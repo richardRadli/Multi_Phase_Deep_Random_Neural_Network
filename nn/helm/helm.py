@@ -1,38 +1,26 @@
+import logging
 import numpy as np
 import time
 
-from scipy import linalg, stats
-from sklearn import preprocessing
+from scipy import linalg
+
 from sklearn.metrics import accuracy_score
 
 from elm.src.config.config import DatasetConfig, MPDRNNConfig
 from elm.src.config.dataset_config import general_dataset_configs
+from elm.src.dataset_operations.load_dataset import load_data
+from elm.src.utils.utils import setup_logger
 
 
 class HELM:
     def __init__(self, penalty, scaling_factor):
+        setup_logger()
         cfg = MPDRNNConfig().parse()
         cfg_data_preprocessing = DatasetConfig().parse()
         gen_ds_cfg = general_dataset_configs(cfg)
 
-        data_file = gen_ds_cfg.get("cached_dataset_file")
-        data = np.load(data_file, allow_pickle=True)
-
-        self.train_data = data[0]
-        self.train_labels = data[2]
-        self.test_data = data[1]
-        self.test_labels = data[3]
-
-        if cfg_data_preprocessing.normalize:
-            if cfg_data_preprocessing.type_of_normalization == "zscore":
-                self.train_data = stats.zscore(self.train_data)
-                self.test_data = stats.zscore(self.test_data)
-            elif cfg_data_preprocessing.type_of_normalization == "minmax":
-                scaler = preprocessing.MinMaxScaler()
-                self.train_data = scaler.fit_transform(self.train_data)
-                self.test_data = scaler.fit_transform(self.test_data)
-            else:
-                raise ValueError("Wrong type of normalization!")
+        self.train_data, self.train_labels, self.test_data, self.test_labels = (
+            load_data(gen_ds_cfg, cfg_data_preprocessing))
 
         if cfg.seed:
             np.random.seed(1234)
@@ -154,7 +142,7 @@ class HELM:
         del a1
         t1 = h1 @ beta1.T
         del h1
-        print("Layer 1: Max Val of Output", np.max(t1), "Min Val", np.min(t1))
+        logging.info(f"Layer 1\n Max Val of Output: {np.max(t1):.4f} Min Val: {np.min(t1):.4f}")
         t1, ps1 = self.min_max_scale(t1.T, "0_1")
 
         # Second layer RELM
@@ -166,7 +154,7 @@ class HELM:
         del a2
         t2 = h2 @ beta2.T
         del h2
-        print("Layer 2: Max Val of Output", np.max(t2), "Min Val", np.min(t2))
+        logging.info(f"Layer 2\n Max Val of Output: {np.max(t2):.4f} Min Val: {np.min(t2):.4f}")
         t2, ps2 = self.min_max_scale(t2.T, "0_1")
 
         # Original ELM
@@ -176,15 +164,15 @@ class HELM:
         del h3
         l3 = np.amax(np.amax(t3))
         l3 = self.scaling_factor / l3
-        print("Layer 3: Max Val of Output %f Min Val %f" % (l3, np.amin(t3)))
+        logging.info(f"Layer 3\n Max Val of Output: {np.max(t3):.4f} Min Val: {np.min(t3):.4f}")
 
         t3 = np.tanh(t3 * l3)
 
         # Finsh Training
         beta = np.linalg.solve(t3.T.dot(t3) + np.eye(t3.shape[1]) * self.C_penalty, t3.T.dot(self.train_labels))
         end = time.time()
-        print('Training has been finished!')
-        print(f'The Total Training Time is : {end - start} seconds')
+        logging.info("Training has been finished!")
+        logging.info(f'The Total Training Time is : {end - start:.4f} seconds')
 
         return t3, beta, beta1, beta2, l3, ps1, ps2
 
@@ -200,7 +188,7 @@ class HELM:
         y_predicted_argmax = np.argmax(np.asarray(y_predicted), axis=-1)
         y_true_argmax = np.argmax(np.asarray(self.train_labels), axis=-1)
         training_accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
-        print(f"Training Accuracy is: {training_accuracy * 100}%")
+        logging.info(f"Training Accuracy is: {training_accuracy * 100:.4f}%")
 
     def testing_accuracy(self, beta, beta1, beta2, l3, ps1, ps2):
         """
@@ -239,11 +227,16 @@ class HELM:
         testing_accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
         end = time.time()
 
-        print("Testing has been finished!")
-        print(f"The Total Testing Time is:  {end - start} seconds")
-        print(f"Testing Accuracy is: {testing_accuracy * 100}%")
+        logging.info("Testing has been finished!")
+        logging.info(f"The Total Testing Time is:  {end - start:.4f} seconds")
+        logging.info(f"Testing Accuracy is: {testing_accuracy * 100:.4f}%")
 
     def main(self):
+        """
+
+        :return:
+        """
+
         t3, beta, beta1, beta2, l3, ps1, ps2 = self.train()
         self.training_accuracy(t3, beta)
         self.testing_accuracy(beta, beta1, beta2, l3, ps1, ps2)

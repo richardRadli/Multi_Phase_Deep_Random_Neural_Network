@@ -26,7 +26,8 @@ class InitialLayer(object):
         self.H_pseudo_inverse = None
         self.__n_input_nodes = n_input_nodes
         self.__n_hidden_nodes = n_hidden_nodes
-        self.__alpha_weights = None
+        self.__alpha_weights = np.random.uniform(low=self.cfg.alpha_weights_min, high=self.cfg.alpha_weights_max,
+                                                 size=(self.__n_input_nodes, self.__n_hidden_nodes))
         self.__beta_weights = None
 
         # Variables to store prediction results
@@ -70,20 +71,29 @@ class InitialLayer(object):
     # ------------------------------------------------------ F I T -----------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def fit(self):
-        if self.method in ["BASE", "EXP"]:
-            self.__alpha_weights = np.random.uniform(low=self.cfg.alpha_weights_min, high=self.cfg.alpha_weights_max,
-                                                     size=(self.__n_input_nodes, self.__n_hidden_nodes))
-        else:
-            raise ValueError("Wrong method was given!")
+        if self.method not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
+            raise ValueError(f"Wrong method was given: {self.method}")
 
         # Compute the first hidden layer (size: [number of data, number of hidden nodes])
         self.H1 = self.__activation(self.train_data @ self.__alpha_weights)
 
-        # Compute inverse of H1 (size: (number of hidden nodes, number of data))
-        self.H_pseudo_inverse = pinv(self.H1)
+        if self.method in ["BASE", "EXP_ORT"]:
+            # Compute inverse of H1 (size: (number of hidden nodes, number of data))
+            self.H_pseudo_inverse = pinv(self.H1)
 
-        # Compute the beta weights (size: [number of hidden nodes, number of output nodes])
-        self.__beta_weights = self.H_pseudo_inverse @ self.train_labels
+            # Compute the beta weights (size: [number of hidden nodes, number of output nodes])
+            self.__beta_weights = self.H_pseudo_inverse @ self.train_labels
+        else:
+            C = 0.01
+            identity_mtx = np.identity(self.H1.shape[1])
+            if self.H1.shape[0] > self.H1.shape[1]:
+                self.__beta_weights = (
+                        np.linalg.pinv(self.H1.T @ self.H1 + identity_mtx / C) @ self.H1.T @ self.train_labels)
+            elif self.H1.shape[0] < self.H1.shape[1]:
+                self.__beta_weights = (
+                        self.H1.T @ np.linalg.pinv(self.H1 @ self.H1.T + identity_mtx / C) @ self.train_labels)
+            else:
+                raise ValueError("not possible")
 
     def predict(self, data: np.ndarray, operation: str) -> np.ndarray:
         """

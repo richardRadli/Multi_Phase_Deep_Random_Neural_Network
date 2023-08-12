@@ -12,7 +12,7 @@ class MPDRNNConfig:
                                                                                          "values of the alpha weight "
                                                                                          "matrix")
         self.parser.add_argument("--dataset_name", type=str, default="musk2")
-        self.parser.add_argument("--method", type=str, default="BASE", help="BASE | EXP_ORT")
+        self.parser.add_argument("--method", type=str, default="BASE", help="BASE | EXP_ORT | EXP_ORT_C")
         self.parser.add_argument("--mu", type=float, default=0.0)
         self.parser.add_argument("--number_of_tests", type=int, default=1)
         self.parser.add_argument("--plot_diagrams", type=bool, default=False)

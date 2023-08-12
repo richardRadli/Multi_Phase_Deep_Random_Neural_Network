@@ -62,14 +62,30 @@ class AdditionalLayer(object):
         noise = np.random.normal(mu, sigma, (self.previous_weights.shape[0],
                                              self.previous_weights.shape[1]))
         w_rnd_out_i = self.previous_weights + noise
-        w_rnd = np.random.normal(mu, sigma, (self.previous_weights.shape[0],
-                                             self.__n_hidden_nodes))
-
         hidden_layer_i_a = np.hstack((self.previous_weights, w_rnd_out_i))
-        return np.hstack((hidden_layer_i_a, w_rnd))
+
+        if self.method in ["BASE"]:
+            w_rnd = np.random.normal(mu, sigma, (self.previous_weights.shape[0],
+                                                 self.__n_hidden_nodes))
+
+            hidden_layer_i = np.hstack((hidden_layer_i_a, w_rnd))
+        else:
+            w_rnd = np.random.normal(mu, sigma, (self.previous_weights.shape[0], self.__n_hidden_nodes // 2))
+            ort = (np.apply_along_axis(self.calc_ort, axis=1, arr=w_rnd))
+            ort = np.squeeze(ort)
+            w_rnd = np.hstack((w_rnd, ort))
+            hidden_layer_i = np.hstack((hidden_layer_i_a, w_rnd))
+
+        return hidden_layer_i
 
     def calc_ort(self, x):
+        """
         # Calculation of orthogonal neuron
+
+        :param x:
+        :return:
+        """
+
         return np.subtract(x, np.dot(self.predict_h_train_prev, np.dot(np.transpose(self.predict_h_train_prev), x)))
 
     def fit(self, labels: np.ndarray):

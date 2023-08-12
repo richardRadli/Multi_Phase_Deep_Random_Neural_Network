@@ -9,21 +9,30 @@ from elm.src.utils.utils import pretty_print_results, measure_execution_time
 
 class ELMModelWrapper:
     def __init__(self, train_data, train_labels, test_data, test_labels):
+        # Initialize config and paths
         self.cfg = MPDRNNConfig().parse()
         gen_ds_cfg = general_dataset_configs(self.cfg)
 
+        # Initialize data
         self.train_data = train_data
         self.train_labels = train_labels
         self.test_data = test_data
         self.test_labels = test_labels
 
+        # Initialize number of neurons
         self.n_output_nodes = gen_ds_cfg.get("num_classes")
-        self.n_hidden_nodes_layer_2 = gen_ds_cfg.get("eq_neurons")[1]
-        self.n_hidden_nodes_layer_3 = gen_ds_cfg.get("eq_neurons")[2]
+        n_hidden_nodes_layer_1 = (
+            gen_ds_cfg.get("eq_neurons"))[0] if self.cfg.method == "BASE" else gen_ds_cfg.get("exp_neurons")[0]
+        self.n_hidden_nodes_layer_2 = (
+            gen_ds_cfg.get("eq_neurons"))[1] if self.cfg.method == "BASE" else gen_ds_cfg.get("exp_neurons")[1]
+        self.n_hidden_nodes_layer_3 = (
+            gen_ds_cfg.get("eq_neurons"))[2] if self.cfg.method == "BASE" else gen_ds_cfg.get("exp_neurons")[2]
 
-        self.initial_layer = InitialLayer(train_data, train_labels, test_data, test_labels,
-                                          gen_ds_cfg.get("num_features"), gen_ds_cfg.get("eq_neurons")[0],
-                                          self.n_output_nodes, "ReLU", "mse", "phase_1", self.cfg.method, "zero")
+        # Initialize layers
+        self.initial_layer = InitialLayer(train_data=train_data, train_labels=train_labels, test_data=test_data,
+                                          test_labels=test_labels, n_input_nodes=gen_ds_cfg.get("num_features"),
+                                          n_hidden_nodes=n_hidden_nodes_layer_1, activation="ReLU", loss="mse",
+                                          name="phase_1", method=self.cfg.method, bias="zero")
         self.second_layer = None
         self.third_layer = None
 
