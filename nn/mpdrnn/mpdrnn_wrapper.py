@@ -1,10 +1,10 @@
 from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error, precision_recall_fscore_support
 
 from additional_layers import AdditionalLayer
-from config.config import MPDRNNConfig
-from config.dataset_config import general_dataset_configs
+from elm.src.config.config import MPDRNNConfig
+from elm.src.config.dataset_config import general_dataset_configs
 from initial_layer import InitialLayer
-from utils.utils import pretty_print_results, measure_execution_time
+from elm.src.utils.utils import pretty_print_results, measure_execution_time
 
 
 class ELMModelWrapper:

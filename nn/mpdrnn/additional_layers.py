@@ -1,7 +1,7 @@
 import numpy as np
 
-from utils.activation_functions import leaky_ReLU, identity, ReLU, sigmoid, tanh
-from utils.loss_functions import mae, mse
+from elm.src.utils.activation_functions import leaky_ReLU, identity, ReLU, sigmoid, tanh
+from elm.src.utils.loss_functions import mae, mse
 
 
 class AdditionalLayer(object):

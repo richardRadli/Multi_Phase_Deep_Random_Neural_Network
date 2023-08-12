@@ -2,10 +2,10 @@ import numpy as np
 
 from numpy.linalg import pinv
 
-from config.config import MPDRNNConfig
-from utils.activation_functions import leaky_ReLU, identity, ReLU, sigmoid, tanh
-from utils.biases import ones_bias, uniform_bias, xavier_bias, zero_bias
-from utils.loss_functions import mae, mse
+from elm.src.config.config import MPDRNNConfig
+from elm.src.utils.activation_functions import leaky_ReLU, identity, ReLU, sigmoid, tanh
+from elm.src.utils.biases import ones_bias, uniform_bias, xavier_bias, zero_bias
+from elm.src.utils.loss_functions import mae, mse
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

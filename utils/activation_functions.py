@@ -1,6 +1,6 @@
 import numpy as np
 
-from config.config import MPDRNNConfig
+from elm.src.config.config import MPDRNNConfig
 
 cfg = MPDRNNConfig().parse()
 

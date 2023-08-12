@@ -5,8 +5,8 @@ from scipy import linalg, stats
 from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 
-from config.config import DatasetConfig, MPDRNNConfig
-from config.dataset_config import general_dataset_configs
+from elm.src.config.config import DatasetConfig, MPDRNNConfig
+from elm.src.config.dataset_config import general_dataset_configs
 
 
 class HELM:

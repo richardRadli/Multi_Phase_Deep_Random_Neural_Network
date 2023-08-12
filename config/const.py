@@ -11,9 +11,9 @@ class _Const(object):
     root_mapping = {
         "rrb12": {
             "PROJECT_ROOT":
-                "C:/Users/rrb12/Documents/research/mpdrnn",
+                "C:/Users/rrb12/Documents/research/elm",
             "DATASET_ROOT":
-                "C:/Users/rrb12/Documents/research/mpdrnn/datasets"
+                "C:/Users/rrb12/Documents/research/elm/datasets"
         }
     }
 

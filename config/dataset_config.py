@@ -2,7 +2,7 @@ import logging
 
 from typing import Dict
 
-from config.const import DATASET_FCNN_PATHS, DATASET_FILES_PATHS
+from elm.src.config.const import DATASET_FCNN_PATHS, DATASET_FILES_PATHS
 
 
 def general_dataset_configs(cfg) -> Dict:

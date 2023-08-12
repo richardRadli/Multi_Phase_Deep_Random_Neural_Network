@@ -9,10 +9,10 @@ from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 
-from config.config import FCNNConfig
-from config.dataset_config import general_dataset_configs, fcnn_dataset_configs
+from elm.src.config.config import FCNNConfig
+from elm.src.config.dataset_config import general_dataset_configs, fcnn_dataset_configs
 from model import CustomELMModel
-from utils.utils import create_timestamp, device_selector, setup_logger
+from elm.src.utils.utils import create_timestamp, setup_logger
 
 
 class FCNN:
@@ -27,7 +27,7 @@ class FCNN:
         gen_ds_cfg = general_dataset_configs(self.cfg)
         fcnn_ds_cfg = fcnn_dataset_configs(self.cfg)
         # Set up device
-        self.device = device_selector(use_gpu=self.cfg.disable_GPU)
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.training_acc = []
         self.testing_acc = []
