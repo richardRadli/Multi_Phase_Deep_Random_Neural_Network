@@ -25,7 +25,7 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         if cfg_training.method not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
             raise ValueError(f"Wrong method was given: {cfg_training.method}")
 
-        # Load data
+        # Load fcnn_data
         self.train_data, self.train_labels, self.test_data, self.test_labels = (
             load_data(gen_ds_cfg, cfg_data_preprocessing))
 
@@ -50,10 +50,12 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         elm_wrapper.evaluate_first_layer()
 
         elm_wrapper.train_second_layer()
-        elm_wrapper.evaluate_second_layer()
+        elm_wrapper.evaluate_additional_layer(layer=elm_wrapper.second_layer,
+                                              phase_name="train_second_layer")
 
         elm_wrapper.train_third_layer()
-        elm_wrapper.evaluate_third_layer()
+        elm_wrapper.evaluate_additional_layer(layer=elm_wrapper.third_layer,
+                                              phase_name="train_third_layer")
 
         total_time = elm_wrapper.get_total_execution_time()
         logging.info("Total training time: %.4f seconds", total_time)

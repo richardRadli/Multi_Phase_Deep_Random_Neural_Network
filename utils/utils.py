@@ -194,14 +194,14 @@ def plot_metrics(path_to_plot: str, train_accuracy: list, test_accuracy: list, n
     if colors is None:
         raise ValueError('An unknown operation \'%s\'.' % operation)
 
-    # Transform data to plot
+    # Transform fcnn_data to plot
     df = pd.DataFrame({'Train': train_accuracy,
                        'Test': test_accuracy})
     df['Train'] = df['Train'].astype(float)
     df['Test'] = df['Test'].astype(float)
     fig, ax = plt.subplots()
 
-    # Redraw the data with low alpha and slightly increased line width:
+    # Redraw the fcnn_data with low alpha and slightly increased line width:
     n_shades = 9
     diff_line_width = 0.5
     alpha_value = 0.9 / n_shades

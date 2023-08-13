@@ -40,13 +40,13 @@ class HELM:
     def sparse_elm_autoencoder(a, b, lam, itrs):
         """
 
-        param a: a matrix with size (d, n), where d is the dimension of the input data and n is the number of training
+        param a: a matrix with size (d, n), where d is the dimension of the input fcnn_data and n is the number of training
                  samples.
         param b: a matrix with size (d, m), where m is the number of hidden neurons in the autoencoder.
         param lam: a scalar that controls the sparsity of the learned representation.
         param itrs: the number of iterations for training the autoencoder.
         :return: The function returns a matrix "x" with size (m, n), which is the learned representation of the input
-                 data.
+                 fcnn_data.
         """
 
         # These lines calculate the Lipschitz constant of the input matrix "a", which is used to set the step size of
@@ -94,7 +94,7 @@ class HELM:
     def min_max_scale(matrix, scale: str):
         """
         The function scales the values of the matrix to either the range of [-1, 1] or [0, 1] based on the value of
-        the parameter "scale". The function returns the scaled data along with a list that contains the minimum values,
+        the parameter "scale". The function returns the scaled fcnn_data along with a list that contains the minimum values,
         maximum values, and ranges for each row.
 
         param matrix:
@@ -117,9 +117,9 @@ class HELM:
     @staticmethod
     def apply_normalization(data, min_values, range_values):
         """
-        The purpose of this function is to normalize the input data based on the given minimum values and range values.
+        The purpose of this function is to normalize the input fcnn_data based on the given minimum values and range values.
 
-        param data:
+        param fcnn_data:
         param min_values:
         param range_values:
         :return:

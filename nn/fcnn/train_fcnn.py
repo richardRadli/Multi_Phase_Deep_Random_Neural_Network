@@ -37,13 +37,13 @@ class FCNN:
         self.testing_acc = []
         self.training_time = []
 
-        # Load the data directly
+        # Load the fcnn_data directly
         data_file = gen_ds_cfg.get("cached_dataset_file")
         data = np.load(data_file, allow_pickle=True)
         train_data = torch.tensor(data[0], dtype=torch.float32)
         train_labels = torch.tensor(data[2], dtype=torch.float32)
 
-        # Split data into training and validation sets
+        # Split fcnn_data into training and validation sets
         num_samples = len(train_data)
         num_train = int(self.cfg.train_size * num_samples)  # 80% for training
         self.train_data, self.valid_data = train_data[:num_train], train_data[num_train:]

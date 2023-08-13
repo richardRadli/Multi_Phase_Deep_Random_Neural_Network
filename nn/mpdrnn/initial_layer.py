@@ -21,9 +21,9 @@ class InitialLayer(object):
         """
         Initialize an InitialLayer instance.
 
-        :param train_data: Training data.
+        :param train_data: Training fcnn_data.
         :param train_labels: Training labels.
-        :param test_data: Test data.
+        :param test_data: Test fcnn_data.
         :param test_labels: Test labels.
         :param n_input_nodes: Number of input nodes.
         :param n_hidden_nodes: Number of hidden nodes.
@@ -58,7 +58,7 @@ class InitialLayer(object):
         self.__loss = self.loss_map.get(loss, None)
         self.__bias = self.bias_map.get(bias, None)
 
-        # Load the data directly
+        # Load the fcnn_data directly
         self.train_data = train_data
         self.train_labels = train_labels
         self.test_data = test_data
@@ -102,11 +102,11 @@ class InitialLayer(object):
         :return: None
         """
 
-        # Compute the first hidden layer (size: [number of data, number of hidden nodes])
+        # Compute the first hidden layer (size: [number of fcnn_data, number of hidden nodes])
         self.H1 = self.__activation(self.train_data @ self.__alpha_weights)
 
         if self.method in ["BASE", "EXP_ORT"]:
-            # Compute inverse of H1 (size: (number of hidden nodes, number of data))
+            # Compute inverse of H1 (size: (number of hidden nodes, number of fcnn_data))
             self.H_pseudo_inverse = pinv(self.H1)
 
             # Compute the beta weights (size: [number of hidden nodes, number of output nodes])
@@ -128,9 +128,9 @@ class InitialLayer(object):
     # ------------------------------------------------------------------------------------------------------------------
     def predict(self, data: np.ndarray, operation: str) -> np.ndarray:
         """
-        Predict the model on train/test data.
+        Predict the model on train/test fcnn_data.
 
-        :param data: Input data.
+        :param data: Input fcnn_data.
         :param operation: Either train or test.
         :return: Predicted values.
         """
@@ -154,8 +154,8 @@ class InitialLayer(object):
         """
         Evaluate the model's performance using the specified metrics.
 
-        :param data: Input data for evaluation.
-        :param labels: True labels for the input data.
+        :param data: Input fcnn_data for evaluation.
+        :param labels: True labels for the input fcnn_data.
         :param metrics: Dictionary of metric names and corresponding metric functions.
         :param operation: Either train or test.
         :return: Dictionary containing evaluated metrics.

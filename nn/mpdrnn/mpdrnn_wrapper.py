@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error
 from additional_layers import AdditionalLayer
 from elm.src.config.config import MPDRNNConfig
 from elm.src.config.dataset_config import general_dataset_configs
-from elm.src.utils.utils import create_timestamp, measure_execution_time, pretty_print_results,  plot_confusion_matrix, plot_metrics
+from elm.src.utils.utils import create_timestamp, measure_execution_time, pretty_print_results, plot_confusion_matrix
 from initial_layer import InitialLayer
 
 
@@ -21,7 +21,7 @@ class ELMModelWrapper:
         self.cfg = MPDRNNConfig().parse()
         self.gen_ds_cfg = general_dataset_configs(self.cfg)
 
-        # Initialize data
+        # Initialize fcnn_data
         self.train_data = train_data
         self.train_labels = train_labels
         self.test_data = test_data
@@ -120,9 +120,6 @@ class ELMModelWrapper:
                                                    metrics=self.metrics,
                                                    operation="test")
 
-        self.training_accuracy.append(train_metrics.get("accuracy"))
-        self.testing_accuracy.append(test_metrics.get("accuracy"))
-
         pretty_print_results(metric_results=train_metrics,
                              operation="train",
                              name=self.initial_layer.name,
@@ -147,6 +144,47 @@ class ELMModelWrapper:
                               operation="test",
                               method=self.cfg.method,
                               phase_name=self.initial_layer.name)
+
+    def evaluate_additional_layer(self, layer: AdditionalLayer, phase_name: str):
+        """
+
+        :param layer:
+        :param phase_name:
+        :return:
+        """
+
+        train_metrics = layer.evaluate(labels=self.train_labels,
+                                       metrics=self.metrics,
+                                       operation="train")
+
+        test_metrics = layer.evaluate(labels=self.test_labels,
+                                      metrics=self.metrics,
+                                      operation="test")
+
+        pretty_print_results(metric_results=train_metrics,
+                             operation="train",
+                             name=layer.name,
+                             training_time=self.total_execution_time.get(phase_name))
+
+        pretty_print_results(metric_results=test_metrics,
+                             name=layer.name,
+                             operation="test")
+
+        plot_confusion_matrix(metrics=train_metrics,
+                              path_to_plot=self.path_to_cm,
+                              labels=self.gen_ds_cfg.get("class_labels"),
+                              name_of_dataset=self.gen_ds_cfg.get("dataset_name"),
+                              operation="train",
+                              method=self.cfg.method,
+                              phase_name=layer.name)
+
+        plot_confusion_matrix(metrics=test_metrics,
+                              path_to_plot=self.path_to_cm,
+                              labels=self.gen_ds_cfg.get("class_labels"),
+                              name_of_dataset=self.gen_ds_cfg.get("dataset_name"),
+                              operation="test",
+                              method=self.cfg.method,
+                              phase_name=layer.name)
 
     # ------------------------------------------------------------------------------------------------------------------
     # ---------------------------------------- I N I T   S E C O N D   L A Y E R ---------------------------------------
@@ -183,52 +221,6 @@ class ELMModelWrapper:
         self.second_layer.train(self.train_labels)
 
     # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------ E V A L U A T E   S E C O N D   L A Y E R -----------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def evaluate_second_layer(self) -> None:
-        """
-        Evaluates the second layer of the ELM model.
-
-        :return: None
-        """
-
-        train_metrics = self.second_layer.evaluate(labels=self.train_labels,
-                                                   metrics=self.metrics,
-                                                   operation="train")
-
-        test_metrics = self.second_layer.evaluate(labels=self.test_labels,
-                                                  metrics=self.metrics,
-                                                  operation="test")
-
-        self.training_accuracy.append(train_metrics.get("accuracy"))
-        self.testing_accuracy.append(test_metrics.get("accuracy"))
-
-        pretty_print_results(metric_results=train_metrics,
-                             operation="train",
-                             name=self.second_layer.name,
-                             training_time=self.total_execution_time.get("train_second_layer"))
-
-        pretty_print_results(metric_results=test_metrics,
-                             name=self.second_layer.name,
-                             operation="test")
-
-        plot_confusion_matrix(metrics=train_metrics,
-                              path_to_plot=self.path_to_cm,
-                              labels=self.gen_ds_cfg.get("class_labels"),
-                              name_of_dataset=self.gen_ds_cfg.get("dataset_name"),
-                              operation="train",
-                              method=self.cfg.method,
-                              phase_name=self.second_layer.name)
-
-        plot_confusion_matrix(metrics=test_metrics,
-                              path_to_plot=self.path_to_cm,
-                              labels=self.gen_ds_cfg.get("class_labels"),
-                              name_of_dataset=self.gen_ds_cfg.get("dataset_name"),
-                              operation="test",
-                              method=self.cfg.method,
-                              phase_name=self.second_layer.name)
-
-    # ------------------------------------------------------------------------------------------------------------------
     # ----------------------------------------- I N I T   T H I R D   L A Y E R ----------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def init_third_layer(self) -> AdditionalLayer:
@@ -261,58 +253,6 @@ class ELMModelWrapper:
 
         self.third_layer = self.init_third_layer()
         self.third_layer.train(self.train_labels)
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------- E V A L U A T E   T H I R D   L A Y E R ------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def evaluate_third_layer(self) -> None:
-        """
-        Evaluates the third layer of the ELM model.
-
-        :return: None
-        """
-
-        train_metrics = self.third_layer.evaluate(labels=self.train_labels,
-                                                  metrics=self.metrics,
-                                                  operation="train")
-
-        test_metrics = self.third_layer.evaluate(labels=self.test_labels,
-                                                 metrics=self.metrics,
-                                                 operation="test")
-
-        self.training_accuracy.append(train_metrics.get("accuracy"))
-        self.testing_accuracy.append(test_metrics.get("accuracy"))
-
-        pretty_print_results(metric_results=train_metrics,
-                             operation="train",
-                             name=self.third_layer.name,
-                             training_time=self.total_execution_time.get("train_third_layer"))
-
-        pretty_print_results(metric_results=test_metrics,
-                             name=self.third_layer.name,
-                             operation="test")
-
-        plot_confusion_matrix(metrics=train_metrics,
-                              path_to_plot=self.path_to_cm,
-                              labels=self.gen_ds_cfg.get("class_labels"),
-                              name_of_dataset=self.gen_ds_cfg.get("dataset_name"),
-                              operation="train",
-                              method=self.cfg.method,
-                              phase_name=self.third_layer.name)
-
-        plot_confusion_matrix(metrics=test_metrics,
-                              path_to_plot=self.path_to_cm,
-                              labels=self.gen_ds_cfg.get("class_labels"),
-                              name_of_dataset=self.gen_ds_cfg.get("dataset_name"),
-                              operation="test",
-                              method=self.cfg.method,
-                              phase_name=self.third_layer.name)
-
-        plot_metrics(path_to_plot=self.path_to_metrics_plot,
-                     train_accuracy=self.training_accuracy,
-                     test_accuracy=self.testing_accuracy,
-                     name_of_dataset=self.gen_ds_cfg.get("dataset_name"),
-                     operation="accuracy")
 
     # ------------------------------------------------------------------------------------------------------------------
     # --------------------------------- G E T   T O T A L   E X E C U T I O N   T I M E --------------------------------

@@ -53,59 +53,59 @@ class FCNNPaths(_Const):
     dirs_dataset_paths = {
         # FCNN saved weights
         "sw_connect4":
-            "data/saved_weights_fcnn/connect4",
+            "fcnn_data/saved_weights_fcnn/connect4",
         "sw_isolete":
-            "data/saved_weights_fcnn/isolete",
+            "fcnn_data/saved_weights_fcnn/isolete",
         "sw_letter":
-            "data/saved_weights_fcnn/letter",
+            "fcnn_data/saved_weights_fcnn/letter",
         "sw_mnist":
-            "data/saved_weights_fcnn/mnist",
+            "fcnn_data/saved_weights_fcnn/mnist",
         "sw_mnist_fashion":
-            "data/saved_weights_fcnn/mnist_fashion",
+            "fcnn_data/saved_weights_fcnn/mnist_fashion",
         "sw_musk2":
-            "data/saved_weights_fcnn/musk2",
+            "fcnn_data/saved_weights_fcnn/musk2",
         "sw_optdigits":
-            "data/saved_weights_fcnn/optdigits",
+            "fcnn_data/saved_weights_fcnn/optdigits",
         "sw_page_blocks":
-            "data/saved_weights_fcnn/page_blocks",
+            "fcnn_data/saved_weights_fcnn/page_blocks",
         "sw_segment":
-            "data/saved_weights_fcnn/segment",
+            "fcnn_data/saved_weights_fcnn/segment",
         "sw_shuttle":
-            "data/saved_weights_fcnn/shuttle",
+            "fcnn_data/saved_weights_fcnn/shuttle",
         "sw_spambase":
-            "data/saved_weights_fcnn/spambase",
+            "fcnn_data/saved_weights_fcnn/spambase",
         "sw_usps":
-            "data/saved_weights_fcnn/usps",
+            "fcnn_data/saved_weights_fcnn/usps",
         "sw_yaleb":
-            "data/saved_weights_fcnn/yaleb",
+            "fcnn_data/saved_weights_fcnn/yaleb",
 
         # FCNN logs
         "logs_connect4":
-            "data/logs_fcnn/connect4",
+            "fcnn_data/logs_fcnn/connect4",
         "logs_isolete":
-            "data/logs_fcnn/isolete",
+            "fcnn_data/logs_fcnn/isolete",
         "logs_letter":
-            "data/logs_fcnn/letter",
+            "fcnn_data/logs_fcnn/letter",
         "logs_mnist":
-            "data/logs_fcnn/mnist",
+            "fcnn_data/logs_fcnn/mnist",
         "logs_mnist_fashion":
-            "data/logs_fcnn/mnist_fashion",
+            "fcnn_data/logs_fcnn/mnist_fashion",
         "logs_musk2":
-            "data/logs_fcnn/musk2",
+            "fcnn_data/logs_fcnn/musk2",
         "logs_optdigits":
-            "data/logs_fcnn/optdigits",
+            "fcnn_data/logs_fcnn/optdigits",
         "logs_page_blocks":
-            "data/logs_fcnn/page_blocks",
+            "fcnn_data/logs_fcnn/page_blocks",
         "logs_segment":
-            "data/logs_fcnn/segment",
+            "fcnn_data/logs_fcnn/segment",
         "logs_shuttle":
-            "data/logs_fcnn/shuttle",
+            "fcnn_data/logs_fcnn/shuttle",
         "logs_spambase":
-            "data/logs_fcnn/spambase",
+            "fcnn_data/logs_fcnn/spambase",
         "logs_usps":
-            "data/logs_fcnn/usps",
+            "fcnn_data/logs_fcnn/usps",
         "logs_yaleb":
-            "data/logs_fcnn/yaleb"
+            "fcnn_data/logs_fcnn/yaleb"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
