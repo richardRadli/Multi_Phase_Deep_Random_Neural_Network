@@ -2,7 +2,7 @@ import logging
 
 from elm.src.config.config import DatasetConfig, MPDRNNConfig
 from elm.src.config.dataset_config import general_dataset_configs
-from elm.src.dataset_operations.load_dataset import load_data
+from elm.src.dataset_operations.load_dataset import load_data_elm
 from elm.src.utils.utils import setup_logger, display_dataset_info
 from mpdrnn_wrapper import ELMModelWrapper
 
@@ -27,7 +27,7 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
 
         # Load fcnn_data
         self.train_data, self.train_labels, self.test_data, self.test_labels = (
-            load_data(gen_ds_cfg, cfg_data_preprocessing))
+            load_data_elm(gen_ds_cfg, cfg_data_preprocessing))
 
     # ------------------------------------------------------------------------------------------------------------------
     # ---------------------------------------------------- M A I N -----------------------------------------------------

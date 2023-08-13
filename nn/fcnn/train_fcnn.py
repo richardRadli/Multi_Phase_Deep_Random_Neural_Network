@@ -11,7 +11,8 @@ from torchsummary import summary
 
 from elm.src.config.config import FCNNConfig
 from elm.src.config.dataset_config import general_dataset_configs, fcnn_dataset_configs
-from elm.src.utils.utils import create_timestamp, setup_logger
+from elm.src.dataset_operations.load_dataset import load_data_fcnn
+from elm.src.utils.utils import create_timestamp, setup_logger, measure_execution_time_fcnn
 from model import CustomELMModel
 
 
@@ -24,34 +25,19 @@ class FCNN:
         setup_logger()
 
         # Set up config
-        self.cfg = FCNNConfig().parse()
+        self.fcnn_cfg = FCNNConfig().parse()
 
-        #
-        gen_ds_cfg = general_dataset_configs(self.cfg)
-        fcnn_ds_cfg = fcnn_dataset_configs(self.cfg)
+        # Set up paths
+        gen_ds_cfg = general_dataset_configs(self.fcnn_cfg)
+        fcnn_ds_cfg = fcnn_dataset_configs(self.fcnn_cfg)
 
         # Set up device
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        self.training_acc = []
-        self.testing_acc = []
-        self.training_time = []
+        # Load dataset
+        self.train_loader, self.valid_loader, self.test_loader = load_data_fcnn(gen_ds_cfg, self.fcnn_cfg)
 
-        # Load the fcnn_data directly
-        data_file = gen_ds_cfg.get("cached_dataset_file")
-        data = np.load(data_file, allow_pickle=True)
-        train_data = torch.tensor(data[0], dtype=torch.float32)
-        train_labels = torch.tensor(data[2], dtype=torch.float32)
-
-        # Split fcnn_data into training and validation sets
-        num_samples = len(train_data)
-        num_train = int(self.cfg.train_size * num_samples)  # 80% for training
-        self.train_data, self.valid_data = train_data[:num_train], train_data[num_train:]
-        self.train_labels, self.valid_labels = train_labels[:num_train], train_labels[num_train:]
-
-        self.test_data = torch.tensor(data[1], dtype=torch.float32)
-        self.test_labels = torch.tensor(data[3], dtype=torch.float32)
-
+        # Set up model
         self.model = CustomELMModel()
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),))
 
@@ -59,7 +45,7 @@ class FCNN:
         self.loss_fn = nn.MSELoss()
 
         # Define your optimizer
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.cfg.learning_rate)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.fcnn_cfg.learning_rate)
 
         # Tensorboard
         tensorboard_log_dir = os.path.join(fcnn_ds_cfg.get("logs"), self.timestamp)
@@ -72,6 +58,33 @@ class FCNN:
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
+        # Initialize aux variables
+        self.training_acc = []
+        self.testing_acc = []
+        self.training_time = []
+
+    def train_loop(self, batch_data, batch_labels, train_losses):
+        self.optimizer.zero_grad()
+        batch_data = batch_data.to(self.device)
+        batch_labels = batch_labels.to(self.device)
+
+        outputs = self.model(batch_data)
+        t_loss = self.loss_fn(outputs, batch_labels)
+        t_loss.backward()
+        self.optimizer.step()
+
+        train_losses.append(t_loss.item())
+
+    def valid_loop(self, batch_data, batch_labels, valid_losses):
+        batch_data = batch_data.to(self.device)
+        batch_labels = batch_labels.to(self.device)
+
+        outputs = self.model(batch_data)
+        v_loss = self.loss_fn(outputs, batch_labels)
+
+        valid_losses.append(v_loss.item())
+
+    @measure_execution_time_fcnn
     def train(self):
         best_valid_loss = float('inf')
         best_model_path = None
@@ -83,23 +96,18 @@ class FCNN:
         # To track the validation loss as the model trains
         valid_losses = []
 
-        for epoch in tqdm(range(self.cfg.epochs), desc="Training", total=self.cfg.epochs):
-            self.optimizer.zero_grad()
-            outputs = self.model(self.train_data)
-            t_loss = self.loss_fn(outputs, self.train_labels)
-            t_loss.backward()
-            self.optimizer.step()
-            train_losses.append(t_loss.item())
+        for epoch in tqdm(range(self.fcnn_cfg.epochs), desc="Training", total=self.fcnn_cfg.epochs):
+            self.model.train()
+            for batch_data, batch_labels in tqdm(self.train_loader, total=len(self.train_loader)):
+                self.train_loop(batch_data, batch_labels, train_losses)
 
-            # Validate and check for early stopping
-            valid_outputs = self.model(self.valid_data)
-            v_loss = self.loss_fn(valid_outputs, self.valid_labels)
-            valid_losses.append(v_loss.item())
+            for batch_data, batch_labels in tqdm(self.valid_loader, total=len(self.valid_loader)):
+                self.valid_loop(batch_data, batch_labels, valid_losses)
 
             train_loss = np.average(train_losses)
             valid_loss = np.average(valid_losses)
 
-            logging.info(f'train_loss: {train_loss:.5f} ' + f'valid_loss: {valid_loss:.5f}')
+            logging.info(f'\ntrain_loss: {train_loss:.5f} ' + f'valid_loss: {valid_loss:.5f}')
 
             # Record to tensorboard
             self.writer.add_scalars("Loss", {"train": train_loss, "validation": valid_loss}, epoch)
@@ -118,32 +126,42 @@ class FCNN:
                 torch.save(self.model.state_dict(), best_model_path)
             else:
                 epochs_without_improvement += 1
-                if epochs_without_improvement >= self.cfg.patience:
-                    logging.info("Early stopping: No improvement for {} epochs".format(self.cfg.patience))
+                if epochs_without_improvement >= self.fcnn_cfg.patience:
+                    logging.info("Early stopping: No improvement for {} epochs".format(self.fcnn_cfg.patience))
                     break
 
         # Close and flush SummaryWriter
         self.writer.close()
         self.writer.flush()
 
-    def evaluate(self, data, labels, operation: str):
+    def evaluate(self, data_loader, operation: str):
         self.model.eval()
+        total_samples = 0
+        correct_predictions = 0
+
         with torch.no_grad():
-            outputs = self.model(data)
-            predicted_labels = torch.argmax(outputs, dim=1)
-            correct_predictions = (predicted_labels == torch.argmax(labels, dim=1)).sum().item()
-            total_samples = labels.size(0)
+            for batch_data, batch_labels in data_loader:
+                batch_data = batch_data.to(self.device)
+                batch_labels = batch_labels.to(self.device)
+
+                outputs = self.model(batch_data)
+                predicted_labels = torch.argmax(outputs, dim=1)
+                correct_predictions += (predicted_labels == torch.argmax(batch_labels, dim=1)).sum().item()
+                total_samples += batch_labels.size(0)
 
         accuracy = correct_predictions / total_samples
 
         logging.info(f'The {operation} accuracy is {accuracy:.4f}')
 
-        self.training_acc.append(accuracy) if operation == "train" else self.testing_acc.append(accuracy)
+        if operation == "train":
+            self.training_acc.append(accuracy)
+        else:
+            self.testing_acc.append(accuracy)
 
     def main(self):
         self.train()
-        self.evaluate(self.train_data, self.train_labels, operation="train")
-        self.evaluate(self.test_data, self.test_labels, operation="test")
+        self.evaluate(self.train_loader, operation="train")
+        self.evaluate(self.test_loader, operation="test")
 
 
 if __name__ == "__main__":

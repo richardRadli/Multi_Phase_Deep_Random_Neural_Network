@@ -10,6 +10,7 @@ import seaborn as sns
 import time
 
 from datetime import datetime
+from functools import wraps
 
 
 def setup_logger():
@@ -120,6 +121,28 @@ def measure_execution_time(func):
             instance.total_execution_time[method_name] = 0.0
         instance.total_execution_time[method_name] += elapsed_time
 
+        return result
+    return wrapper
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ------------------------------------- M E A S U R E   E X E C U T I O N   T I M E ------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+def measure_execution_time_fcnn(func):
+    """
+    Decorator to measure the execution time.
+
+    :param func:
+    :return:
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        logging.info(f"Execution time of {func.__name__}: {execution_time} seconds")
         return result
     return wrapper
 

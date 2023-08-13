@@ -63,13 +63,14 @@ class FCNNConfig:
         self.parser = argparse.ArgumentParser()
 
         # FCNN parameters
-        self.parser.add_argument("--dataset_name", type=str, default="connect4")
-        self.parser.add_argument("--epochs", type=int, default=15)
-        self.parser.add_argument("--patience", type=int, default=5)
+        self.parser.add_argument("--dataset_name", type=str, default="optdigits")
+        self.parser.add_argument("--epochs", type=int, default=200)
+        self.parser.add_argument("--patience", type=int, default=15)
         self.parser.add_argument("--disable_GPU", type=bool, default=True)
-        self.parser.add_argument("--train_size", type=float, default=0.8)
+        self.parser.add_argument("--valid_size", type=float, default=0.2)
         self.parser.add_argument("--slope", type=float, default=0.2)
-        self.parser.add_argument("--learning_rate", type=float, default=1e-4)
+        self.parser.add_argument("--learning_rate", type=float, default=1e-3)
+        self.parser.add_argument("--batch_size", type=float, default=128)
 
     def parse(self):
         self.opt = self.parser.parse_args()
