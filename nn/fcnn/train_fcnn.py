@@ -11,21 +11,25 @@ from torchsummary import summary
 
 from elm.src.config.config import FCNNConfig
 from elm.src.config.dataset_config import general_dataset_configs, fcnn_dataset_configs
-from model import CustomELMModel
 from elm.src.utils.utils import create_timestamp, setup_logger
+from model import CustomELMModel
 
 
 class FCNN:
     def __init__(self):
         # Create time stamp
         self.timestamp = create_timestamp()
+
         # Set up logger
         setup_logger()
+
         # Set up config
         self.cfg = FCNNConfig().parse()
+
         #
         gen_ds_cfg = general_dataset_configs(self.cfg)
         fcnn_ds_cfg = fcnn_dataset_configs(self.cfg)
+
         # Set up device
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 

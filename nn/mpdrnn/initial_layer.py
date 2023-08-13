@@ -12,9 +12,27 @@ from elm.src.utils.loss_functions import mae, mse
 # +++++++++++++++++++++++++++++++++++++++++++++ I N I T I A L   L A Y E R ++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class InitialLayer(object):
+    # ------------------------------------------------------------------------------------------------------------------
+    # -------------------------------------------------- __I N I T__ ---------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     def __init__(self, train_data: np.ndarray, train_labels: np.ndarray, test_data: np.ndarray, test_labels: np.ndarray,
                  n_input_nodes: int, n_hidden_nodes: int, activation: str = "ReLU", loss: str = "mse", name: str = None,
                  method: str = "BASE", bias: str = "zero"):
+        """
+        Initialize an InitialLayer instance.
+
+        :param train_data: Training data.
+        :param train_labels: Training labels.
+        :param test_data: Test data.
+        :param test_labels: Test labels.
+        :param n_input_nodes: Number of input nodes.
+        :param n_hidden_nodes: Number of hidden nodes.
+        :param activation: Name of the activation function.
+        :param loss: Name of the loss function.
+        :param name: Name of the layer.
+        :param method: Training method.
+        :param bias: Bias initialization method.
+        """
 
         self.cfg = MPDRNNConfig().parse()
 
@@ -26,7 +44,8 @@ class InitialLayer(object):
         self.H_pseudo_inverse = None
         self.__n_input_nodes = n_input_nodes
         self.__n_hidden_nodes = n_hidden_nodes
-        self.__alpha_weights = np.random.uniform(low=self.cfg.alpha_weights_min, high=self.cfg.alpha_weights_max,
+        self.__alpha_weights = np.random.uniform(low=self.cfg.alpha_weights_min,
+                                                 high=self.cfg.alpha_weights_max,
                                                  size=(self.__n_input_nodes, self.__n_hidden_nodes))
         self.__beta_weights = None
 
@@ -48,7 +67,13 @@ class InitialLayer(object):
     # ------------------------------------------------------------------------------------------------------------------
     # --------------------------------------- I N I T   M A P P I N G   D I C T S --------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-    def __init_mapping_dicts(self):
+    def __init_mapping_dicts(self) -> None:
+        """
+        Initializes mapping dictionaries for activation functions, loss functions, and bias initialization methods.
+
+        :return: None
+        """
+
         self.activation_map = {
             "sigmoid": sigmoid,
             "identity": identity,
@@ -68,11 +93,14 @@ class InitialLayer(object):
         }
 
     # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------------------ F I T -----------------------------------------------------
+    # ---------------------------------------------------- T R A I N ---------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-    def fit(self):
-        if self.method not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
-            raise ValueError(f"Wrong method was given: {self.method}")
+    def train(self) -> None:
+        """
+        Trains the initial layer of the ELM model.
+
+        :return: None
+        """
 
         # Compute the first hidden layer (size: [number of data, number of hidden nodes])
         self.H1 = self.__activation(self.train_data @ self.__alpha_weights)
@@ -95,11 +123,15 @@ class InitialLayer(object):
             else:
                 raise ValueError("not possible")
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------- P R E D I C T --------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     def predict(self, data: np.ndarray, operation: str) -> np.ndarray:
         """
-        Function to predict the model on train/test data.
-        param data: Input data.
-        param operation: Either train or test.
+        Predict the model on train/test data.
+
+        :param data: Input data.
+        :param operation: Either train or test.
         :return: Predicted values.
         """
 
@@ -115,14 +147,18 @@ class InitialLayer(object):
             self.predict_h_test = predicted_hidden
             return np.dot(predicted_hidden, self.__beta_weights)
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------- E V A L U A T E ------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     def evaluate(self, data: np.ndarray, labels: np.ndarray, metrics: dict = None, operation: str = "train") -> dict:
         """
+        Evaluate the model's performance using the specified metrics.
 
-        :param data:
-        :param labels:
-        :param metrics:
-        :param operation:
-        :return:
+        :param data: Input data for evaluation.
+        :param labels: True labels for the input data.
+        :param metrics: Dictionary of metric names and corresponding metric functions.
+        :param operation: Either train or test.
+        :return: Dictionary containing evaluated metrics.
         """
 
         if metrics is None:
@@ -143,12 +179,17 @@ class InitialLayer(object):
 
         return evaluated_metrics
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # -------------------------------------------------- W E I G H T S -------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     @property
     def weights(self):
         """
         Function to save weights.
+
         :return: Values of the weights.
         """
+
         return {
             'prev_weights': self.__beta_weights,
             'H_prev': self.H1,

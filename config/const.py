@@ -151,6 +151,33 @@ class MPDRNNPaths(_Const):
             "images/confusion_matrix/usps",
         "cm_yaleb":
             "images/confusion_matrix/yaleb",
+
+        "metrics_connect4":
+            "images/metrics_plot/connect4",
+        "metrics_isolete":
+            "images/metrics_plot/isolete",
+        "metrics_letter":
+            "images/metrics_plot/letter",
+        "metrics_mnist":
+            "images/metrics_plot/mnist",
+        "metrics_mnist_fashion":
+            "images/metrics_plot/mnist_fashion",
+        "metrics_musk2":
+            "images/metrics_plot/musk2",
+        "metrics_optdigits":
+            "images/metrics_plot/optdigits",
+        "metrics_page_blocks":
+            "images/metrics_plot/page_blocks",
+        "metrics_segment":
+            "images/metrics_plot/segment",
+        "metrics_shuttle":
+            "images/metrics_plot/shuttle",
+        "metrics_spambase":
+            "images/metrics_plot/spambase",
+        "metrics_usps":
+            "images/metrics_plot/usps",
+        "metrics_yaleb":
+            "images/metrics_plot/yaleb",
     }
 
     # ------------------------------------------------------------------------------------------------------------------

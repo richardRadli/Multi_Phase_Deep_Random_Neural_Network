@@ -1,8 +1,10 @@
 import colorlog
 import gc
 import logging
+import matplotlib.patches as mp
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
 import seaborn as sns
 import time
@@ -143,15 +145,17 @@ def calc_exp_neurons(total_neurons: int, n_layers: int):
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix(metrics: dict, path_to_plot, name_of_dataset: str, operation: str, method: str) -> None:
+def plot_confusion_matrix(metrics: dict, path_to_plot, labels, name_of_dataset: str, operation: str, method: str,
+                          phase_name: str) -> None:
     cm = metrics.get("confusion_matrix")
     cmn = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    sns.heatmap(cmn, annot=True, fmt='.2f', xticklabels=["0", "1"], yticklabels=["0", "1"])
-    plt.title('%s dataset, %s values, %s method' % (name_of_dataset, operation, method))
+    sns.heatmap(cmn, annot=True, fmt='.2f', xticklabels=labels, yticklabels=labels)
+    plt.title('%s, %s, %s, %s' % (phase_name, name_of_dataset, method, operation))
     plt.ylabel('Actual')
     plt.xlabel('Predicted')
 
-    plt.savefig(path_to_plot, dpi=300)
+    filename = os.path.join(path_to_plot, f"{phase_name}_{name_of_dataset}_{method}_{operation}.png")
+    plt.savefig(filename, dpi=300)
     plt.close()
 
     plt.close("all")
@@ -160,9 +164,81 @@ def plot_confusion_matrix(metrics: dict, path_to_plot, name_of_dataset: str, ope
 
 
 def display_dataset_info(gen_ds_cfg):
-    # Create a DataFrame from the dataset_config dictionary
     df = pd.DataFrame.from_dict(gen_ds_cfg, orient='index')
-    # Drop the "cached_dataset_file" row
     df = df.drop("cached_dataset_file", axis=0)
-    # Display the DataFrame
+    df = df.drop("path_to_cm", axis=0)
     logging.info(df)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------- P L O T   T R A I N   A N D   V A L I D   D A T A ----------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+def plot_metrics(path_to_plot: str, train_accuracy: list, test_accuracy: list, name_of_dataset: str, operation: str)\
+        -> None:
+    # Create background
+    plt.style.use("dark_background")
+    for param in ['text.color', 'axes.labelcolor', 'xtick.color', 'ytick.color']:
+        plt.rcParams[param] = '0.9'  # very light grey
+    for param in ['figure.facecolor', 'axes.facecolor', 'savefig.facecolor']:
+        plt.rcParams[param] = '#212946'  # bluish dark grey 212946
+
+    color_mapping = {
+        "accuracy": [
+            '#FF62B2',  # pink
+            '#F5D300',  # yellow
+        ]
+    }
+
+    colors = color_mapping.get(operation, None)
+
+    if colors is None:
+        raise ValueError('An unknown operation \'%s\'.' % operation)
+
+    # Transform data to plot
+    df = pd.DataFrame({'Train': train_accuracy,
+                       'Test': test_accuracy})
+    df['Train'] = df['Train'].astype(float)
+    df['Test'] = df['Test'].astype(float)
+    fig, ax = plt.subplots()
+
+    # Redraw the data with low alpha and slightly increased line width:
+    n_shades = 9
+    diff_line_width = 0.5
+    alpha_value = 0.9 / n_shades
+
+    for n in range(1, n_shades + 1):
+        df.plot(marker='o',
+                linewidth=2 + (diff_line_width * n),
+                alpha=alpha_value,
+                legend=False,
+                ax=ax,
+                color=colors)
+
+    # Color the areas below the lines:
+    for column, color in zip(df, colors):
+        ax.fill_between(x=df.index,
+                        y1=df[column].values,
+                        y2=[0] * len(df),
+                        color=color,
+                        alpha=0.1)
+
+    ax.grid(color='#2A3459')
+    ax.set_xlim([ax.get_xlim()[0] - 0.2, ax.get_xlim()[1] + 0.2])  # to not have the markers cut off
+    ax.set_ylim(np.min(test_accuracy) - 0.025, np.max(train_accuracy) + 0.025)
+
+    ax.set_ylabel("Score")
+    ax.set_xlabel("Iterations")
+    ax.set_title('Train and Test %s on %s' % (operation, name_of_dataset))
+
+    train_legend = mp.Patch(color='#FE53BB', label='Train')
+    valid_legend = mp.Patch(color='yellow', label='Test')
+
+    ax.legend(handles=[train_legend, valid_legend])
+
+    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{operation}.png")
+    plt.savefig(filename, dpi=300)
+    plt.close()
+
+    plt.close("all")
+    plt.close()
+    gc.collect()

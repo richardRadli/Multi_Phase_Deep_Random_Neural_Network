@@ -2,7 +2,7 @@ import logging
 
 from typing import Dict
 
-from elm.src.config.const import DATASET_FCNN_PATHS, DATASET_FILES_PATHS
+from elm.src.config.const import DATASET_FCNN_PATHS, DATASET_FILES_PATHS, DATASET_MPDRNN_PATHS
 
 
 def general_dataset_configs(cfg) -> Dict:
@@ -28,7 +28,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["x", "o", "b"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_connect4")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_connect4"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_connect4")
         },
         "isolete": {
             "dataset_name":
@@ -50,7 +54,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 [],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_isolete")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_isolete"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_isolete")
         },
         "letter": {
             "dataset_name":
@@ -73,7 +81,11 @@ def general_dataset_configs(cfg) -> Dict:
                 ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
                  'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_letter")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_letter"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_letter"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_letter")
         },
         "mnist": {
             "dataset_name":
@@ -95,7 +107,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_mnist"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_mnist")
         },
         "mnist_fashion": {
             "dataset_name":
@@ -118,7 +134,11 @@ def general_dataset_configs(cfg) -> Dict:
                 ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt",
                  "Sneaker", "Bag", "Ankle boot"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_mnist_fashion")
         },
         "musk2": {
             "dataset_name":
@@ -140,7 +160,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["Musks", "Non musks"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_musk2")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_musk2"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_musk2")
         },
         "optdigits": {
             "dataset_name":
@@ -162,7 +186,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_optdigits"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_optdigits")
         },
         "page_blocks": {
             "dataset_name":
@@ -184,7 +212,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["text", "horiz. line", "graphic", "vert. line ", "picture"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_page_blocks"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_page_blocks")
         },
         "segment": {
             "dataset_name":
@@ -206,7 +238,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["brickface", "sky", "foliage", "cement", "window", "path", "grass"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_segment")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_segment"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_segment"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_segment")
         },
         "shuttle": {
             "dataset_name":
@@ -228,7 +264,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["Rad Flow", "Fpv Close", "Fpv Open", "High", "Bypass", "Bpv Close", "Bpv Open"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_shuttle"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_shuttle")
         },
         "spambase": {
             "dataset_name":
@@ -250,7 +290,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_spambase")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_spambase"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_spambase")
         },
         "usps": {
             "dataset_name":
@@ -272,7 +316,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_usps")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_usps"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_usps"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_usps")
         },
         "yaleb": {
             "dataset_name":
@@ -294,7 +342,11 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 [],
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb")
+                DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_yaleb"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_yaleb")
         }
     }
 
