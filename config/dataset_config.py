@@ -347,6 +347,84 @@ def general_dataset_configs(cfg) -> Dict:
                 DATASET_MPDRNN_PATHS.get_data_path("cm_yaleb"),
             "path_to_metrics_plot":
                 DATASET_MPDRNN_PATHS.get_data_path("metrics_yaleb")
+        },
+        "iris": {
+            "dataset_name":
+                "iris",
+            "num_train_data":
+                105,
+            "num_test_data":
+                45,
+            "num_features":
+                4,
+            "num_classes":
+                3,
+            "eq_neurons":
+                [100, 100, 100],
+            "exp_neurons":
+                [100, 40, 10],
+            "helm_neurons":
+                [50, 50, 50],
+            "class_labels":
+                [],
+            "cached_dataset_file":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_iris"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_iris"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_iris")
+        },
+        "forest": {
+            "dataset_name":
+                "forest",
+            "num_train_data":
+                15120,
+            "num_test_data":
+                565892,
+            "num_features":
+                54,
+            "num_classes":
+                7,
+            "eq_neurons":
+                [1000, 1000, 1000],
+            "exp_neurons":
+                [100, 40, 10],
+            "helm_neurons":
+                [50, 50, 50],
+            "class_labels":
+                [],
+            "cached_dataset_file":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_forest"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_forest"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_forest")
+        },
+        "satimages": {
+            "dataset_name":
+                "satimages",
+            "num_train_data":
+                4435,
+            "num_test_data":
+                2000,
+            "num_features":
+                36,
+            "num_classes":
+                6,
+            "eq_neurons":
+                [1000, 1000, 1000],
+            "exp_neurons":
+                [100, 40, 10],
+            "helm_neurons":
+                [50, 50, 50],
+            "class_labels":
+                [],
+            "cached_dataset_file":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_satimages"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_satimages")
         }
     }
 

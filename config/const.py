@@ -78,6 +78,12 @@ class FCNNPaths(_Const):
             "fcnn_data/saved_weights_fcnn/usps",
         "sw_yaleb":
             "fcnn_data/saved_weights_fcnn/yaleb",
+        "sw_iris":
+            "fcnn_data/saved_weights_fcnn/iris",
+        "sw_forest":
+            "fcnn_data/saved_weights_fcnn/forest",
+        "sw_satimages":
+            "fcnn_data/saved_weights_fcnn/satimages",
 
         # FCNN logs
         "logs_connect4":
@@ -105,7 +111,13 @@ class FCNNPaths(_Const):
         "logs_usps":
             "fcnn_data/logs_fcnn/usps",
         "logs_yaleb":
-            "fcnn_data/logs_fcnn/yaleb"
+            "fcnn_data/logs_fcnn/yaleb",
+        "logs_iris":
+            "fcnn_data/logs_fcnn/iris",
+        "logs_forest":
+            "fcnn_data/logs_fcnn/forest",
+        "logs_satimages":
+            "fcnn_data/logs_fcnn/satiamges"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -151,6 +163,12 @@ class MPDRNNPaths(_Const):
             "images/confusion_matrix/usps",
         "cm_yaleb":
             "images/confusion_matrix/yaleb",
+        "cm_iris":
+            "images/confusion_matrix/iris",
+        "cm_forest":
+            "images/confusion_matrix/forest",
+        "cm_satimages":
+            "images/confusion_matrix/satimages",
 
         "metrics_connect4":
             "images/metrics_plot/connect4",
@@ -178,6 +196,12 @@ class MPDRNNPaths(_Const):
             "images/metrics_plot/usps",
         "metrics_yaleb":
             "images/metrics_plot/yaleb",
+        "metrics_iris":
+            "images/metrics_plot/iris",
+        "metrics_forest":
+            "images/metrics_plot/forest",
+        "metrics_satimages":
+            "images/metrics_plot/satimages"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -223,6 +247,12 @@ class DatasetFilesPaths(_Const):
             "usps/usps.npy",
         "dataset_path_yaleb":
             "yaleb/yaleb.npy",
+        "dataset_path_iris":
+            "iris/dataset_iris.npy",
+        "dataset_path_forest":
+            "forest/dataset_forest.npy",
+        "dataset_path_satimages":
+            "satimages/dataset_satimages.npy",
     }
 
     # ------------------------------------------------------------------------------------------------------------------
