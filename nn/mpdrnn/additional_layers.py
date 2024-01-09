@@ -1,7 +1,7 @@
 import numpy as np
 
-from elm.src.utils.activation_functions import leaky_ReLU, identity, ReLU, sigmoid, tanh
-from elm.src.utils.loss_functions import mae, mse
+from utils.activation_functions import leaky_ReLU, identity, ReLU, sigmoid, tanh
+from utils.loss_functions import mae, mse
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -11,8 +11,15 @@ class AdditionalLayer(object):
     # ------------------------------------------------------------------------------------------------------------------
     # -------------------------------------------------- __I N I T__ ---------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-    def __init__(self, previous_layer, n_hidden_nodes: int = 256, n_output_nodes: int = 10, mu: float = 0,
-                 sigma: float = 10, activation: str = "ReLU", loss: str = "mse", name: str = None,
+    def __init__(self,
+                 previous_layer,
+                 n_hidden_nodes: int = 256,
+                 n_output_nodes: int = 10,
+                 mu: float = 0,
+                 sigma: float = 10,
+                 activation: str = "ReLU",
+                 loss: str = "mse",
+                 name: str = None,
                  method: str = "BASE"):
 
         # Initialize attributes

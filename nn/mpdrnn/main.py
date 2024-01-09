@@ -1,9 +1,9 @@
 import logging
 
-from elm.src.config.config import DatasetConfig, MPDRNNConfig
-from elm.src.config.dataset_config import general_dataset_configs
-from elm.src.dataset_operations.load_dataset import load_data_elm
-from elm.src.utils.utils import setup_logger, display_dataset_info
+from config.config import DatasetConfig, MPDRNNConfig
+from config.dataset_config import general_dataset_configs
+from dataset_operations.load_dataset import load_data_elm
+from utils.utils import setup_logger, display_dataset_info
 from mpdrnn_wrapper import ELMModelWrapper
 
 

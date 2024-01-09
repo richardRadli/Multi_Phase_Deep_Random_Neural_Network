@@ -2,10 +2,10 @@ import numpy as np
 
 from numpy.linalg import pinv
 
-from elm.src.config.config import MPDRNNConfig
-from elm.src.utils.activation_functions import leaky_ReLU, identity, ReLU, sigmoid, tanh
-from elm.src.utils.biases import ones_bias, uniform_bias, xavier_bias, zero_bias
-from elm.src.utils.loss_functions import mae, mse
+from config.config import MPDRNNConfig
+from utils.activation_functions import leaky_ReLU, identity, ReLU, sigmoid, tanh
+from utils.biases import ones_bias, uniform_bias, xavier_bias, zero_bias
+from utils.loss_functions import mae, mse
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -15,9 +15,18 @@ class InitialLayer(object):
     # ------------------------------------------------------------------------------------------------------------------
     # -------------------------------------------------- __I N I T__ ---------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-    def __init__(self, train_data: np.ndarray, train_labels: np.ndarray, test_data: np.ndarray, test_labels: np.ndarray,
-                 n_input_nodes: int, n_hidden_nodes: int, activation: str = "ReLU", loss: str = "mse", name: str = None,
-                 method: str = "BASE", bias: str = "zero"):
+    def __init__(self,
+                 train_data: np.ndarray,
+                 train_labels: np.ndarray,
+                 test_data: np.ndarray,
+                 test_labels: np.ndarray,
+                 n_input_nodes: int,
+                 n_hidden_nodes: int,
+                 activation: str = "ReLU",
+                 loss: str = "mse",
+                 name: str = None,
+                 method: str = "BASE",
+                 bias: str = "zero"):
         """
         Initialize an InitialLayer instance.
 

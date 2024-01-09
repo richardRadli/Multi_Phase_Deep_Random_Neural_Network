@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from elm.src.config.config import FCNNConfig
-from elm.src.config.dataset_config import general_dataset_configs
+from config.config import FCNNConfig
+from config.dataset_config import general_dataset_configs
 
 
 class CustomELMModel(nn.Module):

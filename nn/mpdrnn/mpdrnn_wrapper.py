@@ -3,9 +3,9 @@ import os
 from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error, precision_recall_fscore_support
 
 from additional_layers import AdditionalLayer
-from elm.src.config.config import MPDRNNConfig
-from elm.src.config.dataset_config import general_dataset_configs
-from elm.src.utils.utils import create_timestamp, measure_execution_time, pretty_print_results, plot_confusion_matrix
+from config.config import MPDRNNConfig
+from config.dataset_config import general_dataset_configs
+from utils.utils import create_timestamp, measure_execution_time, pretty_print_results, plot_confusion_matrix
 from initial_layer import InitialLayer
 
 

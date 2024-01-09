@@ -1,19 +1,23 @@
 import logging
 import os
 
+from utils.utils import setup_logger
+
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++ C O N S T ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class _Const(object):
+    setup_logger()
+
     # Select user and according paths
     user = os.getlogin()
     root_mapping = {
-        "rrb12": {
+        "ricsi": {
             "PROJECT_ROOT":
-                "C:/Users/rrb12/Documents/research/elm",
+                "D:/research/ELM/storage",
             "DATASET_ROOT":
-                "C:/Users/rrb12/Documents/research/elm/datasets"
+                "D:/research/ELM/datasets"
         }
     }
 
@@ -222,37 +226,37 @@ class DatasetFilesPaths(_Const):
     dirs_dataset_paths = {
         # Confusion matrices
         "dataset_path_connect4":
-            "connect4/connect4.npy",
+            "connect4",
         "dataset_path_isolete":
-            "isolete/isolete.npy",
+            "isolete",
         "dataset_path_letter":
-            "letter/letter.npy",
+            "letter",
         "dataset_path_mnist":
-            "mnist/mnist.npy",
+            "mnist",
         "dataset_path_mnist_fashion":
-            "mnist_fashion/mnist_fashion.npy",
+            "mnist_fashion",
         "dataset_path_musk2":
-            "musk2/musk2.npy",
+            "musk2",
         "dataset_path_optdigits":
-            "optdigits/optdigits.npy",
+            "optdigits",
         "dataset_path_page_blocks":
-            "page_blocks/page_blocks.npy",
+            "page_blocks",
         "dataset_path_segment":
-            "segment/segment.npy",
+            "segment",
         "dataset_path_shuttle":
-            "shuttle/shuttle.npy",
+            "shuttle",
         "dataset_path_spambase":
-            "spambase/spambase.npy",
+            "spambase",
         "dataset_path_usps":
-            "usps/usps.npy",
+            "usps",
         "dataset_path_yaleb":
-            "yaleb/yaleb.npy",
+            "yaleb",
         "dataset_path_iris":
-            "iris/dataset_iris.npy",
+            "iris",
         "dataset_path_forest":
-            "forest/dataset_forest.npy",
+            "forest",
         "dataset_path_satimages":
-            "satimages/dataset_satimages.npy",
+            "satimages",
     }
 
     # ------------------------------------------------------------------------------------------------------------------

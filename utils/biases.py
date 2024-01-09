@@ -1,6 +1,6 @@
 import numpy as np
 
-from elm.src.config.config import UtilsConfig
+from config.config import UtilsConfig
 
 cfg = UtilsConfig().parse()
 

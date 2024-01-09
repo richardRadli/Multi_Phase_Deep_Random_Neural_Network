@@ -9,10 +9,10 @@ from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 
-from elm.src.config.config import FCNNConfig
-from elm.src.config.dataset_config import general_dataset_configs, fcnn_dataset_configs
-from elm.src.dataset_operations.load_dataset import load_data_fcnn
-from elm.src.utils.utils import create_timestamp, setup_logger, measure_execution_time_fcnn
+from config.config import FCNNConfig
+from config.dataset_config import general_dataset_configs, fcnn_dataset_configs
+from dataset_operations.load_dataset import load_data_fcnn
+from utils.utils import create_timestamp, setup_logger, measure_execution_time_fcnn
 from model import CustomELMModel
 
 
@@ -51,7 +51,7 @@ class FCNN:
         tensorboard_log_dir = os.path.join(fcnn_ds_cfg.get("logs"), self.timestamp)
         if not os.path.exists(tensorboard_log_dir):
             os.makedirs(tensorboard_log_dir)
-        self.writer = SummaryWriter(log_dir=tensorboard_log_dir)
+        self.writer = SummaryWriter(log_dir=str(tensorboard_log_dir))
 
         # Create save directory
         self.save_path = os.path.join(fcnn_ds_cfg.get("fcnn_saved_weights"), self.timestamp)
