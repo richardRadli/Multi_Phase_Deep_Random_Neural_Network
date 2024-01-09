@@ -1,4 +1,5 @@
 import logging
+import os
 
 from typing import Dict
 
@@ -27,8 +28,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [400, 200, 2000],
             "class_labels":
                 ["x", "o", "b"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "connect4.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_connect4"),
             "path_to_metrics_plot":
@@ -53,8 +56,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [800, 400, 3000],
             "class_labels":
                 [],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "isolete.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_isolete"),
             "path_to_metrics_plot":
@@ -80,8 +85,10 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
                  'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_letter"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "letter.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_letter"),
             "path_to_metrics_plot":
@@ -106,8 +113,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [1000, 5000, 10000],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_mnist"),
             "path_to_metrics_plot":
@@ -133,8 +142,10 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt",
                  "Sneaker", "Bag", "Ankle boot"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
             "path_to_metrics_plot":
@@ -159,8 +170,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [400, 200, 2000],
             "class_labels":
                 ["Musks", "Non musks"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "musk2.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_musk2"),
             "path_to_metrics_plot":
@@ -185,8 +198,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [100, 50, 500],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "optdigits.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_optdigits"),
             "path_to_metrics_plot":
@@ -211,8 +226,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [100, 50, 500],
             "class_labels":
                 ["text", "horiz. line", "graphic", "vert. line ", "picture"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "page_blocks.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_page_blocks"),
             "path_to_metrics_plot":
@@ -237,8 +254,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [100, 50, 500],
             "class_labels":
                 ["brickface", "sky", "foliage", "cement", "window", "path", "grass"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_segment"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "segment.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_segment"),
             "path_to_metrics_plot":
@@ -263,8 +282,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [100, 50, 500],
             "class_labels":
                 ["Rad Flow", "Fpv Close", "Fpv Open", "High", "Bypass", "Bpv Close", "Bpv Open"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_shuttle"),
             "path_to_metrics_plot":
@@ -289,8 +310,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [100, 50, 500],
             "class_labels":
                 ["0", "1"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_spambase"),
             "path_to_metrics_plot":
@@ -315,8 +338,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [400, 200, 2000],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_usps"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "usps.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_usps"),
             "path_to_metrics_plot":
@@ -341,8 +366,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [800, 400, 3000],
             "class_labels":
                 [],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"), "yaleb.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_yaleb"),
             "path_to_metrics_plot":
@@ -367,8 +394,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [50, 50, 50],
             "class_labels":
                 [],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_iris"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_iris"),
             "path_to_metrics_plot":
@@ -393,8 +422,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [50, 50, 50],
             "class_labels":
                 [],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_forest"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_forest"),
             "path_to_metrics_plot":
@@ -419,8 +450,10 @@ def general_dataset_configs(cfg) -> Dict:
                 [50, 50, 50],
             "class_labels":
                 [],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
             "cached_dataset_file":
-                DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_satimages"),
             "path_to_metrics_plot":

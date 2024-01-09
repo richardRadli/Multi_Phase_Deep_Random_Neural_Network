@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import torch
 
 from sklearn.model_selection import train_test_split
@@ -7,7 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 def load_data_elm(gen_ds_cfg):
-    data_file = os.path.join(gen_ds_cfg.get("cached_dataset_file"), "musk2.npy")
+    data_file = gen_ds_cfg.get("cached_dataset_file")
     data = np.load(data_file, allow_pickle=True)
     
     train_data = data[0]

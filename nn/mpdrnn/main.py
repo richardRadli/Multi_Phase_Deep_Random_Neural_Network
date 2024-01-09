@@ -1,6 +1,6 @@
 import logging
 
-from config.config import DatasetConfig, MPDRNNConfig
+from config.config import MPDRNNConfig
 from config.dataset_config import general_dataset_configs
 from dataset_operations.load_dataset import load_data_elm
 from utils.utils import setup_logger, display_dataset_info
@@ -18,7 +18,6 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         # Initialize paths and settings
         setup_logger()
         cfg_training = MPDRNNConfig().parse()
-        cfg_data_preprocessing = DatasetConfig().parse()
         gen_ds_cfg = general_dataset_configs(cfg_training)
         display_dataset_info(gen_ds_cfg)
 
@@ -27,7 +26,8 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
 
         # Load fcnn_data
         self.train_data, self.train_labels, self.test_data, self.test_labels = (
-            load_data_elm(gen_ds_cfg, cfg_data_preprocessing))
+            load_data_elm(gen_ds_cfg)
+        )
 
     # ------------------------------------------------------------------------------------------------------------------
     # ---------------------------------------------------- M A I N -----------------------------------------------------
