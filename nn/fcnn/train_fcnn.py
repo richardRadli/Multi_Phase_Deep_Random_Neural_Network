@@ -39,6 +39,7 @@ class FCNN:
 
         # Set up model
         self.model = CustomELMModel()
+        self.model = self.model.to(self.device)
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),))
 
         # Define your loss function
@@ -96,12 +97,12 @@ class FCNN:
         # To track the validation loss as the model trains
         valid_losses = []
 
-        for epoch in tqdm(range(self.fcnn_cfg.epochs), desc="Training", total=self.fcnn_cfg.epochs):
+        for epoch in tqdm(range(self.fcnn_cfg.epochs), desc="Epochs", total=self.fcnn_cfg.epochs):
             self.model.train()
-            for batch_data, batch_labels in tqdm(self.train_loader, total=len(self.train_loader)):
+            for batch_data, batch_labels in self.train_loader:
                 self.train_loop(batch_data, batch_labels, train_losses)
 
-            for batch_data, batch_labels in tqdm(self.valid_loader, total=len(self.valid_loader)):
+            for batch_data, batch_labels in self.valid_loader:
                 self.valid_loop(batch_data, batch_labels, valid_losses)
 
             train_loss = np.average(train_losses)

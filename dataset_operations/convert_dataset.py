@@ -9,8 +9,8 @@ from config.dataset_config import general_dataset_configs
 from config.config import MPDRNNConfig
 
 
-def main():
-    # connect4, isolete
+def main(scale):
+    # connect4, isolete, iris
     cfg = MPDRNNConfig().parse()
 
     path_to_dataset = general_dataset_configs(cfg).get("dataset_file")
@@ -23,8 +23,17 @@ def main():
     features = []
     for line in tqdm(lines):
         split = line.strip().split(',')
-        labels.append(split[-1])
-        features.append(split[:-1])
+        # label at the end
+        if cfg.dataset_name in ["connect4", "isolete", "iris", "optdigits", "page_blocks", "satimages", "shuttle",
+                                "spambase", "forest"]:
+            labels.append(split[-1])
+            features.append(split[:-1])
+        # label at the front
+        elif cfg.dataset_name in ["letter", "mnist", "mnist_fashion", "musk2", "segment", "usps"]:
+            labels.append(split[0])
+            features.append(split[1:])
+        else:
+            raise ValueError(f"Wrong dataset name {cfg.dataset_name}")
 
     # Convert the features to numerical values using label encoding
     encoder = LabelEncoder()
@@ -36,18 +45,23 @@ def main():
     encoded_labels = encoder.fit_transform(labels)
     one_hot_labels = np_utils.to_categorical(encoded_labels)
 
-    train_x, test_x, train_y, test_y = train_test_split(encoded_features,
-                                                        one_hot_labels,
-                                                        test_size=general_dataset_configs(cfg).get("num_test_data"),
-                                                        random_state=42)
+    train_x, test_x, train_y, test_y = (
+        train_test_split(
+            encoded_features,
+            one_hot_labels,
+            test_size=general_dataset_configs(cfg).get("num_test_data"),
+            random_state=42
+        )
+    )
 
-    scaler = MinMaxScaler()
-    train_x_scaled = scaler.fit_transform(train_x)
-    test_x_scaled = scaler.transform(test_x)
+    if scale:
+        scaler = MinMaxScaler()
+        train_x = scaler.fit_transform(train_x)
+        test_x = scaler.transform(test_x)
 
     file_save_name = general_dataset_configs(cfg).get("cached_dataset_file")
-    np.save(str(file_save_name), [train_x_scaled, test_x_scaled, train_y, test_y])
+    np.save(str(file_save_name), [train_x, test_x, train_y, test_y])
 
 
 if __name__ == "__main__":
-    main()
+    main(scale=False)

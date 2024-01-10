@@ -193,7 +193,7 @@ def general_dataset_configs(cfg) -> Dict:
             "eq_neurons":
                 [216, 216, 216],
             "exp_neurons":
-                [325, 325],
+                [325, 325, 325],
             "helm_neurons":
                 [100, 50, 500],
             "class_labels":
@@ -211,7 +211,7 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_name":
                 "page_blocks",
             "num_train_data":
-                4372,
+                4373,
             "num_test_data":
                 1100,
             "num_features":
@@ -349,7 +349,7 @@ def general_dataset_configs(cfg) -> Dict:
         },
         "yaleb": {
             "dataset_name":
-                "yaleB",
+                "yaleb",
             "num_train_data":
                 1680,
             "num_test_data":
@@ -393,7 +393,7 @@ def general_dataset_configs(cfg) -> Dict:
             "helm_neurons":
                 [50, 50, 50],
             "class_labels":
-                [],
+                ['iris-setosa', 'iris-versicolor', 'iris-virginica'],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
             "cached_dataset_file":
