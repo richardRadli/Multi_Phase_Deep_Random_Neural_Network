@@ -11,7 +11,7 @@ class MPDRNNConfig:
         self.parser.add_argument("--alpha_weights_min", type=float, default="-1.0", help="the lower limit of the "
                                                                                          "values of the alpha weight "
                                                                                          "matrix")
-        self.parser.add_argument("--dataset_name", type=str, default="forest",
+        self.parser.add_argument("--dataset_name", type=str, default="shuttle",
                                  choices=["connect4", "isolete", "iris", "letter", "mnist", "mnist_fashion", "musk2",
                                           "optdigits", "page_blocks", "satimages", "segment", "shuttle", "spambase",
                                           "usps", "forest"])

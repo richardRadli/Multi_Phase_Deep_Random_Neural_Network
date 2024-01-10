@@ -6,7 +6,7 @@ from scipy import linalg
 
 from sklearn.metrics import accuracy_score
 
-from config.config import DatasetConfig, MPDRNNConfig
+from config.config import MPDRNNConfig
 from config.dataset_config import general_dataset_configs
 from dataset_operations.load_dataset import load_data_elm
 from utils.utils import setup_logger
@@ -16,11 +16,9 @@ class HELM:
     def __init__(self, penalty, scaling_factor):
         setup_logger()
         cfg = MPDRNNConfig().parse()
-        cfg_data_preprocessing = DatasetConfig().parse()
         gen_ds_cfg = general_dataset_configs(cfg)
 
-        self.train_data, self.train_labels, self.test_data, self.test_labels = (
-            load_data_elm(gen_ds_cfg, cfg_data_preprocessing))
+        self.train_data, self.train_labels, self.test_data, self.test_labels = load_data_elm(gen_ds_cfg)
 
         if cfg.seed:
             np.random.seed(1234)
@@ -94,8 +92,8 @@ class HELM:
     def min_max_scale(matrix, scale: str):
         """
         The function scales the values of the matrix to either the range of [-1, 1] or [0, 1] based on the value of
-        the parameter "scale". The function returns the scaled fcnn_data along with a list that contains the minimum values,
-        maximum values, and ranges for each row.
+        the parameter "scale". The function returns the scaled fcnn_data along with a list that contains the minimum
+        values, maximum values, and ranges for each row.
 
         param matrix:
         param scale:
@@ -117,7 +115,8 @@ class HELM:
     @staticmethod
     def apply_normalization(data, min_values, range_values):
         """
-        The purpose of this function is to normalize the input fcnn_data based on the given minimum values and range values.
+        The purpose of this function is to normalize the input fcnn_data based on the given minimum values and range
+        values.
 
         param fcnn_data:
         param min_values:
