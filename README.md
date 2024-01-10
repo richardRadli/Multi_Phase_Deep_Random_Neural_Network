@@ -2,9 +2,27 @@
 
 Deep learning neural networks show a significant improvement over shallow ones in complex problems. Their main disadvantage is their memory requirements, the vanishing gradient problem, and the time consuming solutions to find the best achievable weights and other parameters. Since many applications (such as continuous learning) would need fast training, one possible solution is the application of sub-networks which can be trained very fast. Randomized single layer networks became very popular due to their fast optimization while their extensions, for more complex structures, could increase their prediction accuracy. In our paper we show a new approach to build deep neural models for classification tasks with an iterative, pseudo-inverse optimization technique. We compare the performance with a state-of-the-art backpropagation method and the best known randomized approach called hierarchical extreme learning machine. Computation time and prediction accuracy are evaluated on 12 benchmark datasets, showing that our approach is competitive in many cases.
 
+ The overview of our approach can be drawn by two kinds of phases in four main steps:
+
+-  Create a single ELM network and compute its output weights as the first iteration. This is the first approximation for the solution.
+-  Add new neurons to extend the output layer (which now becomes a hidden layer) of the previous phase and add new output neurons at the top level becoming the new output layer.
+-  Compute the weights for the new output layer with the matrix inversion technique.
+-  Repeat Steps 2-3 as further phases.
+
+<figure align="center">
+  <figcaption>Phase 1</figcaption>
+  <img src="poc_images/plot_nn_first_phase.svg" alt="phase_1" width="400"/>
+</figure>
+
+<figure align="center">
+  <figcaption>Phase 2</figcaption>
+  <img src="poc_images/plot_nn_second_phase.svg" alt="phase_2" width="400"/>
+</figure>
 
 ## Datasets
-All of the datasets can be accessed in the "datasets" folder, in .txt file format. To convert them into .npy file format, use the convert_dataset.py script.
+All of the datasets can be accessed in the following link:
+https://drive.google.com/file/d/13CnoFZAJj12jia6r3L17YJJ1rANAwSR7/view?usp=sharing
+To convert the .txt files into .npy file format, use the convert_dataset.py script.
 
 
 ## Requirement
@@ -53,17 +71,3 @@ In the config.py file, key parameters and settings crucial for the training, tes
 
 Below are some pictures of how the program works.
 
-<figure align="center">
-  <figcaption>ROC curve:</figcaption>
-  <img src="poc_images/roc.png" alt="ROC_curve" width="400"/>
-</figure>
-
-<figure align="center">
-  <figcaption>Training visualization:</figcaption>
-  <img src="poc_images/190_0.png" alt="training_visualization" width="400"/>
-</figure>
-
-<figure align="center">
-  <figcaption>Reconstruction visualization:</figcaption>
-  <img src="poc_images/0_reconstruction.png" alt="reconstruction_visualization" width="400"/>
-</figure>
