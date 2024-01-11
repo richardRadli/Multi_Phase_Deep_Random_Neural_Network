@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import torch
 
@@ -7,14 +9,16 @@ from torch.utils.data import DataLoader, TensorDataset
 
 def load_data_elm(gen_ds_cfg):
     data_file = gen_ds_cfg.get("cached_dataset_file")
-    data = np.load(data_file, allow_pickle=True)
-    
-    train_data = data[0]
-    train_labels = data[2]
-    test_data = data[1]
-    test_labels = data[3]
 
-    return train_data, train_labels, test_data, test_labels
+    try:
+        data = np.load(data_file, allow_pickle=True)
+        train_data = data[0]
+        train_labels = data[2]
+        test_data = data[1]
+        test_labels = data[3]
+        return train_data, train_labels, test_data, test_labels
+    except FileNotFoundError as fnfe:
+        logging.error(fnfe)
 
 
 def load_data_fcnn(gen_ds_cfg, cfg):

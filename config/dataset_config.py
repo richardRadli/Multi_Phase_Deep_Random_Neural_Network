@@ -37,6 +37,62 @@ def general_dataset_configs(cfg) -> Dict:
             "path_to_metrics_plot":
                 DATASET_MPDRNN_PATHS.get_data_path("metrics_connect4")
         },
+        "forest": {
+            "dataset_name":
+                "forest",
+            "num_train_data":
+                15120,
+            "num_test_data":
+                565892,
+            "num_features":
+                54,
+            "num_classes":
+                7,
+            "eq_neurons":
+                [1000, 1000, 1000],
+            "exp_neurons":
+                [100, 40, 10],
+            "helm_neurons":
+                [50, 50, 50],
+            "class_labels":
+                [],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npy"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_forest"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_forest")
+        },
+        "iris": {
+            "dataset_name":
+                "iris",
+            "num_train_data":
+                105,
+            "num_test_data":
+                45,
+            "num_features":
+                4,
+            "num_classes":
+                3,
+            "eq_neurons":
+                [100, 100, 100],
+            "exp_neurons":
+                [100, 40, 10],
+            "helm_neurons":
+                [50, 50, 50],
+            "class_labels":
+                ['iris-setosa', 'iris-versicolor', 'iris-virginica'],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npy"),
+            "path_to_cm":
+                DATASET_MPDRNN_PATHS.get_data_path("cm_iris"),
+            "path_to_metrics_plot":
+                DATASET_MPDRNN_PATHS.get_data_path("metrics_iris")
+        },
         "isolete": {
             "dataset_name":
                 "isolete",
@@ -267,9 +323,9 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_name":
                 "shuttle",
             "num_train_data":
-                29834,
+                40600,
             "num_test_data":
-                26936,
+                17400,
             "num_features":
                 9,
             "num_classes":
@@ -375,62 +431,6 @@ def general_dataset_configs(cfg) -> Dict:
             "path_to_metrics_plot":
                 DATASET_MPDRNN_PATHS.get_data_path("metrics_yaleb")
         },
-        "iris": {
-            "dataset_name":
-                "iris",
-            "num_train_data":
-                105,
-            "num_test_data":
-                45,
-            "num_features":
-                4,
-            "num_classes":
-                3,
-            "eq_neurons":
-                [100, 100, 100],
-            "exp_neurons":
-                [100, 40, 10],
-            "helm_neurons":
-                [50, 50, 50],
-            "class_labels":
-                ['iris-setosa', 'iris-versicolor', 'iris-virginica'],
-            "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_iris"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_iris")
-        },
-        "forest": {
-            "dataset_name":
-                "forest",
-            "num_train_data":
-                15120,
-            "num_test_data":
-                565892,
-            "num_features":
-                54,
-            "num_classes":
-                7,
-            "eq_neurons":
-                [1000, 1000, 1000],
-            "exp_neurons":
-                [100, 40, 10],
-            "helm_neurons":
-                [50, 50, 50],
-            "class_labels":
-                [],
-            "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_forest"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_forest")
-        },
         "satimages": {
             "dataset_name":
                 "satimages",
@@ -477,6 +477,12 @@ def fcnn_dataset_configs(cfg) -> Dict:
                 DATASET_FCNN_PATHS.get_data_path("sw_connect4"),
             "logs":
                 DATASET_FCNN_PATHS.get_data_path("logs_connect4")
+        },
+        "iris": {
+            "fcnn_saved_weights":
+                DATASET_FCNN_PATHS.get_data_path("sw_iris"),
+            "logs":
+                DATASET_FCNN_PATHS.get_data_path("logs_iris")
         },
         "isolete": {
             "fcnn_saved_weights":
