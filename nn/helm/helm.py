@@ -3,24 +3,25 @@ import numpy as np
 import time
 
 from scipy import linalg
-
 from sklearn.metrics import accuracy_score
+from typing import List, Tuple
 
-from config.config import MPDRNNConfig
+from config.config import DatasetConfig, HELMConfig
 from config.dataset_config import general_dataset_configs
 from dataset_operations.load_dataset import load_data_elm
 from utils.utils import setup_logger
 
 
 class HELM:
-    def __init__(self, penalty, scaling_factor):
+    def __init__(self):
         setup_logger()
-        cfg = MPDRNNConfig().parse()
-        gen_ds_cfg = general_dataset_configs(cfg)
+        dataset_cfg = DatasetConfig().parse()
+        helm_cfg = HELMConfig().parse()
+        gen_ds_cfg = general_dataset_configs(dataset_cfg)
 
         self.train_data, self.train_labels, self.test_data, self.test_labels = load_data_elm(gen_ds_cfg)
 
-        if cfg.seed:
+        if helm_cfg.seed:
             np.random.seed(1234)
 
         self.random_weights_1 = 2 * np.random.rand(self.train_data.shape[1] + 1,
@@ -31,15 +32,15 @@ class HELM:
                                                     gen_ds_cfg.get("helm_neurons")[2]) - 1).T
         self.random_weights_3 = linalg.orth(self.random_weights_3).T
 
-        self.C_penalty = penalty
-        self.scaling_factor = scaling_factor
+        self.C_penalty = helm_cfg.penalty
+        self.scaling_factor = helm_cfg.scaling_factor
 
     @staticmethod
-    def sparse_elm_autoencoder(a, b, lam, itrs):
+    def sparse_elm_autoencoder(a: np.ndarray, b: np.ndarray, lam: float, itrs: int) -> np.ndarray:
         """
 
-        param a: a matrix with size (d, n), where d is the dimension of the input fcnn_data and n is the number of training
-                 samples.
+        param a: a matrix with size (d, n), where d is the dimension of the input fcnn_data and n is the number of
+        training samples.
         param b: a matrix with size (d, m), where m is the number of hidden neurons in the autoencoder.
         param lam: a scalar that controls the sparsity of the learned representation.
         param itrs: the number of iterations for training the autoencoder.
@@ -89,15 +90,16 @@ class HELM:
         return x
 
     @staticmethod
-    def min_max_scale(matrix, scale: str):
+    def min_max_scale(matrix: np.ndarray, scale: str) -> Tuple[np.ndarray, List[np.ndarray]]:
         """
         The function scales the values of the matrix to either the range of [-1, 1] or [0, 1] based on the value of
         the parameter "scale". The function returns the scaled fcnn_data along with a list that contains the minimum
         values, maximum values, and ranges for each row.
 
-        param matrix:
-        param scale:
-        :return:
+        :param matrix: Input matrix to be scaled.
+        :param scale: String specifying the scaling range ("-1_1" or "0_1").
+        :return: Tuple containing the scaled matrix and a list with minimum values, maximum values, and ranges for each
+        row.
         """
 
         min_vals = np.min(matrix, axis=1).reshape(-1, 1)
@@ -113,23 +115,24 @@ class HELM:
             raise ValueError("Wrong value!")
 
     @staticmethod
-    def apply_normalization(data, min_values, range_values):
+    def apply_normalization(data: np.ndarray, min_values: np.ndarray, range_values: np.ndarray) -> np.ndarray:
         """
         The purpose of this function is to normalize the input fcnn_data based on the given minimum values and range
         values.
 
-        param fcnn_data:
-        param min_values:
-        param range_values:
-        :return:
+        :param data: Input data to be normalized.
+        :param min_values: Minimum values used for normalization.
+        :param range_values: Range values used for normalization.
+        :return: Normalized data.
         """
 
         return (data - min_values) / range_values
 
     def train(self):
         """
+        Train the model.
 
-        :return:
+        :return: A tuple containing the results of training.
         """
 
         start = time.time()
@@ -175,12 +178,12 @@ class HELM:
 
         return t3, beta, beta1, beta2, l3, ps1, ps2
 
-    def training_accuracy(self, t3, beta):
+    def training_accuracy(self, t3: np.ndarray, beta: np.ndarray) -> None:
         """
+        Calculate and log the training accuracy.
 
-        param t3:
-        param beta:
-        :return:
+        :param t3: Output from the last layer.
+        :param beta: Weight matrix.
         """
 
         y_predicted = t3 @ beta
@@ -189,16 +192,22 @@ class HELM:
         training_accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
         logging.info(f"Training Accuracy is: {training_accuracy * 100:.4f}%")
 
-    def testing_accuracy(self, beta, beta1, beta2, l3, ps1, ps2):
+    def testing_accuracy(self,
+                         beta: np.ndarray,
+                         beta1: np.ndarray,
+                         beta2: np.ndarray,
+                         l3: float,
+                         ps1: list,
+                         ps2: list) -> None:
         """
+        Calculate and log the testing accuracy.
 
-        param beta:
-        param beta1:
-        param beta2:
-        param l3:
-        param ps1:
-        param ps2:
-        :return:
+        :param beta: Weight matrix.
+        :param beta1: Weight matrix for the first layer.
+        :param beta2: Weight matrix for the second layer.
+        :param l3: Scaling factor for the third layer.
+        :param ps1: Tuple containing minimum values, maximum values, and ranges for the first layer.
+        :param ps2: Tuple containing minimum values, maximum values, and ranges for the second layer.
         """
 
         #  First layer feedforward
@@ -230,11 +239,10 @@ class HELM:
         logging.info(f"The Total Testing Time is:  {end - start:.4f} seconds")
         logging.info(f"Testing Accuracy is: {testing_accuracy * 100:.4f}%")
 
-    def main(self):
+    def main(self) -> None:
         """
-
-        :return:
-        """
+         Execute the main logic of the program.
+         """
 
         t3, beta, beta1, beta2, l3, ps1, ps2 = self.train()
         self.training_accuracy(t3, beta)
@@ -242,5 +250,5 @@ class HELM:
 
 
 if __name__ == "__main__":
-    helm = HELM(penalty=2 ** -30, scaling_factor=0.8)
+    helm = HELM()
     helm.main()

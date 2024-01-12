@@ -6,7 +6,7 @@ class DatasetConfig:
         self.opt = None
         self.parser = argparse.ArgumentParser()
 
-        self.parser.add_argument("--dataset_name", type=str, default="usps",
+        self.parser.add_argument("--dataset_name", type=str, default="satimages",
                                  choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
                                           "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
                                           "spambase", "usps", ])
@@ -25,6 +25,21 @@ class UtilsConfig:
         self.parser.add_argument("--upper_limit", type=float, default="1.0", help="Uniform bias upper limit")
         self.parser.add_argument("--lower_limit", type=float, default="-1.0", help="Uniform bias lower limit")
         self.parser.add_argument("--constant", type=float, default="1.0")
+
+    def parse(self):
+        self.opt = self.parser.parse_args()
+
+        return self.opt
+
+
+class HELMConfig:
+    def __init__(self):
+        self.opt = None
+        self.parser = argparse.ArgumentParser()
+
+        self.parser.add_argument("--seed", type=bool, default=False)
+        self.parser.add_argument("--penalty", type=float, default=2 ** -30)
+        self.parser.add_argument("--scaling_factor", type=float, default=0.8)
 
     def parse(self):
         self.opt = self.parser.parse_args()

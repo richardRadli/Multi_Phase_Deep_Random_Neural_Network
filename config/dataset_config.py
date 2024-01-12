@@ -53,7 +53,7 @@ def general_dataset_configs(cfg) -> Dict:
             "exp_neurons":
                 [100, 40, 10],
             "helm_neurons":
-                [50, 50, 50],
+                [50, 50, 51],
             "class_labels":
                 [],
             "dataset_file":
@@ -81,7 +81,7 @@ def general_dataset_configs(cfg) -> Dict:
             "exp_neurons":
                 [100, 40, 10],
             "helm_neurons":
-                [50, 50, 50],
+                [50, 50, 51],
             "class_labels":
                 ['iris-setosa', 'iris-versicolor', 'iris-virginica'],
             "dataset_file":
@@ -447,7 +447,7 @@ def general_dataset_configs(cfg) -> Dict:
             "exp_neurons":
                 [100, 40, 10],
             "helm_neurons":
-                [50, 50, 50],
+                [50, 50, 51],
             "class_labels":
                 [],
             "dataset_file":
