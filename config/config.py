@@ -6,10 +6,10 @@ class DatasetConfig:
         self.opt = None
         self.parser = argparse.ArgumentParser()
 
-        self.parser.add_argument("--dataset_name", type=str, default="satimages",
+        self.parser.add_argument("--dataset_name", type=str, default="usps",
                                  choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
                                           "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
-                                          "spambase", "usps", ])
+                                          "spambase", "usps", "yaleb"])
 
     def parse(self):
         self.opt = self.parser.parse_args()
@@ -57,7 +57,7 @@ class MPDRNNConfig:
         self.parser.add_argument("--alpha_weights_min", type=float, default="-1.0", help="the lower limit of the "
                                                                                          "values of the alpha weight "
                                                                                          "matrix")
-        self.parser.add_argument("--method", type=str, default="BASE", help="BASE | EXP_ORT | EXP_ORT_C")
+        self.parser.add_argument("--method", type=str, default="EXP_ORT_C", help="BASE | EXP_ORT | EXP_ORT_C")
         self.parser.add_argument("--mu", type=float, default=0.0)
         self.parser.add_argument("--number_of_tests", type=int, default=1)
         self.parser.add_argument("--plot_diagrams", type=bool, default=False)

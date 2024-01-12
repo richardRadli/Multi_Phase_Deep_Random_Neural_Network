@@ -1,6 +1,6 @@
 import logging
 
-from config.config import MPDRNNConfig
+from config.config import DatasetConfig, MPDRNNConfig
 from config.dataset_config import general_dataset_configs
 from dataset_operations.load_dataset import load_data_elm
 from utils.utils import setup_logger, display_dataset_info
@@ -18,7 +18,8 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         # Initialize paths and settings
         setup_logger()
         cfg_training = MPDRNNConfig().parse()
-        gen_ds_cfg = general_dataset_configs(cfg_training)
+        cfg_dataset = DatasetConfig().parse()
+        gen_ds_cfg = general_dataset_configs(cfg_dataset)
         display_dataset_info(gen_ds_cfg)
 
         if cfg_training.method not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:

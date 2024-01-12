@@ -3,7 +3,7 @@ import os
 from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error, precision_recall_fscore_support
 
 from additional_layers import AdditionalLayer
-from config.config import MPDRNNConfig
+from config.config import DatasetConfig, MPDRNNConfig
 from config.dataset_config import general_dataset_configs
 from utils.utils import create_timestamp, measure_execution_time, pretty_print_results, plot_confusion_matrix
 from initial_layer import InitialLayer
@@ -19,7 +19,8 @@ class ELMModelWrapper:
     def __init__(self, train_data, train_labels, test_data, test_labels):
         # Initialize config and paths
         self.cfg = MPDRNNConfig().parse()
-        self.gen_ds_cfg = general_dataset_configs(self.cfg)
+        datast_name = DatasetConfig().parse()
+        self.gen_ds_cfg = general_dataset_configs(datast_name)
 
         # Initialize fcnn_data
         self.train_data = train_data
@@ -59,10 +60,8 @@ class ELMModelWrapper:
         self.total_execution_time = {}
 
         timestamp = create_timestamp()
-        self.path_to_cm = os.path.join(self.gen_ds_cfg.get("path_to_cm"), timestamp)
+        self.path_to_cm = os.path.join(self.gen_ds_cfg.get("path_to_cm"), self.cfg.method, timestamp)
         os.makedirs(self.path_to_cm, exist_ok=True)
-        self.path_to_metrics_plot = os.path.join(self.gen_ds_cfg.get("path_to_metrics_plot"), timestamp)
-        os.makedirs(self.path_to_metrics_plot, exist_ok=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # ----------------------------------------- I N I T   F I R S T   L A Y E R ----------------------------------------

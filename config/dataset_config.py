@@ -34,8 +34,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "connect4.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_connect4"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_connect4")
         },
         "forest": {
             "dataset_name":
@@ -62,8 +60,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_forest"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_forest")
         },
         "iris": {
             "dataset_name":
@@ -90,8 +86,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_iris"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_iris")
         },
         "isolete": {
             "dataset_name":
@@ -118,8 +112,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "isolete.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_isolete"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_isolete")
         },
         "letter": {
             "dataset_name":
@@ -147,8 +139,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "letter.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_letter"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_letter")
         },
         "mnist": {
             "dataset_name":
@@ -175,8 +165,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_mnist"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_mnist")
         },
         "mnist_fashion": {
             "dataset_name":
@@ -204,8 +192,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_mnist_fashion")
         },
         "musk2": {
             "dataset_name":
@@ -232,8 +218,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "musk2.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_musk2"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_musk2")
         },
         "optdigits": {
             "dataset_name":
@@ -260,8 +244,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "optdigits.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_optdigits"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_optdigits")
         },
         "page_blocks": {
             "dataset_name":
@@ -288,8 +270,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "page_blocks.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_page_blocks"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_page_blocks")
         },
         "segment": {
             "dataset_name":
@@ -316,8 +296,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "segment.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_segment"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_segment")
         },
         "shuttle": {
             "dataset_name":
@@ -344,8 +322,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_shuttle"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_shuttle")
         },
         "spambase": {
             "dataset_name":
@@ -372,8 +348,6 @@ def general_dataset_configs(cfg) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npy"),
             "path_to_cm":
                 DATASET_MPDRNN_PATHS.get_data_path("cm_spambase"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_spambase")
         },
         "usps": {
             "dataset_name":
@@ -399,9 +373,7 @@ def general_dataset_configs(cfg) -> Dict:
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "usps.npy"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_usps"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_usps")
+                DATASET_MPDRNN_PATHS.get_data_path("cm_usps")
         },
         "yaleb": {
             "dataset_name":
@@ -427,9 +399,7 @@ def general_dataset_configs(cfg) -> Dict:
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"), "yaleb.npy"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_yaleb"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_yaleb")
+                DATASET_MPDRNN_PATHS.get_data_path("cm_yaleb")
         },
         "satimages": {
             "dataset_name":
@@ -455,9 +425,7 @@ def general_dataset_configs(cfg) -> Dict:
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npy"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_satimages"),
-            "path_to_metrics_plot":
-                DATASET_MPDRNN_PATHS.get_data_path("metrics_satimages")
+                DATASET_MPDRNN_PATHS.get_data_path("cm_satimages")
         }
     }
 

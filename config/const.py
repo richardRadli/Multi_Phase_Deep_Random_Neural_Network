@@ -173,70 +173,37 @@ class MPDRNNPaths(_Const):
     dirs_dataset_paths = {
         # Confusion matrices
         "cm_connect4":
-            "images/confusion_matrix/connect4",
+            "mpdrnn/images/confusion_matrix/connect4",
         "cm_isolete":
-            "images/confusion_matrix/isolete",
+            "mpdrnn/images/confusion_matrix/isolete",
         "cm_letter":
-            "images/confusion_matrix/letter",
+            "mpdrnn/images/confusion_matrix/letter",
         "cm_mnist":
-            "images/confusion_matrix/mnist",
+            "mpdrnn/images/confusion_matrix/mnist",
         "cm_mnist_fashion":
-            "images/confusion_matrix/mnist_fashion",
+            "mpdrnn/images/confusion_matrix/mnist_fashion",
         "cm_musk2":
-            "images/confusion_matrix/musk2",
+            "mpdrnn/images/confusion_matrix/musk2",
         "cm_optdigits":
-            "images/confusion_matrix/optdigits",
+            "mpdrnn/images/confusion_matrix/optdigits",
         "cm_page_blocks":
-            "images/confusion_matrix/page_blocks",
+            "mpdrnn/images/confusion_matrix/page_blocks",
         "cm_segment":
-            "images/confusion_matrix/segment",
+            "mpdrnn/images/confusion_matrix/segment",
         "cm_shuttle":
-            "images/confusion_matrix/shuttle",
+            "mpdrnn/images/confusion_matrix/shuttle",
         "cm_spambase":
-            "images/confusion_matrix/spambase",
+            "mpdrnn/images/confusion_matrix/spambase",
         "cm_usps":
-            "images/confusion_matrix/usps",
+            "mpdrnn/images/confusion_matrix/usps",
         "cm_yaleb":
-            "images/confusion_matrix/yaleb",
+            "mpdrnn/images/confusion_matrix/yaleb",
         "cm_iris":
-            "images/confusion_matrix/iris",
+            "mpdrnn/images/confusion_matrix/iris",
         "cm_forest":
-            "images/confusion_matrix/forest",
+            "mpdrnn/images/confusion_matrix/forest",
         "cm_satimages":
-            "images/confusion_matrix/satimages",
-
-        "metrics_connect4":
-            "images/metrics_plot/connect4",
-        "metrics_isolete":
-            "images/metrics_plot/isolete",
-        "metrics_letter":
-            "images/metrics_plot/letter",
-        "metrics_mnist":
-            "images/metrics_plot/mnist",
-        "metrics_mnist_fashion":
-            "images/metrics_plot/mnist_fashion",
-        "metrics_musk2":
-            "images/metrics_plot/musk2",
-        "metrics_optdigits":
-            "images/metrics_plot/optdigits",
-        "metrics_page_blocks":
-            "images/metrics_plot/page_blocks",
-        "metrics_segment":
-            "images/metrics_plot/segment",
-        "metrics_shuttle":
-            "images/metrics_plot/shuttle",
-        "metrics_spambase":
-            "images/metrics_plot/spambase",
-        "metrics_usps":
-            "images/metrics_plot/usps",
-        "metrics_yaleb":
-            "images/metrics_plot/yaleb",
-        "metrics_iris":
-            "images/metrics_plot/iris",
-        "metrics_forest":
-            "images/metrics_plot/forest",
-        "metrics_satimages":
-            "images/metrics_plot/satimages"
+            "mpdrnn/images/confusion_matrix/satimages"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
