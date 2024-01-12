@@ -58,16 +58,48 @@ root_mapping = {
 ```
 
 - Update the designated username ('ricsi') to reflect the username associated with your logged-in operating system.
-- Utilize PROJECT_ROOT as the central repository for storing essential data such as weights and images, including ROC plots, within your project.
+- Utilize PROJECT_ROOT as the central repository for storing essential data such as weights and images
 - Employ DATASET_ROOT as the designated directory for managing datasets integral to the functioning of the project.
 - const.py will create all the necessary folders.
-- Download the datasets and place them into the appropropriate folders.
+- Download the datasets and place them into the appropriate folder (in my case it is the DATASET_ROOT.
 
 
 ## Usage
-In the config.py file, key parameters and settings crucial for the training, testing are  stored. These configurations provide a streamlined and organized approach to manage various aspects of the project, ensuring adaptability and ease of customization.
+In the config.py file, key parameters and settings crucial for the training, testing are stored. 
+These configurations provide a streamlined and organized approach to manage various aspects of the project, ensuring 
+adaptability and ease of customization.
 
-## Screenshots
+## Fully Connectedn Neural Network - FCNN
+To train FCNN, set dataset_name in the config.py file within the DatasetConfig() class. Settings regarding the FCNN 
+itself can be found in the FCNNConfig() class. FCNN is separated to train and evaluation, so first run train_fcnn.py, 
+after training, run eval_fcnn.py
 
-Below are some pictures of how the program works.
+train_fcnn.py logs the loss function with tensorboard, also only the best weights will be saved. The model will be 
+trained until early stopping is activated. By default, the patience is 15 epochs. 
 
+<figure align="center">
+  <figcaption>Training of a model with FCNN</figcaption>
+  <img src="poc_images/fcnn_train.png" alt="training_fcnn" width="600"/>
+</figure>
+
+eval_fcnn.py will find the latest directory with the latest model (.pt) file, and will load these weights into the model.
+It calculates both the train and the test accuracies, and finally saves the results into a .txt file.
+
+<figure align="center">
+  <figcaption>Evaluation of a model with FCNN</figcaption>
+  <img src="poc_images/fcnn_eval.png" alt="eval_fcnn" width="600"/>
+</figure>
+
+
+## Hierarchical ELM - HELM
+
+Python implementation of the network, it was originally implemented in MATLAB, the source files of the orignal code can
+be found here: https://www.extreme-learning-machines.org/
+
+HELM is not separated to train and evaluation files, both operations happen in the same file. Select the desired dataset
+in the config.py file, similarly as with FCNN, and set the parameters of HELM in the _HELMConfig()_ class.
+
+<figure align="center">
+  <figcaption>HELM training and testing</figcaption>
+  <img src="poc_images/helm.png" alt="helm" width="450"/>
+</figure>

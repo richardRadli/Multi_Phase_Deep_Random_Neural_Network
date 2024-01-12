@@ -6,7 +6,7 @@ class DatasetConfig:
         self.opt = None
         self.parser = argparse.ArgumentParser()
 
-        self.parser.add_argument("--dataset_name", type=str, default="usps",
+        self.parser.add_argument("--dataset_name", type=str, default="isolete",
                                  choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
                                           "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
                                           "spambase", "usps", "yaleb"])
