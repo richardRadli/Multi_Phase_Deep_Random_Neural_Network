@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 from sklearn.model_selection import train_test_split
 
 from config.dataset_config import general_dataset_configs
-from config.config import MPDRNNConfig
+from config.config import DatasetConfig
 
 
 def all_elements_numeric(nested_list):
@@ -25,8 +25,7 @@ def all_elements_numeric(nested_list):
 
 
 def main():
-    # connect4, isolete, iris
-    cfg = MPDRNNConfig().parse()
+    cfg = DatasetConfig().parse()
 
     path_to_dataset = general_dataset_configs(cfg).get("dataset_file")
     num_data = general_dataset_configs(cfg).get("num_train_data") + general_dataset_configs(cfg).get("num_test_data")
@@ -42,12 +41,12 @@ def main():
         for line in tqdm(lines):
             split = line.strip().split(',')
             # label at the end
-            if cfg.dataset_name in ["connect4", "isolete", "iris", "optdigits", "page_blocks", "satimages", "shuttle",
-                                    "spambase", "forest"]:
+            if cfg.dataset_name in ["connect4", "isolete", "iris", "musk2", "optdigits", "page_blocks", "satimages",
+                                    "shuttle", "spambase", "forest", "usps"]:
                 labels.append(split[-1])
                 features.append(split[:-1])
             # label at the front
-            elif cfg.dataset_name in ["letter", "mnist", "mnist_fashion", "musk2", "segment", "usps"]:
+            elif cfg.dataset_name in ["letter", "mnist", "mnist_fashion", "segment"]:
                 labels.append(split[0])
                 features.append(split[1:])
             else:

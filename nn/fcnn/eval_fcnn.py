@@ -7,7 +7,7 @@ import torch
 from torchsummary import summary
 from tqdm import tqdm
 
-from config.config import FCNNConfig
+from config.config import DatasetConfig, FCNNConfig
 from config.dataset_config import general_dataset_configs, fcnn_dataset_configs
 from dataset_operations.load_dataset import load_data_fcnn
 from model import CustomELMModel
@@ -30,11 +30,12 @@ class EvalFCNN:
         self.device = use_gpu_if_available()
 
         # Set up config
+        dataset_cfg = DatasetConfig().parse()
         self.fcnn_cfg = FCNNConfig().parse()
 
         # Set up paths
-        gen_ds_cfg = general_dataset_configs(self.fcnn_cfg)
-        fcnn_ds_cfg = fcnn_dataset_configs(self.fcnn_cfg)
+        gen_ds_cfg = general_dataset_configs(dataset_cfg)
+        fcnn_ds_cfg = fcnn_dataset_configs(dataset_cfg)
 
         # Load dataset
         self.train_loader, _, self.test_loader = load_data_fcnn(gen_ds_cfg, self.fcnn_cfg)

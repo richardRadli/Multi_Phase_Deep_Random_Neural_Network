@@ -1,15 +1,16 @@
 import torch
 import torch.nn as nn
 
-from config.config import FCNNConfig
+from config.config import DatasetConfig, FCNNConfig
 from config.dataset_config import general_dataset_configs
 
 
 class CustomELMModel(nn.Module):
     def __init__(self):
         super(CustomELMModel, self).__init__()
+        dataset_cfg = DatasetConfig().parse()
         self.cfg = FCNNConfig().parse()
-        gen_ds_cfg = general_dataset_configs(self.cfg)
+        gen_ds_cfg = general_dataset_configs(dataset_cfg)
 
         input_neurons = gen_ds_cfg.get("num_features")
         eq_neurons = gen_ds_cfg.get("eq_neurons")

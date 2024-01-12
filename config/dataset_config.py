@@ -103,7 +103,7 @@ def general_dataset_configs(cfg) -> Dict:
             "num_features":
                 617,
             "num_classes":
-                27,
+                26,
             "eq_neurons":
                 [1300, 1300, 1300],
             "exp_neurons":
@@ -273,7 +273,7 @@ def general_dataset_configs(cfg) -> Dict:
             "num_features":
                 10,
             "num_classes":
-                6,
+                5,
             "eq_neurons":
                 [216, 216, 216],
             "exp_neurons":
@@ -329,7 +329,7 @@ def general_dataset_configs(cfg) -> Dict:
             "num_features":
                 9,
             "num_classes":
-                8,
+                7,
             "eq_neurons":
                 [216, 216, 216],
             "exp_neurons":
@@ -551,6 +551,14 @@ def fcnn_dataset_configs(cfg) -> Dict:
                 DATASET_FCNN_PATHS.get_data_path("logs_page_blocks"),
             "saved_results":
                 DATASET_FCNN_PATHS.get_data_path("results_page_blocks")
+        },
+        "satimages": {
+            "fcnn_saved_weights":
+                DATASET_FCNN_PATHS.get_data_path("sw_satimages"),
+            "logs":
+                DATASET_FCNN_PATHS.get_data_path("logs_satimages"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_satimages")
         },
         "segment": {
             "fcnn_saved_weights":

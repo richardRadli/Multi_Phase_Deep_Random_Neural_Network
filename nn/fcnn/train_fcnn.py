@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 from typing import List
 
-from config.config import FCNNConfig
+from config.config import DatasetConfig, FCNNConfig
 from config.dataset_config import general_dataset_configs, fcnn_dataset_configs
 from dataset_operations.load_dataset import load_data_fcnn
 from model import CustomELMModel
@@ -30,11 +30,12 @@ class FCNN:
         setup_logger()
 
         # Set up config
+        dataset_cfg = DatasetConfig().parse()
         self.fcnn_cfg = FCNNConfig().parse()
 
         # Set up paths
-        gen_ds_cfg = general_dataset_configs(self.fcnn_cfg)
-        fcnn_ds_cfg = fcnn_dataset_configs(self.fcnn_cfg)
+        gen_ds_cfg = general_dataset_configs(dataset_cfg)
+        fcnn_ds_cfg = fcnn_dataset_configs(dataset_cfg)
 
         # Set up device
         self.device = use_gpu_if_available()
@@ -161,7 +162,10 @@ class FCNN:
                     os.remove(best_model_path)
                 best_model_path = os.path.join(self.save_path, "epoch_" + str(epoch) + ".pt")
                 torch.save(self.model.state_dict(), best_model_path)
+                logging.info(f"New weights have been saved at epoch {epoch} with value of {valid_loss:.5f}")
             else:
+                logging.warning(f"No new weights have been saved. Best valid loss was {best_valid_loss:.5f},\n "
+                                f"current valid loss is {valid_loss:.5f}")
                 epochs_without_improvement += 1
                 if epochs_without_improvement >= self.fcnn_cfg.patience:
                     logging.info("Early stopping: No improvement for {} epochs".format(self.fcnn_cfg.patience))
