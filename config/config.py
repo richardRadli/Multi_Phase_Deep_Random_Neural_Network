@@ -11,10 +11,10 @@ class MPDRNNConfig:
         self.parser.add_argument("--alpha_weights_min", type=float, default="-1.0", help="the lower limit of the "
                                                                                          "values of the alpha weight "
                                                                                          "matrix")
-        self.parser.add_argument("--dataset_name", type=str, default="usps",
-                                 choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion", "musk2",
-                                          "optdigits", "page_blocks", "satimages", "segment", "shuttle", "spambase",
-                                          "usps", ])
+        self.parser.add_argument("--dataset_name", type=str, default="connect4",
+                                 choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
+                                          "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
+                                          "spambase", "usps", ])
         self.parser.add_argument("--method", type=str, default="BASE", help="BASE | EXP_ORT | EXP_ORT_C")
         self.parser.add_argument("--mu", type=float, default=0.0)
         self.parser.add_argument("--number_of_tests", type=int, default=1)
@@ -51,12 +51,15 @@ class FCNNConfig:
         self.parser = argparse.ArgumentParser()
 
         # FCNN parameters
-        self.parser.add_argument("--dataset_name", type=str, default="isolete")
+        self.parser.add_argument("--dataset_name", type=str, default="forest",
+                                 choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
+                                          "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
+                                          "spambase", "usps", ])
         self.parser.add_argument("--epochs", type=int, default=1000)
         self.parser.add_argument("--patience", type=int, default=15)
-        self.parser.add_argument("--valid_size", type=float, default=0.2)
+        self.parser.add_argument("--valid_size", type=float, default=0.3)
         self.parser.add_argument("--slope", type=float, default=0.2)
-        self.parser.add_argument("--learning_rate", type=float, default=1e-3)
+        self.parser.add_argument("--learning_rate", type=float, default=2e-4)
         self.parser.add_argument("--batch_size", type=float, default=128)
 
     def parse(self):

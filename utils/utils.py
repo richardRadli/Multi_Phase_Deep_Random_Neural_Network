@@ -8,6 +8,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import time
+import torch
 
 from datetime import datetime
 from functools import wraps
@@ -265,3 +266,61 @@ def plot_metrics(path_to_plot: str, train_accuracy: list, test_accuracy: list, n
     plt.close("all")
     plt.close()
     gc.collect()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------- U S E   G P U   I F   A V A I L A B L E --------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+def use_gpu_if_available() -> torch.device:
+    """
+    Provides information about the currently available GPUs and returns a torch device for training and inference.
+
+    :return: A torch device for either "cuda" or "cpu".
+    """
+
+    if torch.cuda.is_available():
+        cuda_info = {
+            'CUDA Available': [torch.cuda.is_available()],
+            'CUDA Device Count': [torch.cuda.device_count()],
+            'Current CUDA Device': [torch.cuda.current_device()],
+            'CUDA Device Name': [torch.cuda.get_device_name(0)]
+        }
+
+        df = pd.DataFrame(cuda_info)
+        logging.info(df)
+    else:
+        logging.info("Only CPU is available!")
+
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------- F I N D   L A T E S T   F I L E   I N   L A T E S T   D I R E C T O R Y ----------------------
+# ----------------------------------------------------------------------------------------------------------------------
+def find_latest_file_in_latest_directory(path: str) -> str:
+    """
+    Finds the latest file in the latest directory within the given path.
+
+    :param path: str, the path to the directory where we should look for the latest file
+    :return: str, the path to the latest file
+    :raise: when no directories or files found
+    """
+
+    dirs = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+
+    if not dirs:
+        raise ValueError(f"No directories found in {path}")
+
+    dirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    latest_dir = dirs[0]
+    files = [os.path.join(latest_dir, f) for f in os.listdir(latest_dir) if
+             os.path.isfile(os.path.join(latest_dir, f))]
+
+    if not files:
+        raise ValueError(f"No files found in {latest_dir}")
+
+    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    latest_file = files[0]
+    logging.info(f"The latest file is {latest_file}")
+
+    return latest_file

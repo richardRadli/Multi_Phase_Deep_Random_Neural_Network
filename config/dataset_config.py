@@ -476,85 +476,121 @@ def fcnn_dataset_configs(cfg) -> Dict:
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_connect4"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_connect4")
+                DATASET_FCNN_PATHS.get_data_path("logs_connect4"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_connect4")
+        },
+        "forest": {
+            "fcnn_saved_weights":
+                DATASET_FCNN_PATHS.get_data_path("sw_forest"),
+            "logs":
+                DATASET_FCNN_PATHS.get_data_path("logs_forest"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_forest")
         },
         "iris": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_iris"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_iris")
+                DATASET_FCNN_PATHS.get_data_path("logs_iris"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_iris")
         },
         "isolete": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_isolete"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_isolete")
+                DATASET_FCNN_PATHS.get_data_path("logs_isolete"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_isolete")
         },
         "letter": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_letter"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_letter")
+                DATASET_FCNN_PATHS.get_data_path("logs_letter"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_letter")
         },
         "mnist": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_mnist"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_mnist")
+                DATASET_FCNN_PATHS.get_data_path("logs_mnist"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_mnist")
         },
         "mnist_fashion": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_mnist_fashion"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_mnist_fashion")
+                DATASET_FCNN_PATHS.get_data_path("logs_mnist_fashion"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_mnist_fashion")
         },
         "musk2": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_musk2"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_musk2")
+                DATASET_FCNN_PATHS.get_data_path("logs_musk2"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_musk2")
         },
         "optdigits": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_optdigits"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_optdigits")
+                DATASET_FCNN_PATHS.get_data_path("logs_optdigits"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_optdigits")
         },
         "page_blocks": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_page_blocks"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_page_blocks")
+                DATASET_FCNN_PATHS.get_data_path("logs_page_blocks"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_page_blocks")
         },
         "segment": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_segment"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_segment")
+                DATASET_FCNN_PATHS.get_data_path("logs_segment"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_segment")
         },
         "shuttle": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_shuttle"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_shuttle")
+                DATASET_FCNN_PATHS.get_data_path("logs_shuttle"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_shuttle")
         },
         "spambase": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_spambase"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_spambase")
+                DATASET_FCNN_PATHS.get_data_path("logs_spambase"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_spambase")
         },
         "usps": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_usps"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_usps")
+                DATASET_FCNN_PATHS.get_data_path("logs_usps"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_usps")
         },
         "yaleb": {
             "fcnn_saved_weights":
                 DATASET_FCNN_PATHS.get_data_path("sw_yaleb"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_yaleb")
+                DATASET_FCNN_PATHS.get_data_path("logs_yaleb"),
+            "saved_results":
+                DATASET_FCNN_PATHS.get_data_path("results_yaleb")
         }
     }
 

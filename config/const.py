@@ -121,7 +121,38 @@ class FCNNPaths(_Const):
         "logs_forest":
             "fcnn_data/logs_fcnn/forest",
         "logs_satimages":
-            "fcnn_data/logs_fcnn/satiamges"
+            "fcnn_data/logs_fcnn/satiamges",
+
+        "results_connect4":
+            "fcnn_data/results_fcnn/connect4",
+        "results_forest":
+            "fcnn_data/results_fcnn/forest",
+        "results_iris":
+            "fcnn_data/results_fcnn/iris",
+        "results_isolete":
+            "fcnn_data/results_fcnn/isolete",
+        "results_letter":
+            "fcnn_data/results_fcnn/letter",
+        "results_mnist":
+            "fcnn_data/results_fcnn/mnist",
+        "results_mnist_fashion":
+            "fcnn_data/results_fcnn/mnist_fashion",
+        "results_musk2":
+            "fcnn_data/results_fcnn/musk2",
+        "results_optdigits":
+            "fcnn_data/results_fcnn/optdigits",
+        "results_page_blocks":
+            "fcnn_data/results_fcnn/page_blocks",
+        "results_segment":
+            "fcnn_data/results_fcnn/segment",
+        "results_shuttle":
+            "fcnn_data/results_fcnn/shuttle",
+        "results_spambase":
+            "fcnn_data/results_fcnn/spambase",
+        "results_usps":
+            "fcnn_data/results_fcnn/usps",
+        "results_yaleb":
+            "fcnn_data/results_fcnn/yaleb"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
