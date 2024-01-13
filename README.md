@@ -98,7 +98,7 @@ approach.
 
 ### Usage
 
-To train FCNN, set dataset_name in the c`onfig.py` file within the `DatasetConfig()` class. Settings regarding the FCNN 
+To train FCNN, set dataset_name in the `config.py` file within the `DatasetConfig()` class. Settings regarding the FCNN 
 itself can be found in the _FCNNConfig()_ class. FCNN is separated to train and evaluation, so first run `train_fcnn.py`, 
 after training, run `eval_fcnn.py`.
 
@@ -110,7 +110,7 @@ trained until early stopping is activated. By default, the patience is 15 epochs
   <img src="poc_images/fcnn_train.png" alt="training_fcnn" width="683"/>
 </figure>
 
-`eval_fcnn`.py will find the latest directory with the latest model (.pt) file, and will load these weights into the model.
+`eval_fcnn.py` will find the latest directory with the latest model (.pt) file, and will load these weights into the model.
 It calculates both the train and the test accuracies, and finally saves the results into a .txt file.
 
 <figure align="center">
