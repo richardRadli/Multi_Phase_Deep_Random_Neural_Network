@@ -11,12 +11,12 @@ Deep learning neural networks show a significant improvement over shallow ones i
 
 <figure align="center">
   <figcaption>Phase 1</figcaption>
-  <img src="poc_images/plot_nn_first_phase.svg" alt="phase_1" width="400"/>
+  <img src="poc_images/plot_nn_first_phase.svg" alt="phase_1" width="600"/>
 </figure>
 
 <figure align="center">
   <figcaption>Phase 2</figcaption>
-  <img src="poc_images/plot_nn_second_phase.svg" alt="phase_2" width="400"/>
+  <img src="poc_images/plot_nn_second_phase.svg" alt="phase_2" width="600"/>
 </figure>
 
 ## Datasets
