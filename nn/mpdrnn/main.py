@@ -1,13 +1,14 @@
 import logging
+import torch
 
 from torch.utils.data import DataLoader
 
 from additional_layers import AdditionalLayer
-from config.config import DatasetConfig, MPDRNNConfig
+from config.config import MPDRNNConfig
 from config.dataset_config import general_dataset_configs
 from initial_layer import InitialLayer
 from npy_dataloader import NpyDataset
-from utils.utils import setup_logger, display_dataset_info
+from utils.utils import create_timestamp, display_dataset_info, setup_logger
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -19,23 +20,27 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         # Initialize paths and settings
+        timestamp = create_timestamp()
         setup_logger()
-        cfg_training = MPDRNNConfig().parse()
-        cfg_dataset = DatasetConfig().parse()
-        self.gen_ds_cfg = general_dataset_configs(cfg_dataset)
+        self.cfg = MPDRNNConfig().parse()
+        self.gen_ds_cfg = general_dataset_configs(self.cfg)
         display_dataset_info(self.gen_ds_cfg)
 
-        if cfg_training.method not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
-            raise ValueError(f"Wrong method was given: {cfg_training.method}")
+        if self.cfg.method not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
+            raise ValueError(f"Wrong method was given: {self.cfg.method}")
 
-        self.method = cfg_training.method
+        if self.cfg.seed:
+            torch.manual_seed(42)
+
+        self.method = self.cfg.method
+        self.activation = self.cfg.activation
         self.first_layer_input_nodes = self.gen_ds_cfg.get("num_features")
         self.first_layer_hidden_nodes = self.get_num_of_neurons(self.method)[0]
         self.second_layer_hidden_nodes = self.get_num_of_neurons(self.method)[1]
         self.third_layer_hidden_nodes = self.get_num_of_neurons(self.method)[2]
 
         # Load data
-        file_path = general_dataset_configs(cfg_dataset).get("cached_dataset_file")
+        file_path = general_dataset_configs(self.cfg).get("cached_dataset_file")
         train_dataset = NpyDataset(file_path, operation="train")
         test_dataset = NpyDataset(file_path, operation="test")
         self.train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
@@ -63,22 +68,32 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
                                   n_hidden_nodes=self.first_layer_hidden_nodes,
                                   train_loader=self.train_loader,
                                   test_loader=self.test_loader,
-                                  method=self.method)
+                                  activation=self.cfg.activation,
+                                  method=self.method,
+                                  phase_name="Phase 1")
         init_layer.main()
         second_layer = AdditionalLayer(previous_layer=init_layer,
                                        train_loader=self.train_loader,
                                        test_loader=self.test_loader,
                                        n_hidden_nodes=self.second_layer_hidden_nodes,
-                                       activation="leaky_ReLU",
-                                       method=self.method)
+                                       mu=self.cfg.mu,
+                                       sigma=self.cfg.sigma_layer_2,
+                                       activation=self.cfg.activation,
+                                       method=self.method,
+                                       phase_name="Phase 2")
         second_layer.main()
-        # third_layer = AdditionalLayer(previous_layer=second_layer,
-        #                               train_loader=self.train_loader,
-        #                               test_loader=self.test_loader,
-        #                               n_hidden_nodes=self.third_layer_hidden_nodes,
-        #                               activation="leaky_ReLU",
-        #                               method=self.method)
-        # third_layer.main()
+        third_layer = AdditionalLayer(previous_layer=second_layer,
+                                      train_loader=self.train_loader,
+                                      test_loader=self.test_loader,
+                                      n_hidden_nodes=self.third_layer_hidden_nodes,
+                                      mu=self.cfg.mu,
+                                      sigma=self.cfg.sigma_layer_3,
+                                      activation=self.cfg.activation,
+                                      method=self.method,
+                                      phase_name="Phase 3",
+                                      general_settings=self.gen_ds_cfg,
+                                      config=self.cfg)
+        third_layer.main()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

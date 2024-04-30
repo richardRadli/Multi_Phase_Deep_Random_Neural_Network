@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 from sklearn.model_selection import train_test_split
 
 from config.dataset_config import general_dataset_configs
-from config.config import DatasetConfig
+from config.config import MPDRNNConfig
 
 
 def all_elements_numeric(nested_list):
@@ -25,7 +25,7 @@ def all_elements_numeric(nested_list):
 
 
 def main():
-    cfg = DatasetConfig().parse()
+    cfg = MPDRNNConfig().parse()
 
     path_to_dataset = general_dataset_configs(cfg).get("dataset_file")
     num_data = general_dataset_configs(cfg).get("num_train_data") + general_dataset_configs(cfg).get("num_test_data")

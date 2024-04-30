@@ -1,7 +1,6 @@
 import colorlog
 import gc
 import logging
-import matplotlib.patches as mp
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -171,19 +170,20 @@ def calc_exp_neurons(total_neurons: int, n_layers: int):
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix(cm, path_to_plot, labels, name_of_dataset: str, operation: str, method: str, phase_name: str)\
-        -> None:
+def plot_confusion_matrix(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
 
-    sns.heatmap(cm, annot=True, fmt='.2f', xticklabels=labels, yticklabels=labels)
-    plt.title('%s, %s, %s, %s' % (phase_name, name_of_dataset, method, operation))
-    plt.ylabel('Actual')
-    plt.xlabel('Predicted')
+    fig, axis = plt.subplots(1, 3, figsize=(15, 5))
 
-    filename = os.path.join(path_to_plot, f"{phase_name}_{name_of_dataset}_{method}_{operation}.png")
+    for i, cm in enumerate(cm):
+        ax = axis[i]
+        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=ax)
+        ax.set_title('%s, %s, %s, %s' % (f"Phase {i+1}", name_of_dataset, method, operation))
+        plt.ylabel('Actual')
+        plt.xlabel('Predicted')
+
+    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
+    plt.tight_layout()
     plt.savefig(filename, dpi=300)
-    plt.close()
-
-    plt.close("all")
     plt.close()
     gc.collect()
 
@@ -198,80 +198,21 @@ def display_dataset_info(gen_ds_cfg):
 # ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------- P L O T   T R A I N   A N D   V A L I D   D A T A ----------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def plot_metrics(path_to_plot: str, train_accuracy: list, test_accuracy: list, name_of_dataset: str, operation: str)\
-        -> None:
-    # Create background
-    plt.style.use("dark_background")
-    for param in ['text.color', 'axes.labelcolor', 'xtick.color', 'ytick.color']:
-        plt.rcParams[param] = '0.9'  # very light grey
-    for param in ['figure.facecolor', 'axes.facecolor', 'savefig.facecolor']:
-        plt.rcParams[param] = '#212946'  # bluish dark grey 212946
+def plot_metrics(train, test, metric_type: str, name_of_dataset: str, method: str) -> None:
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(10, 6))
 
-    color_mapping = {
-        "accuracy": [
-            '#FF62B2',  # pink
-            '#F5D300',  # yellow
-        ]
-    }
+    x_values = np.arange(1, len(train) + 1)
 
-    colors = color_mapping.get(operation, None)
-
-    if colors is None:
-        raise ValueError('An unknown operation \'%s\'.' % operation)
-
-    # Transform fcnn_data to plot
-    df = pd.DataFrame({'Train': train_accuracy,
-                       'Test': test_accuracy})
-    df['Train'] = df['Train'].astype(float)
-    df['Test'] = df['Test'].astype(float)
-    fig, ax = plt.subplots()
-
-    # Redraw the fcnn_data with low alpha and slightly increased line width:
-    n_shades = 9
-    diff_line_width = 0.5
-    alpha_value = 0.9 / n_shades
-
-    for n in range(1, n_shades + 1):
-        df.plot(marker='o',
-                linewidth=2 + (diff_line_width * n),
-                alpha=alpha_value,
-                legend=False,
-                ax=ax,
-                color=colors)
-
-    # Color the areas below the lines:
-    for column, color in zip(df, colors):
-        ax.fill_between(x=df.index,
-                        y1=df[column].values,
-                        y2=[0] * len(df),
-                        color=color,
-                        alpha=0.1)
-
-    ax.grid(color='#2A3459')
-    ax.set_xlim([ax.get_xlim()[0] - 0.2, ax.get_xlim()[1] + 0.2])  # to not have the markers cut off
-    ax.set_ylim(np.min(test_accuracy) - 0.025, np.max(train_accuracy) + 0.025)
-
-    ax.set_ylabel("Score")
-    ax.set_xlabel("Iterations")
-    ax.set_title('Train and Test %s on %s' % (operation, name_of_dataset))
-
-    train_legend = mp.Patch(color='#FE53BB', label='Train')
-    valid_legend = mp.Patch(color='yellow', label='Test')
-
-    ax.legend(handles=[train_legend, valid_legend])
-
-    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{operation}.png")
-    plt.savefig(filename, dpi=300)
-    plt.close()
-
-    plt.close("all")
-    plt.close()
-    gc.collect()
+    plt.plot(x_values, train, marker='o', label='Train')
+    plt.plot(x_values, test, marker='o', label='Test')
+    plt.xlabel('Phases')
+    plt.ylabel(metric_type)
+    plt.title('%s, %s, %s' % (name_of_dataset, method, metric_type))
+    plt.legend()
+    plt.show()
 
 
-# ----------------------------------------------------------------------------------------------------------------------
-# --------------------------------------- U S E   G P U   I F   A V A I L A B L E --------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
 def use_gpu_if_available() -> torch.device:
     """
     Provides information about the currently available GPUs and returns a torch device for training and inference.
@@ -293,7 +234,6 @@ def use_gpu_if_available() -> torch.device:
         logging.info("Only CPU is available!")
 
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------- F I N D   L A T E S T   F I L E   I N   L A T E S T   D I R E C T O R Y ----------------------

@@ -3,6 +3,7 @@ import torch
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_fscore_support, mean_squared_error
 from tqdm import tqdm
 
+from config.config import MPDRNNConfig
 from elm import ELM
 from utils.utils import measure_execution_time, pretty_print_results
 
@@ -19,10 +20,12 @@ class InitialLayer:
                  n_hidden_nodes: int,
                  train_loader,
                  test_loader,
-                 activation: str = "ReLU",
-                 method: str = "BASE"):
-
+                 activation: str,
+                 method: str,
+                 phase_name: str):
+        self.cfg = MPDRNNConfig().parse()
         self.method = method
+        self.phase_name = phase_name
 
         self.train_loader = train_loader
         self.test_loader = test_loader
@@ -39,6 +42,8 @@ class InitialLayer:
         self.elm = ELM(activation_function=activation)
         self.alpha_weights = torch.nn.Parameter(torch.randn(n_input_nodes, n_hidden_nodes))
 
+        self.metrics = {}
+
     # ------------------------------------------------------------------------------------------------------------------
     # ---------------------------------------------------- T R A I N ---------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -49,16 +54,25 @@ class InitialLayer:
             if self.method in ["BASE", "EXP_ORT"]:
                 self.beta_weights = torch.pinverse(self.H1).matmul(y)
             else:
-                C = 0.01
                 identity_matrix = torch.eye(self.H1.shape[1])
                 if self.H1.shape[0] > self.H1.shape[1]:
-                    self.beta_weights = (
-                        torch.matmul(
-                            torch.matmul(
-                                torch.linalg.pinv(self.H1.t().matmul(self.H1) + identity_matrix / C),
-                                self.H1.t()),
-                            y)
+                    self.beta_weights = torch.pinverse(
+                        self.H1.T.matmul(self.H1) + identity_matrix / self.cfg.C
+                    ).matmul(self.H1.T.matmul(y))
+                elif self.H1.shape[0] < self.H1.shape[1]:
+                    self.beta_weights = self.H1.T.matmul(
+                        torch.pinverse(
+                            self.H1.matmul(self.H1.T) + identity_matrix / self.cfg.C
+                        ).matmul(y)
                     )
+
+    def collect_metrics(self, operation, accuracy, precision, recall, fscore, loss, cm) -> None:
+        self.metrics[f'{operation}_accuracy'] = accuracy
+        self.metrics[f'{operation}_precision'] = precision
+        self.metrics[f'{operation}_recall'] = recall
+        self.metrics[f'{operation}_fscore'] = fscore
+        self.metrics[f'{operation}_loss'] = loss
+        self.metrics[f'{operation}_cm'] = cm
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------- P R E D I C T --------------------------------------------------
@@ -73,9 +87,9 @@ class InitialLayer:
             dataloader = self.test_loader
 
         for x, y in tqdm(dataloader, total=len(dataloader), desc=f"Predicting {operation}"):
-            H1 = self.elm(x, self.alpha_weights)
-            setattr(self, 'predict_h_train' if operation == 'train' else 'predict_h_test', H1)
-            predictions = H1.matmul(self.beta_weights)
+            h1 = self.elm(x, self.alpha_weights)
+            setattr(self, 'predict_h_train' if operation == 'train' else 'predict_h_test', h1)
+            predictions = h1.matmul(self.beta_weights)
 
             y_predicted_argmax = torch.argmax(predictions, dim=-1)
             y_true_argmax = torch.argmax(y, dim=-1)
@@ -86,13 +100,15 @@ class InitialLayer:
             cm = confusion_matrix(y_true_argmax, y_predicted_argmax)
             loss = mean_squared_error(y_true_argmax, y_predicted_argmax)
 
-            pretty_print_results(accuracy, precision, recall, fscore, loss, operation, "phase_1")
+            pretty_print_results(accuracy, precision, recall, fscore, loss, operation, self.phase_name)
+
+            self.collect_metrics(operation, accuracy, precision, recall, fscore, loss, cm)
 
     # ------------------------------------------------------------------------------------------------------------------
     # -------------------------------------------------- W E I G H T S -------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     @property
-    def weights(self):
+    def save_weights(self):
         """
         Function to save weights.
 
@@ -103,7 +119,13 @@ class InitialLayer:
             'prev_weights': self.beta_weights,
             'H_prev': self.H1,
             'predict_h_train': self.predict_h_train,
-            'predict_h_test': self.predict_h_test
+            'predict_h_test': self.predict_h_test,
+        }
+
+    @property
+    def save_metrics(self):
+        return {
+            "metrics": self.metrics,
         }
 
     def main(self):
