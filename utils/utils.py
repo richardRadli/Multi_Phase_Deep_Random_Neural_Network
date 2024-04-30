@@ -12,6 +12,7 @@ import torch
 
 from datetime import datetime
 from functools import wraps
+from typing import Any, Callable
 
 
 def setup_logger():
@@ -72,34 +73,20 @@ def create_timestamp() -> str:
 # ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------------- P R E T T Y   P R I N T   R E S U L T S --------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def pretty_print_results(metric_results: dict, operation: str, name: str, training_time: float = None) -> None:
+def pretty_print_results(acc, precision, recall, fscore, loss, operation: str, name: str)\
+        -> None:
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    loss = metric_results.get("loss")
     loss = np.round(loss, 4)
-    acc = metric_results.get("accuracy")
-    precision = metric_results.get("precision_recall_fscore")[0]
-    recall = metric_results.get("precision_recall_fscore")[1]
-    fscore = metric_results.get("precision_recall_fscore")[2]
 
-    if operation == "train":
-        df = pd.DataFrame([[loss, acc, precision, recall, fscore, training_time]],
-                          index=pd.Index(['Score']),
-                          columns=pd.MultiIndex.from_product([['%s loss' % operation, '%s acc' % operation,
-                                                               '%s precision' % operation, '%s recall' % operation,
-                                                               '%s fscore' % operation, 'training time']]))
-
-    elif operation == "test":
-        df = pd.DataFrame([[loss, acc, precision, recall, fscore]],
-                          index=pd.Index(['Score']),
-                          columns=pd.MultiIndex.from_product([['%s loss' % operation, '%s acc' % operation,
-                                                               '%s precision' % operation, '%s recall' % operation,
-                                                               '%s fscore' % operation]]))
-    else:
-        raise ValueError('An unknown operation \'%s\'.' % operation)
+    df = pd.DataFrame([[loss, acc, precision, recall, fscore]],
+                      index=pd.Index(['Score']),
+                      columns=pd.MultiIndex.from_product([['%s loss' % operation, '%s acc' % operation,
+                                                           '%s precision' % operation, '%s recall' % operation,
+                                                           '%s fscore' % operation]]))
 
     upper_separator = "-" * 34  # Customize the separator as needed
     lower_separator = "-" * 83
@@ -107,22 +94,37 @@ def pretty_print_results(metric_results: dict, operation: str, name: str, traini
     logging.info("\n%s %s %s %s \n%s\n%s", upper_separator, name, operation, upper_separator, df, lower_separator)
 
 
-def measure_execution_time(func):
-    def wrapper(*args, **kwargs):
+def measure_execution_time(func: Callable) -> Callable:
+    """
+    Decorator to measure the execution time of a function.
+
+    Args:
+        func (Callable): The function to be decorated.
+
+    Returns:
+        Callable: The decorated function.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        """
+        Wrapper function to measure execution time.
+
+        Args:
+            *args: Positional arguments passed to the function.
+            **kwargs: Keyword arguments passed to the function.
+
+        Returns:
+            Any: The result of the function.
+        """
+
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
-        elapsed_time = end_time - start_time
-
-        instance = args[0]  # Get the instance of the class
-        method_name = func.__name__
-
-        # Update the total execution time for the method
-        if method_name not in instance.total_execution_time:
-            instance.total_execution_time[method_name] = 0.0
-        instance.total_execution_time[method_name] += elapsed_time
-
+        execution_time = end_time - start_time
+        logging.info(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
         return result
+
     return wrapper
 
 
@@ -169,11 +171,10 @@ def calc_exp_neurons(total_neurons: int, n_layers: int):
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix(metrics: dict, path_to_plot, labels, name_of_dataset: str, operation: str, method: str,
-                          phase_name: str) -> None:
-    cm = metrics.get("confusion_matrix")
-    cmn = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    sns.heatmap(cmn, annot=True, fmt='.2f', xticklabels=labels, yticklabels=labels)
+def plot_confusion_matrix(cm, path_to_plot, labels, name_of_dataset: str, operation: str, method: str, phase_name: str)\
+        -> None:
+
+    sns.heatmap(cm, annot=True, fmt='.2f', xticklabels=labels, yticklabels=labels)
     plt.title('%s, %s, %s, %s' % (phase_name, name_of_dataset, method, operation))
     plt.ylabel('Actual')
     plt.xlabel('Predicted')
