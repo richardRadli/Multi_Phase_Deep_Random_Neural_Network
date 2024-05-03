@@ -7,8 +7,8 @@ from additional_layers import AdditionalLayer
 from config.config import MPDRNNConfig
 from config.dataset_config import general_dataset_configs
 from initial_layer import InitialLayer
-from npy_dataloader import NpyDataset
-from utils.utils import create_timestamp, display_dataset_info, setup_logger
+from nn.npy_dataloader import NpyDataset
+from utils.utils import create_dir, display_dataset_info, setup_logger
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -20,7 +20,6 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         # Initialize paths and settings
-        timestamp = create_timestamp()
         setup_logger()
         self.cfg = MPDRNNConfig().parse()
         self.gen_ds_cfg = general_dataset_configs(self.cfg)
@@ -46,7 +45,45 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         self.train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
         self.test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
 
+        self.directories = self.generate_directories()
+
+    def generate_directories(self):
+        directories_path = {}
+
+        cm_root = self.gen_ds_cfg.get("path_to_cm")
+        cm_dir = create_dir(
+            root_dir=cm_root,
+            method=self.cfg.method
+        )
+
+        metrics_root = self.gen_ds_cfg.get("path_to_metrics")
+        metrics_dir = create_dir(
+            root_dir=metrics_root,
+            method=self.cfg.method
+        )
+
+        results_root = self.gen_ds_cfg.get("path_to_results")
+        results_dir = create_dir(
+            root_dir=results_root,
+            method=self.cfg.method
+        )
+
+        directories_path["cm"] = cm_dir
+        directories_path["metrics"] = metrics_dir
+        directories_path["results"] = results_dir
+
+        return directories_path
+
     def get_num_of_neurons(self, method):
+        """
+
+        Args:
+            method:
+
+        Returns:
+
+        """
+
         num_neurons = {
             "BASE": self.gen_ds_cfg.get("eq_neurons"),
             "EXP_ORT": self.gen_ds_cfg.get("exp_neurons"),
@@ -70,7 +107,8 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
                                   test_loader=self.test_loader,
                                   activation=self.cfg.activation,
                                   method=self.method,
-                                  phase_name="Phase 1")
+                                  phase_name="Phase 1",
+                                  directory_path=self.directories)
         init_layer.main()
         second_layer = AdditionalLayer(previous_layer=init_layer,
                                        train_loader=self.train_loader,
@@ -80,7 +118,8 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
                                        sigma=self.cfg.sigma_layer_2,
                                        activation=self.cfg.activation,
                                        method=self.method,
-                                       phase_name="Phase 2")
+                                       phase_name="Phase 2",
+                                       directory_path=self.directories)
         second_layer.main()
         third_layer = AdditionalLayer(previous_layer=second_layer,
                                       train_loader=self.train_loader,
@@ -92,7 +131,8 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
                                       method=self.method,
                                       phase_name="Phase 3",
                                       general_settings=self.gen_ds_cfg,
-                                      config=self.cfg)
+                                      config=self.cfg,
+                                      directory_path=self.directories)
         third_layer.main()
 
 

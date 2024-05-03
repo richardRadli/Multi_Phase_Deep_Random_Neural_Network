@@ -69,23 +69,40 @@ def create_timestamp() -> str:
     return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 
+def create_dir(root_dir: str, method: str):
+    timestamp = create_timestamp()
+    output_dir = os.path.join(root_dir, f"{timestamp}_{method}")
+    os.makedirs(output_dir, exist_ok=True)
+    return output_dir
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------------- P R E T T Y   P R I N T   R E S U L T S --------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def pretty_print_results(acc, precision, recall, fscore, loss, operation: str, name: str)\
+def pretty_print_results(acc, precision, recall, fscore, loss, root_dir: str, operation: str, name: str) \
         -> None:
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    loss = np.round(loss, 4)
+    df = pd.DataFrame([[
+        np.round(loss, 4), np.round(acc, 4), np.round(precision, 4), np.round(recall, 4), np.round(fscore, 4)]],
+        index=pd.Index(['Score']),
+        columns=pd.MultiIndex.from_product([['%s loss' % operation,
+                                             '%s acc' % operation,
+                                             '%s precision' % operation,
+                                             '%s recall' % operation,
+                                             '%s fscore' % operation]]))
 
-    df = pd.DataFrame([[loss, acc, precision, recall, fscore]],
-                      index=pd.Index(['Score']),
-                      columns=pd.MultiIndex.from_product([['%s loss' % operation, '%s acc' % operation,
-                                                           '%s precision' % operation, '%s recall' % operation,
-                                                           '%s fscore' % operation]]))
+    path_to_save = os.path.join(root_dir, f"{operation}.txt")
+    try:
+        with open(path_to_save, 'a'):
+            pass
+    except FileNotFoundError:
+        df.to_csv(path_to_save, sep='\t', index=True)
+    else:
+        df.to_csv(path_to_save, sep='\t', index=True, mode='a', header=True)
 
     upper_separator = "-" * 34  # Customize the separator as needed
     lower_separator = "-" * 83
@@ -122,7 +139,7 @@ def measure_execution_time(func: Callable) -> Callable:
         end_time = time.time()
         execution_time = end_time - start_time
         logging.info(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
-        return result
+        return result, execution_time
 
     return wrapper
 
@@ -146,6 +163,7 @@ def measure_execution_time_fcnn(func):
         execution_time = end_time - start_time
         logging.info(f"Execution time of {func.__name__}: {execution_time} seconds")
         return result
+
     return wrapper
 
 
@@ -167,27 +185,6 @@ def calc_exp_neurons(total_neurons: int, n_layers: int):
     return sorted(neurons_per_layer, reverse=True)
 
 
-# ----------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
-
-    fig, axis = plt.subplots(1, 3, figsize=(15, 5))
-
-    for i, cm in enumerate(cm):
-        ax = axis[i]
-        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=ax)
-        ax.set_title('%s, %s, %s, %s' % (f"Phase {i+1}", name_of_dataset, method, operation))
-        plt.ylabel('Actual')
-        plt.xlabel('Predicted')
-
-    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
-    gc.collect()
-
-
 def display_dataset_info(gen_ds_cfg):
     df = pd.DataFrame.from_dict(gen_ds_cfg, orient='index')
     df = df.drop("cached_dataset_file", axis=0)
@@ -196,13 +193,36 @@ def display_dataset_info(gen_ds_cfg):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+def plot_confusion_matrix(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
+    fig, axis = plt.subplots(1, 3, figsize=(15, 5))
+
+    for i, cm in enumerate(cm):
+        ax = axis[i]
+        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=ax)
+        ax.set_title('%s, %s, %s, %s' % (f"Phase {i + 1}", name_of_dataset, method, operation))
+        ax.set_xlabel('Predicted')
+        ax.set_ylabel('Actual')
+
+    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300)
+    plt.close()
+    gc.collect()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------- P L O T   T R A I N   A N D   V A L I D   D A T A ----------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def plot_metrics(train, test, metric_type: str, name_of_dataset: str, method: str) -> None:
+def plot_metrics(train, test, metric_type: str, path_to_plot: str, name_of_dataset: str, method: str) \
+        -> None:
     sns.set_style("whitegrid")
     plt.figure(figsize=(10, 6))
 
     x_values = np.arange(1, len(train) + 1)
+
+    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{metric_type}.png")
 
     plt.plot(x_values, train, marker='o', label='Train')
     plt.plot(x_values, test, marker='o', label='Test')
@@ -210,7 +230,10 @@ def plot_metrics(train, test, metric_type: str, name_of_dataset: str, method: st
     plt.ylabel(metric_type)
     plt.title('%s, %s, %s' % (name_of_dataset, method, metric_type))
     plt.legend()
-    plt.show()
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300)
+    plt.close()
+    gc.collect()
 
 
 def use_gpu_if_available() -> torch.device:
@@ -234,6 +257,7 @@ def use_gpu_if_available() -> torch.device:
         logging.info("Only CPU is available!")
 
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------- F I N D   L A T E S T   F I L E   I N   L A T E S T   D I R E C T O R Y ----------------------

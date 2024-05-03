@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+
 from torch.utils.data import Dataset
 
 
@@ -9,11 +10,11 @@ class NpyDataset(Dataset):
         self.transform = transform
 
         if operation == "train":
-            self.x = torch.from_numpy(data[0]).float()
-            self.y = torch.from_numpy(data[2]).float()
+            self.x = torch.from_numpy(data.get("train_x")).float()
+            self.y = torch.from_numpy(data.get("train_y")).float()
         elif operation == "test":
-            self.x = torch.from_numpy(data[1]).float()
-            self.y = torch.from_numpy(data[3]).float()
+            self.x = torch.from_numpy(data.get("test_x")).float()
+            self.y = torch.from_numpy(data.get("test_y")).float()
         else:
             raise Exception("Operation must be train or test")
 

@@ -24,6 +24,7 @@ class AdditionalLayer:
                  activation: str,
                  method: str,
                  phase_name: str,
+                 directory_path,
                  general_settings=None,
                  config=None):
 
@@ -57,10 +58,23 @@ class AdditionalLayer:
         if config is not None:
             self.config = config
 
+        if directory_path is not None:
+            self.directory_path = directory_path
+
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------ C R E A T E   H I D D E N   L A Y E R   I -----------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def create_hidden_layer_i(self, mu, sigma):
+        """
+
+        Args:
+            mu:
+            sigma:
+
+        Returns:
+
+        """
+
         noise = torch.normal(mean=mu, std=sigma, size=(self.previous_weights.shape[0],
                                                        self.previous_weights.shape[1]))
         w_rnd_out_i = self.previous_weights + noise
@@ -84,16 +98,35 @@ class AdditionalLayer:
     # ------------------------------------------------------------------------------------------------------------------
     @measure_execution_time
     def train(self):
+        """
+
+        Returns:
+
+        """
+
         for _, y in tqdm(self.train_loader, total=len(self.train_loader), desc="Training"):
             self.H_i_layer = self.elm(self.H_prev, self.hidden_layer_i)
             self.new_weights = torch.pinverse(self.H_i_layer).matmul(y)
 
     def collect_metrics(self, operation, accuracy, precision, recall, fscore, loss, cm) -> None:
-        # Define the keys
+        """
+
+        Args:
+            operation:
+            accuracy:
+            precision:
+            recall:
+            fscore:
+            loss:
+            cm:
+
+        Returns:
+
+        """
+
         keys = [f'{operation}_accuracy', f'{operation}_precision', f'{operation}_recall',
                 f'{operation}_fscore', f'{operation}_loss', f'{operation}_cm']
 
-        # Iterate over each key and value
         for key, value in zip(keys, [accuracy, precision, recall, fscore, loss, cm]):
             if key in self.metrics:
                 if not isinstance(self.metrics[key], list):
@@ -104,13 +137,19 @@ class AdditionalLayer:
     # ------------------------------------------------- P R E D I C T --------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def predict_and_evaluate(self, operation: str):
+        """
+
+        Args:
+            operation:
+
+        Returns:
+
+        """
+
         if operation not in ["train", "test"]:
             raise ValueError('An unknown operation \'%s\'.' % operation)
 
-        if operation == "train":
-            dataloader = self.train_loader
-        else:
-            dataloader = self.test_loader
+        dataloader = self.train_loader if operation == "train" else self.test_loader
 
         for x, y in tqdm(dataloader, total=len(dataloader), desc=f"Predicting {operation}"):
             if operation == "train":
@@ -130,13 +169,26 @@ class AdditionalLayer:
             cm = confusion_matrix(y_true_argmax, y_predicted_argmax)
             loss = mean_squared_error(y_true_argmax, y_predicted_argmax)
 
-            pretty_print_results(accuracy, precision, recall, fscore, loss, operation, self.phase_name)
+            pretty_print_results(
+                acc=accuracy, precision=precision, recall=recall, fscore=fscore, loss=loss,
+                root_dir=self.directory_path.get("results"),
+                operation=operation, name=self.phase_name
+            )
 
             self.collect_metrics(operation, accuracy, precision, recall, fscore, loss, cm)
 
     def plot_results(self, operation: str):
+        """
+
+        Args:
+            operation:
+
+        Returns:
+
+        """
+
         plot_confusion_matrix(cm=self.metrics.get(f"{operation}_cm"),
-                              path_to_plot="C:/Users/ricsi/Desktop",
+                              path_to_plot=self.directory_path.get("cm"),
                               name_of_dataset=self.config.dataset_name,
                               operation=operation,
                               method=self.config.method,
@@ -145,12 +197,14 @@ class AdditionalLayer:
         plot_metrics(train=self.metrics.get(f"train_accuracy"),
                      test=self.metrics.get(f"test_accuracy"),
                      metric_type="Accuracy",
+                     path_to_plot=self.directory_path.get("metrics"),
                      name_of_dataset=self.config.dataset_name,
                      method=self.config.method,)
 
         plot_metrics(train=self.metrics.get(f"train_precision"),
                      test=self.metrics.get(f"test_precision"),
                      metric_type="Precision",
+                     path_to_plot=self.directory_path.get("metrics"),
                      name_of_dataset=self.config.dataset_name,
                      method=self.config.method,
                      )
@@ -158,6 +212,7 @@ class AdditionalLayer:
         plot_metrics(train=self.metrics.get(f"train_recall"),
                      test=self.metrics.get(f"test_recall"),
                      metric_type="Recall",
+                     path_to_plot=self.directory_path.get("metrics"),
                      name_of_dataset=self.config.dataset_name,
                      method=self.config.method,
                      )
@@ -165,6 +220,7 @@ class AdditionalLayer:
         plot_metrics(train=self.metrics.get(f"train_fscore"),
                      test=self.metrics.get(f"test_fscore"),
                      metric_type="F-score",
+                     path_to_plot=self.directory_path.get("metrics"),
                      name_of_dataset=self.config.dataset_name,
                      method=self.config.method,
                      )
@@ -172,6 +228,7 @@ class AdditionalLayer:
         plot_metrics(train=self.metrics.get(f"train_loss"),
                      test=self.metrics.get(f"test_loss"),
                      metric_type="Loss",
+                     path_to_plot=self.directory_path.get("metrics"),
                      name_of_dataset=self.config.dataset_name,
                      method=self.config.method,
                      )

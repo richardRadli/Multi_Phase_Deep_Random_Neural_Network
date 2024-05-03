@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 
 from tqdm import tqdm
@@ -6,6 +7,7 @@ from sklearn.model_selection import train_test_split
 
 from config.dataset_config import general_dataset_configs
 from config.config import MPDRNNConfig
+from utils.utils import setup_logger
 
 
 def all_elements_numeric(nested_list):
@@ -26,6 +28,7 @@ def all_elements_numeric(nested_list):
 
 def main():
     cfg = MPDRNNConfig().parse()
+    setup_logger()
 
     path_to_dataset = general_dataset_configs(cfg).get("dataset_file")
     num_data = general_dataset_configs(cfg).get("num_train_data") + general_dataset_configs(cfg).get("num_test_data")
@@ -77,9 +80,13 @@ def main():
         )
 
         file_save_name = general_dataset_configs(cfg).get("cached_dataset_file")
-        np.save(str(file_save_name), [train_x, test_x, train_y, test_y])
+        np.savez(file_save_name,
+                 train_x=train_x,
+                 test_x=test_x,
+                 train_y=train_y,
+                 test_y=test_y)
     except FileNotFoundError:
-        print("File not found")
+        logging.error("File not found")
 
 
 if __name__ == "__main__":

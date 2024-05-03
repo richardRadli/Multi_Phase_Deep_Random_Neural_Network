@@ -80,8 +80,6 @@ class FCNNPaths(_Const):
             "fcnn_data/saved_weights_fcnn/spambase",
         "sw_usps":
             "fcnn_data/saved_weights_fcnn/usps",
-        "sw_yaleb":
-            "fcnn_data/saved_weights_fcnn/yaleb",
         "sw_iris":
             "fcnn_data/saved_weights_fcnn/iris",
         "sw_forest":
@@ -114,8 +112,6 @@ class FCNNPaths(_Const):
             "fcnn_data/logs_fcnn/spambase",
         "logs_usps":
             "fcnn_data/logs_fcnn/usps",
-        "logs_yaleb":
-            "fcnn_data/logs_fcnn/yaleb",
         "logs_iris":
             "fcnn_data/logs_fcnn/iris",
         "logs_forest":
@@ -151,8 +147,6 @@ class FCNNPaths(_Const):
             "fcnn_data/results_fcnn/spambase",
         "results_usps":
             "fcnn_data/results_fcnn/usps",
-        "results_yaleb":
-            "fcnn_data/results_fcnn/yaleb"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -196,14 +190,74 @@ class MPDRNNPaths(_Const):
             "mpdrnn/images/confusion_matrix/spambase",
         "cm_usps":
             "mpdrnn/images/confusion_matrix/usps",
-        "cm_yaleb":
-            "mpdrnn/images/confusion_matrix/yaleb",
         "cm_iris":
             "mpdrnn/images/confusion_matrix/iris",
         "cm_forest":
             "mpdrnn/images/confusion_matrix/forest",
         "cm_satimages":
-            "mpdrnn/images/confusion_matrix/satimages"
+            "mpdrnn/images/confusion_matrix/satimages",
+
+        "metrics_connect4":
+            "mpdrnn/images/metrics/connect4",
+        "metrics_isolete":
+            "mpdrnn/images/metrics/isolete",
+        "metrics_letter":
+            "mpdrnn/images/metrics/letter",
+        "metrics_mnist":
+            "mpdrnn/images/metrics/mnist",
+        "metrics_mnist_fashion":
+            "mpdrnn/images/metrics/mnist_fashion",
+        "metrics_musk2":
+            "mpdrnn/images/metrics/musk2",
+        "metrics_optdigits":
+            "mpdrnn/images/metrics/optdigits",
+        "metrics_page_blocks":
+            "mpdrnn/images/metrics/page_blocks",
+        "metrics_segment":
+            "mpdrnn/images/metrics/segment",
+        "metrics_shuttle":
+            "mpdrnn/images/metrics/shuttle",
+        "metrics_spambase":
+            "mpdrnn/images/metrics/spambase",
+        "metrics_usps":
+            "mpdrnn/images/metrics/usps",
+        "metrics_iris":
+            "mpdrnn/images/metrics/iris",
+        "metrics_forest":
+            "mpdrnn/images/metrics/forest",
+        "metrics_satimages":
+            "mpdrnn/images/metrics/satimages",
+
+        "results_connect4":
+            "mpdrnn/data/results/connect4",
+        "results_isolete":
+            "mpdrnn/data/results/isolete",
+        "results_letter":
+            "mpdrnn/data/results/letter",
+        "results_mnist":
+            "mpdrnn/data/results/mnist",
+        "results_mnist_fashion":
+            "mpdrnn/data/results/mnist_fashion",
+        "results_musk2":
+            "mpdrnn/data/results/musk2",
+        "results_optdigits":
+            "mpdrnn/data/results/optdigits",
+        "results_page_blocks":
+            "mpdrnn/data/results/page_blocks",
+        "results_segment":
+            "mpdrnn/data/results/segment",
+        "results_shuttle":
+            "mpdrnn/data/results/shuttle",
+        "results_spambase":
+            "mpdrnn/data/results/spambase",
+        "results_usps":
+            "mpdrnn/data/results/usps",
+        "results_iris":
+            "mpdrnn/data/results/iris",
+        "results_forest":
+            "mpdrnn/data/results/forest",
+        "results_satimages":
+            "mpdrnn/data/results/satimages"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -247,8 +301,6 @@ class DatasetFilesPaths(_Const):
             "spambase",
         "dataset_path_usps":
             "usps",
-        "dataset_path_yaleb":
-            "yaleb",
         "dataset_path_iris":
             "iris",
         "dataset_path_forest":
@@ -272,6 +324,6 @@ class DatasetFilesPaths(_Const):
 
 
 CONST: _Const = _Const()
-DATASET_FCNN_PATHS: FCNNPaths = FCNNPaths()
-DATASET_MPDRNN_PATHS: MPDRNNPaths = MPDRNNPaths()
+FCNN_PATHS: FCNNPaths = FCNNPaths()
+MPDRNN_PATHS: MPDRNNPaths = MPDRNNPaths()
 DATASET_FILES_PATHS: DatasetFilesPaths = DatasetFilesPaths()

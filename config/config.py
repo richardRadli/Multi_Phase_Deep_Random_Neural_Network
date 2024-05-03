@@ -1,17 +1,36 @@
 import argparse
 
 
+class HELMConfig:
+    def __init__(self):
+        self.opt = None
+        self.parser = argparse.ArgumentParser()
+
+        self.parser.add_argument("--dataset_name", type=str, default="connect4",
+                                 choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
+                                          "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
+                                          "spambase", "usps"])
+        self.parser.add_argument("--seed", type=bool, default=True)
+        self.parser.add_argument("--penalty", type=float, default=2 ** -30)
+        self.parser.add_argument("--scaling_factor", type=float, default=0.8)
+
+    def parse(self):
+        self.opt = self.parser.parse_args()
+
+        return self.opt
+
+
 class MPDRNNConfig:
     def __init__(self):
         self.opt = None
         self.parser = argparse.ArgumentParser()
-        self.parser.add_argument("--dataset_name", type=str, default="connect4",
+        self.parser.add_argument("--dataset_name", type=str, default="mnist",
                                  choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
                                           "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
-                                          "spambase", "usps", "yaleb"])
+                                          "spambase", "usps"])
         self.parser.add_argument("--method", type=str, default="BASE", choices=["BASE", "EXP_ORT", "EXP_ORT_C"])
-        self.parser.add_argument("--activation", type=str, default="ReLU",
-                                 choices=["ReLU"," sigmoid", "tanh", "identity", "leaky_ReLU"])
+        self.parser.add_argument("--activation", type=str, default="leaky_ReLU",
+                                 choices=["ReLU", " sigmoid", "tanh", "identity", "leaky_ReLU"])
         self.parser.add_argument("--mu", type=float, default=0.0)
         self.parser.add_argument("--number_of_tests", type=int, default=1)
         self.parser.add_argument("--plot_diagrams", type=bool, default=False)

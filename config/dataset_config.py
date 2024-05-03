@@ -3,7 +3,7 @@ import os
 
 from typing import Dict
 
-from config.const import DATASET_FCNN_PATHS, DATASET_FILES_PATHS, DATASET_MPDRNN_PATHS
+from config.const import FCNN_PATHS, DATASET_FILES_PATHS, MPDRNN_PATHS
 
 
 def general_dataset_configs(cfg) -> Dict:
@@ -31,9 +31,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "connect4.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "connect4.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_connect4"),
+                MPDRNN_PATHS.get_data_path("cm_connect4"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_connect4"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_connect4"),
         },
         "forest": {
             "dataset_name":
@@ -57,9 +61,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_forest"),
+                MPDRNN_PATHS.get_data_path("cm_forest"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_forest"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_forest"),
         },
         "iris": {
             "dataset_name":
@@ -83,9 +91,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_iris"),
+                MPDRNN_PATHS.get_data_path("cm_iris"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_iris"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_iris"),
         },
         "isolete": {
             "dataset_name":
@@ -109,9 +121,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "isolete.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "isolete.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_isolete"),
+                MPDRNN_PATHS.get_data_path("cm_isolete"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_isolete"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_isolete"),
         },
         "letter": {
             "dataset_name":
@@ -136,9 +152,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "letter.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "letter.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_letter"),
+                MPDRNN_PATHS.get_data_path("cm_letter"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_letter"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_letter"),
         },
         "mnist": {
             "dataset_name":
@@ -162,9 +182,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_mnist"),
+                MPDRNN_PATHS.get_data_path("cm_mnist"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_mnist"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_mnist"),
         },
         "mnist_fashion": {
             "dataset_name":
@@ -189,9 +213,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
+                MPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_mnist_fashion"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_mnist_fashion"),
         },
         "musk2": {
             "dataset_name":
@@ -215,9 +243,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "musk2.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "musk2.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_musk2"),
+                MPDRNN_PATHS.get_data_path("cm_musk2"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_musk2"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_musk2"),
         },
         "optdigits": {
             "dataset_name":
@@ -241,9 +273,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "optdigits.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "optdigits.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_optdigits"),
+                MPDRNN_PATHS.get_data_path("cm_optdigits"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_optdigits"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_optdigits"),
         },
         "page_blocks": {
             "dataset_name":
@@ -267,9 +303,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "page_blocks.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "page_blocks.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_page_blocks"),
+                MPDRNN_PATHS.get_data_path("cm_page_blocks"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_page_blocks"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_page_blocks"),
         },
         "segment": {
             "dataset_name":
@@ -293,9 +333,11 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "segment.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_segment"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "segment.npz"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_segment"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_segment"),
         },
         "shuttle": {
             "dataset_name":
@@ -319,9 +361,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_shuttle"),
+                MPDRNN_PATHS.get_data_path("cm_shuttle"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_shuttle"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_shuttle"),
         },
         "spambase": {
             "dataset_name":
@@ -345,9 +391,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_spambase"),
+                MPDRNN_PATHS.get_data_path("cm_spambase"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_spambase"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_spambase"),
         },
         "usps": {
             "dataset_name":
@@ -371,35 +421,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "usps.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "usps.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_usps")
-        },
-        "yaleb": {
-            "dataset_name":
-                "yaleb",
-            "num_train_data":
-                1680,
-            "num_test_data":
-                734,
-            "num_features":
-                1024,
-            "num_classes":
-                40,
-            "eq_neurons":
-                [1400, 1400, 1400],
-            "exp_neurons":
-                [1050, 1050, 1050, 1050],
-            "helm_neurons":
-                [800, 400, 3000],
-            "class_labels":
-                [],
-            "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"), "yaleb.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_yaleb")
+                MPDRNN_PATHS.get_data_path("cm_usps"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_usps"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_usps")
         },
         "satimages": {
             "dataset_name":
@@ -423,9 +451,13 @@ def general_dataset_configs(cfg) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npy"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npz"),
             "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_satimages")
+                MPDRNN_PATHS.get_data_path("cm_satimages"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_satimages"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_satimages")
         }
     }
 
@@ -442,131 +474,123 @@ def fcnn_dataset_configs(cfg) -> Dict:
     dataset_config = {
         "connect4": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_connect4"),
+                FCNN_PATHS.get_data_path("sw_connect4"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_connect4"),
+                FCNN_PATHS.get_data_path("logs_connect4"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_connect4")
+                FCNN_PATHS.get_data_path("results_connect4")
         },
         "forest": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_forest"),
+                FCNN_PATHS.get_data_path("sw_forest"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_forest"),
+                FCNN_PATHS.get_data_path("logs_forest"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_forest")
+                FCNN_PATHS.get_data_path("results_forest")
         },
         "iris": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_iris"),
+                FCNN_PATHS.get_data_path("sw_iris"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_iris"),
+                FCNN_PATHS.get_data_path("logs_iris"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_iris")
+                FCNN_PATHS.get_data_path("results_iris")
         },
         "isolete": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_isolete"),
+                FCNN_PATHS.get_data_path("sw_isolete"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_isolete"),
+                FCNN_PATHS.get_data_path("logs_isolete"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_isolete")
+                FCNN_PATHS.get_data_path("results_isolete")
         },
         "letter": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_letter"),
+                FCNN_PATHS.get_data_path("sw_letter"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_letter"),
+                FCNN_PATHS.get_data_path("logs_letter"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_letter")
+                FCNN_PATHS.get_data_path("results_letter")
         },
         "mnist": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_mnist"),
+                FCNN_PATHS.get_data_path("sw_mnist"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_mnist"),
+                FCNN_PATHS.get_data_path("logs_mnist"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_mnist")
+                FCNN_PATHS.get_data_path("results_mnist")
         },
         "mnist_fashion": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_mnist_fashion"),
+                FCNN_PATHS.get_data_path("sw_mnist_fashion"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_mnist_fashion"),
+                FCNN_PATHS.get_data_path("logs_mnist_fashion"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_mnist_fashion")
+                FCNN_PATHS.get_data_path("results_mnist_fashion")
         },
         "musk2": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_musk2"),
+                FCNN_PATHS.get_data_path("sw_musk2"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_musk2"),
+                FCNN_PATHS.get_data_path("logs_musk2"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_musk2")
+                FCNN_PATHS.get_data_path("results_musk2")
         },
         "optdigits": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_optdigits"),
+                FCNN_PATHS.get_data_path("sw_optdigits"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_optdigits"),
+                FCNN_PATHS.get_data_path("logs_optdigits"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_optdigits")
+                FCNN_PATHS.get_data_path("results_optdigits")
         },
         "page_blocks": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_page_blocks"),
+                FCNN_PATHS.get_data_path("sw_page_blocks"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_page_blocks"),
+                FCNN_PATHS.get_data_path("logs_page_blocks"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_page_blocks")
+                FCNN_PATHS.get_data_path("results_page_blocks")
         },
         "satimages": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_satimages"),
+                FCNN_PATHS.get_data_path("sw_satimages"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_satimages"),
+                FCNN_PATHS.get_data_path("logs_satimages"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_satimages")
+                FCNN_PATHS.get_data_path("results_satimages")
         },
         "segment": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_segment"),
+                FCNN_PATHS.get_data_path("sw_segment"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_segment"),
+                FCNN_PATHS.get_data_path("logs_segment"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_segment")
+                FCNN_PATHS.get_data_path("results_segment")
         },
         "shuttle": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_shuttle"),
+                FCNN_PATHS.get_data_path("sw_shuttle"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_shuttle"),
+                FCNN_PATHS.get_data_path("logs_shuttle"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_shuttle")
+                FCNN_PATHS.get_data_path("results_shuttle")
         },
         "spambase": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_spambase"),
+                FCNN_PATHS.get_data_path("sw_spambase"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_spambase"),
+                FCNN_PATHS.get_data_path("logs_spambase"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_spambase")
+                FCNN_PATHS.get_data_path("results_spambase")
         },
         "usps": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_usps"),
+                FCNN_PATHS.get_data_path("sw_usps"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_usps"),
+                FCNN_PATHS.get_data_path("logs_usps"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_usps")
-        },
-        "yaleb": {
-            "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_yaleb"),
-            "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_yaleb"),
-            "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_yaleb")
+                FCNN_PATHS.get_data_path("results_usps")
         }
     }
 
