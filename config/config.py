@@ -1,12 +1,31 @@
 import argparse
 
 
+class BWELMConfig:
+    def __init__(self):
+        self.opt = None
+        self.parser = argparse.ArgumentParser()
+        self.parser.add_argument("--dataset_name", type=str, default="forest",
+                                 choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
+                                          "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
+                                          "spambase", "usps"])
+        self.parser.add_argument("--init_type", type=str, default="orthogonal",
+                                 choices=["uniform_0_1", "uniform_1_1", "xavier", "relu", "orthogonal"])
+        self.parser.add_argument("--number_of_tests", type=int, default=1)
+        self.parser.add_argument("--seed", type=bool, default=True)
+
+    def parse(self):
+        self.opt = self.parser.parse_args()
+
+        return self.opt
+
+
 class HELMConfig:
     def __init__(self):
         self.opt = None
         self.parser = argparse.ArgumentParser()
 
-        self.parser.add_argument("--dataset_name", type=str, default="connect4",
+        self.parser.add_argument("--dataset_name", type=str, default="mnist",
                                  choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
                                           "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
                                           "spambase", "usps"])
@@ -24,7 +43,7 @@ class MPDRNNConfig:
     def __init__(self):
         self.opt = None
         self.parser = argparse.ArgumentParser()
-        self.parser.add_argument("--dataset_name", type=str, default="mnist",
+        self.parser.add_argument("--dataset_name", type=str, default="satimages",
                                  choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
                                           "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
                                           "spambase", "usps"])

@@ -6,8 +6,8 @@ from torch.utils.data import DataLoader
 from additional_layers import AdditionalLayer
 from config.config import MPDRNNConfig
 from config.dataset_config import general_dataset_configs
-from initial_layer import InitialLayer
-from nn.npy_dataloader import NpyDataset
+from inital_layer import InitialLayer
+from nn.dataloader.npy_dataloader import NpyDataset
 from utils.utils import create_dir, display_dataset_info, setup_logger
 
 

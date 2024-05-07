@@ -8,7 +8,7 @@ from typing import List, Tuple
 
 from config.config import HELMConfig
 from config.dataset_config import general_dataset_configs
-from nn.npy_dataloader import NpyDataset
+from nn.dataloader.npy_dataloader import NpyDataset
 from utils.utils import measure_execution_time, setup_logger
 
 
@@ -42,7 +42,7 @@ class HELM:
     def sparse_elm_autoencoder(a: np.ndarray, b: np.ndarray, lam: float, itrs: int) -> np.ndarray:
         """
 
-        param a: a matrix with size (d, n), where d is the dimension of the input fcnn_data and n is the number of
+        param a: a matrix with size (d, n), where d is the dimension of the input data and n is the number of
         training samples.
         param b: a matrix with size (d, m), where m is the number of hidden neurons in the autoencoder.
         param lam: a scalar that controls the sparsity of the learned representation.

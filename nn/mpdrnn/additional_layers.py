@@ -3,7 +3,7 @@ import torch
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_fscore_support, mean_squared_error
 from tqdm import tqdm
 
-from elm import ELM
+from nn.models.elm import ELM
 from utils.utils import measure_execution_time, pretty_print_results, plot_confusion_matrix, plot_metrics
 
 

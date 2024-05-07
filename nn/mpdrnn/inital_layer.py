@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_f
 from tqdm import tqdm
 
 from config.config import MPDRNNConfig
-from elm import ELM
+from nn.models.elm import ELM
 from utils.utils import measure_execution_time, pretty_print_results
 
 
@@ -58,8 +58,6 @@ class InitialLayer:
         """
 
         for train_x, train_y in tqdm(self.train_loader, total=len(self.train_loader), desc="Training"):
-            train_x = train_x
-            train_y = train_y
             self.H1 = self.elm(train_x, self.alpha_weights)
             if self.method in ["BASE", "EXP_ORT"]:
                 self.beta_weights = torch.pinverse(self.H1).matmul(train_y)
@@ -121,8 +119,6 @@ class InitialLayer:
             dataloader = self.test_loader
 
         for x, y in tqdm(dataloader, total=len(dataloader), desc=f"Predicting {operation}"):
-            x = x
-            y = y
             h1 = self.elm(x, self.alpha_weights)
             setattr(self, 'predict_h_train' if operation == 'train' else 'predict_h_test', h1)
             predictions = h1.matmul(self.beta_weights)

@@ -172,7 +172,7 @@ def general_dataset_configs(cfg) -> Dict:
             "num_classes":
                 10,
             "eq_neurons":
-                [5333, 5333, 5333],
+                [1000, 1000, 1000],
             "exp_neurons":
                 [8000, 5000, 3000],
             "helm_neurons":
