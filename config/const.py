@@ -274,6 +274,57 @@ class MPDRNNPaths(_Const):
         return os.path.join(self.PROJECT_ROOT, self.dirs_dataset_paths.get(key, ""))
 
 
+class BWELMPaths(_Const):
+    dirs_dataset_paths = {
+        # Confusion matrices
+        "cm_mnist":
+            "bwelm/images/confusion_matrix/mnist",
+        "cm_shuttle":
+            "bwelm/images/confusion_matrix/shuttle",
+        "cm_iris":
+            "bwelm/images/confusion_matrix/iris",
+        "cm_forest":
+            "bwelm/images/confusion_matrix/forest",
+        "cm_satimages":
+            "bwelm/images/confusion_matrix/satimages",
+
+        "metrics_mnist":
+            "bwelm/images/metrics/mnist",
+        "metrics_shuttle":
+            "bwelm/images/metrics/shuttle",
+        "metrics_iris":
+            "bwelm/images/metrics/iris",
+        "metrics_forest":
+            "bwelm/images/metrics/forest",
+        "metrics_satimages":
+            "bwelm/images/metrics/satimages",
+
+        "results_mnist":
+            "bwelm/data/results/mnist",
+        "results_shuttle":
+            "bwelm/data/results/shuttle",
+        "results_iris":
+            "bwelm/data/results/iris",
+        "results_forest":
+            "bwelm/data/results/forest",
+        "results_satimages":
+            "bwelm/data/results/satimages"
+    }
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------- I N I T -----------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super().__init__()
+        self.create_directories(self.dirs_dataset_paths, "PROJECT")
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def get_data_path(self, key):
+        return os.path.join(self.PROJECT_ROOT, self.dirs_dataset_paths.get(key, ""))
+
+
 class DatasetFilesPaths(_Const):
     dirs_dataset_paths = {
         # Confusion matrices
@@ -324,6 +375,7 @@ class DatasetFilesPaths(_Const):
 
 
 CONST: _Const = _Const()
+BWELM_PATHS: BWELMPaths = BWELMPaths()
 FCNN_PATHS: FCNNPaths = FCNNPaths()
 MPDRNN_PATHS: MPDRNNPaths = MPDRNNPaths()
 DATASET_FILES_PATHS: DatasetFilesPaths = DatasetFilesPaths()

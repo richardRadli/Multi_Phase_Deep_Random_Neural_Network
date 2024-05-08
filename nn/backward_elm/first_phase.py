@@ -1,101 +1,219 @@
+import logging
+import pandas as pd
 import torch
 import torch.nn.init as init
 
-from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 
 from config.config import BWELMConfig
+from nn.models.elm import ELM
 
 
 class FirstPhase:
     def __init__(self,
                  n_input_nodes: int,
                  n_hidden_nodes: int,
+                 sigma: float,
                  train_loader,
                  test_loader,
                  ):
         self.cfg = BWELMConfig().parse()
 
-        if self.cfg.seed:
-            torch.manual_seed(1234)
-
         self.n_input_nodes = n_input_nodes
         self.n_hidden_nodes = n_hidden_nodes
+        self.sigma = sigma
 
         self.train_loader = train_loader
         self.test_loader = test_loader
 
-    @staticmethod
-    def inv_leaky_ReLU(x, alpha=0.2):
-        return torch.where(x < 0, x * (1 / alpha), x)
+        self.elm = ELM(self.cfg.activation_function)
+        self.reverse_elm = ELM(self.cfg.inverse_activation_function)
+
+        self.training_accuracies = []
+        self.test_accuracies = []
 
     @staticmethod
     def get_weight_initialization(weight_init_type: str, empty_weight_matrix):
+        """
+
+        Args:
+            weight_init_type:
+            empty_weight_matrix:
+
+        Returns:
+
+        """
+
         weight_dict = {
             'uniform_0_1': init.uniform_(empty_weight_matrix, 0, 1),
             'uniform_1_1': init.uniform_(empty_weight_matrix, -1, 1),
             "xavier": init.xavier_uniform_(empty_weight_matrix),
-            "relu": init.kaiming_uniform_(empty_weight_matrix, nonlinearity="relu"),
+            "relu": init.kaiming_uniform_(empty_weight_matrix),
             "orthogonal": init.orthogonal_(empty_weight_matrix)
         }
 
         return weight_dict[weight_init_type]
 
-    def calculate_beta_weights(self):
-        empty_tensor = torch.empty((self.n_input_nodes, self.n_hidden_nodes))
-        alpha_weights = self.get_weight_initialization(self.cfg.init_type, empty_tensor)
+    @staticmethod
+    def calculate_condition(weights):
+        _, s, _ = torch.svd(weights)
+        condition = torch.max(s) / torch.min(s)
+        return condition
 
-        for train_x, train_y in tqdm(self.train_loader):
-            h1 = torch.nn.LeakyReLU(negative_slope=0.2, inplace=True)(train_x.matmul(alpha_weights))
-            beta_weights = torch.pinverse(h1).matmul(train_y)
+    def forward_weight_calculations(self, weights):
+        """
 
-            return h1, alpha_weights, beta_weights
+        Args:
+            weights:
 
-    def train_accuracy(self, h1, beta_weights):
-        for _, train_y in tqdm(self.train_loader):
+        Returns:
+
+        """
+
+        for train_x, train_y in self.train_loader:
+            hidden_layer = self.elm(train_x, weights)
+            beta_weights = torch.pinverse(hidden_layer).matmul(train_y)
+
+            return beta_weights
+
+    def calculate_accuracy(self, operation, alpha_weights, beta_weights):
+        """
+
+        Args:
+            operation:
+            alpha_weights:
+            beta_weights:
+
+        Returns:
+
+        """
+
+        if operation not in ["train", "test"]:
+            raise ValueError('An unknown operation \'%s\'.' % operation)
+
+        if operation == "train":
+            dataloader = self.train_loader
+        else:
+            dataloader = self.test_loader
+
+        for x, y in dataloader:
+            h1 = self.elm(x, alpha_weights)
             predictions = h1.matmul(beta_weights)
             y_predicted_argmax = torch.argmax(predictions, dim=-1)
-            y_true_argmax = torch.argmax(train_y, dim=-1)
+            y_true_argmax = torch.argmax(y, dim=-1)
             accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
-            print(accuracy)
 
-    def calculate_updated_alpha(self, beta_weights, sigma_beta: float = 0.09, sigma_h_est: float = 0.09):
-        for train_x, train_y in tqdm(self.train_loader):
+            self.training_accuracies.append(accuracy) if operation == "train" \
+                else self.test_accuracies.append(accuracy)
+
+    def calculate_updated_alpha(self, beta_weights, sigma_beta, sigma_h_est):
+        """
+
+        Args:
+            beta_weights:
+            sigma_beta:
+            sigma_h_est:
+
+        Returns:
+
+        """
+
+        for train_x, train_y in self.train_loader:
             beta_weights += torch.normal(0, sigma_beta, beta_weights.shape)
-            h_est = self.inv_leaky_ReLU(train_y.matmul(torch.pinverse(beta_weights)))
+            h_est = self.reverse_elm(train_y, torch.pinverse(beta_weights))
             h_est += torch.normal(0, sigma_h_est, h_est.shape)
             updated_alpha_weights = torch.pinverse(train_x).matmul(h_est)
 
             return updated_alpha_weights
 
-    def accuracy_of_ELM_with_updated_alpha(self, beta_weights, updated_alpha_weights):
-        for train_x, train_y in tqdm(self.train_loader):
-            h1_updated = torch.nn.LeakyReLU(negative_slope=0.2, inplace=True)(train_x.matmul(updated_alpha_weights))
-            y_predicted_updated = h1_updated.matmul(beta_weights)
-            y_predicted_updated_argmax = torch.argmax(y_predicted_updated, dim=-1)
-            y_true_argmax = torch.argmax(train_y, dim=-1)
-            accuracy = accuracy_score(y_true_argmax, y_predicted_updated_argmax)
-            print(accuracy)
+    @staticmethod
+    def orthogonalize_weights(weights):
+        num_rows, num_cols = weights.size()
+        first_half_cols = num_cols // 2
+        first_half = weights[:, :first_half_cols]
+        second_half = weights[:, first_half_cols:]
 
-    def calculate_updated_beta(self, updated_alpha_weights, ort_alpha_weights: bool):
-        if ort_alpha_weights:
-            temp1 = updated_alpha_weights[:, updated_alpha_weights.shape[1] // 2:]
-            temp2 = updated_alpha_weights[:, :updated_alpha_weights.shape[1] // 2]
-            temp3 = torch.empty(temp1.shape)
-            orthogonal_alpha = init.orthogonal_(temp3)
-            updated_alpha_weights = torch.cat((orthogonal_alpha, temp2), dim=1)
+        u, _, v = torch.svd(first_half)
+        orthogonalized_weights = torch.matmul(u, v.t())
 
-        for train_x, train_y in tqdm(self.train_loader):
-            h1_updated = torch.nn.LeakyReLU(negative_slope=0.2, inplace=True)(train_x.matmul(updated_alpha_weights))
-            updated_beta_weights = torch.pinverse(h1_updated).matmul(train_y)
-            return h1_updated, updated_beta_weights
+        new_matrix = torch.cat((orthogonalized_weights, second_half), dim=1)
+
+        return new_matrix
+
+    def plot_accuracies(self):
+        data = {
+            'training_accuracy': self.training_accuracies,
+            'test_accuracy': self.test_accuracies
+        }
+
+        index = ["forward1", "backward", "forward2"]
+
+        df = pd.DataFrame(data, index=index)
+        logging.info(df)
+
+    def first_forward(self):
+        """
+
+        Returns:
+
+        """
+
+        empty_tensor = torch.empty((self.n_input_nodes, self.n_hidden_nodes), dtype=torch.float)
+        alpha_weights = self.get_weight_initialization(self.cfg.init_type, empty_tensor)
+        beta_weights = self.forward_weight_calculations(alpha_weights)
+        self.calculate_accuracy("train", alpha_weights, beta_weights)
+        self.calculate_accuracy("test", alpha_weights, beta_weights)
+
+        self.calculate_condition(alpha_weights)
+        self.calculate_condition(beta_weights)
+
+        return beta_weights
+
+    def backward(self, beta_weights, orthogonal_weights: bool):
+        """
+
+        Args:
+            beta_weights:
+            orthogonal_weights:
+
+        Returns:
+
+        """
+
+        updated_alpha_weights = self.calculate_updated_alpha(beta_weights,
+                                                             sigma_beta=self.sigma,
+                                                             sigma_h_est=self.sigma)
+        if orthogonal_weights:
+            updated_alpha_weights = self.orthogonalize_weights(updated_alpha_weights)
+
+        self.calculate_accuracy("train", updated_alpha_weights, beta_weights)
+        self.calculate_accuracy("test", updated_alpha_weights, beta_weights)
+        self.calculate_condition(updated_alpha_weights)
+
+        return updated_alpha_weights
+
+    def second_forward(self, updated_alpha_weights):
+        """
+
+        Args:
+            updated_alpha_weights:
+
+        Returns:
+
+        """
+
+        updated_beta_weights = self.forward_weight_calculations(updated_alpha_weights)
+        self.calculate_accuracy("train", updated_alpha_weights, updated_beta_weights)
+        self.calculate_accuracy("test", updated_alpha_weights, updated_beta_weights)
 
     def main(self):
-        h1, alpha_weights, beta_weights = self.calculate_beta_weights()
-        self.train_accuracy(h1, beta_weights)
-        updated_alpha_weights = self.calculate_updated_alpha(beta_weights, sigma_beta=0.5, sigma_h_est=0.5)
-        self.accuracy_of_ELM_with_updated_alpha(beta_weights, updated_alpha_weights)
-        h1_updated, updated_beta_weights = (
-            self.calculate_updated_beta(updated_alpha_weights, ort_alpha_weights=True)
-        )
-        self.train_accuracy(h1_updated, updated_beta_weights)
+        # Forward 1
+        beta_weights = self.first_forward()
+
+        # Backward
+        updated_alpha_weights = self.backward(beta_weights, orthogonal_weights=False)
+
+        # Forward 2
+        self.second_forward(updated_alpha_weights)
+
+        self.plot_accuracies()

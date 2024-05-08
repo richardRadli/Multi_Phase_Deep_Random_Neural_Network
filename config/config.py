@@ -5,14 +5,17 @@ class BWELMConfig:
     def __init__(self):
         self.opt = None
         self.parser = argparse.ArgumentParser()
-        self.parser.add_argument("--dataset_name", type=str, default="forest",
-                                 choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
-                                          "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
-                                          "spambase", "usps"])
+        self.parser.add_argument("--dataset_name", type=str, default="shuttle",
+                                 choices=["forest", "iris", "mnist", "satimages",  "shuttle"])
+        self.parser.add_argument("--activation_function", type=str, default="leaky_ReLU",
+                                 choices=["leaky_ReLU", "ReLU", "sigmoid", "identity", "sigmoid"])
+        self.parser.add_argument("--inverse_activation_function", type=str, default="inverse_leaky_ReLU",
+                                 choices=["inverse_leaky_ReLU", "logit", "atanh"])
         self.parser.add_argument("--init_type", type=str, default="orthogonal",
                                  choices=["uniform_0_1", "uniform_1_1", "xavier", "relu", "orthogonal"])
         self.parser.add_argument("--number_of_tests", type=int, default=1)
-        self.parser.add_argument("--seed", type=bool, default=True)
+        self.parser.add_argument("--seed", type=bool, default=False)
+        self.parser.add_argument("--slope", type=float, default=0.2)
 
     def parse(self):
         self.opt = self.parser.parse_args()

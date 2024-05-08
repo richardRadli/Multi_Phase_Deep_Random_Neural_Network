@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from config.config import BWELMConfig
-from config.dataset_config import general_dataset_configs
+from config.dataset_config import bwelm_dataset_configs
 from first_phase import FirstPhase
 from nn.dataloader.npy_dataloader import NpyDataset
 from utils.utils import display_dataset_info, setup_logger
@@ -21,18 +21,18 @@ class BackwardELM:
         # Initialize paths and settings
         setup_logger()
         self.cfg = BWELMConfig().parse()
-        self.gen_ds_cfg = general_dataset_configs(self.cfg)
+        self.gen_ds_cfg = bwelm_dataset_configs(self.cfg)
         display_dataset_info(self.gen_ds_cfg)
 
         if self.cfg.seed:
             torch.manual_seed(42)
 
-        self.first_layer_input_nodes = self.gen_ds_cfg.get("num_features")
-        self.first_layer_hidden_nodes = 50
-        self.first_layer_output_nodes = self.gen_ds_cfg.get("num_classes")
+        self.input_nodes = self.gen_ds_cfg.get("num_features")
+        self.hidden_nodes = bwelm_dataset_configs(self.cfg).get("neurons")
+        self.sigma = bwelm_dataset_configs(self.cfg).get("sigma")
 
         # Load data
-        file_path = general_dataset_configs(self.cfg).get("cached_dataset_file")
+        file_path = bwelm_dataset_configs(self.cfg).get("cached_dataset_file")
         train_dataset = NpyDataset(file_path, operation="train")
         test_dataset = NpyDataset(file_path, operation="test")
         self.train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
@@ -47,9 +47,9 @@ class BackwardELM:
 
         :return: None
         """
-
-        init_layer = FirstPhase(n_input_nodes=self.first_layer_input_nodes,
-                                n_hidden_nodes=self.first_layer_hidden_nodes,
+        init_layer = FirstPhase(n_input_nodes=self.input_nodes,
+                                n_hidden_nodes=self.hidden_nodes,
+                                sigma=self.sigma,
                                 train_loader=self.train_loader,
                                 test_loader=self.test_loader)
         init_layer.main()

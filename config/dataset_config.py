@@ -3,7 +3,7 @@ import os
 
 from typing import Dict
 
-from config.const import FCNN_PATHS, DATASET_FILES_PATHS, MPDRNN_PATHS
+from config.const import BWELM_PATHS, DATASET_FILES_PATHS, FCNN_PATHS, MPDRNN_PATHS
 
 
 def general_dataset_configs(cfg) -> Dict:
@@ -57,7 +57,7 @@ def general_dataset_configs(cfg) -> Dict:
             "helm_neurons":
                 [50, 50, 51],
             "class_labels":
-                [],
+                ["Spruce", "Lodgepole-Pine", "Ponderosa-Pine", "Cottonwood", "Aspen", "Douglas-fir", "Krummholz"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
             "cached_dataset_file":
@@ -459,6 +459,157 @@ def general_dataset_configs(cfg) -> Dict:
             "path_to_results":
                 MPDRNN_PATHS.get_data_path("results_satimages")
         }
+    }
+
+    if dataset_type not in dataset_config:
+        raise ValueError(f'Invalid dataset name: {dataset_type}')
+
+    return dataset_config[dataset_type]
+
+
+def bwelm_dataset_configs(cfg) -> Dict:
+    dataset_type = cfg.dataset_name
+    dataset_config = {
+        "forest": {
+            "dataset_name":
+                "forest",
+            "num_train_data":
+                15120,
+            "num_test_data":
+                565892,
+            "num_features":
+                54,
+            "num_classes":
+                7,
+            "neurons":
+                2000,
+            "sigma":
+                0.5,
+            "class_labels":
+                ["Spruce", "Lodgepole-Pine", "Ponderosa-Pine", "Cottonwood", "Aspen", "Douglas-fir", "Krummholz"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npz"),
+            "path_to_cm":
+                BWELM_PATHS.get_data_path("cm_forest"),
+            "path_to_metrics":
+                BWELM_PATHS.get_data_path("metrics_forest"),
+            "path_to_results":
+                BWELM_PATHS.get_data_path("results_forest"),
+        },
+        "iris": {
+            "dataset_name":
+                "iris",
+            "num_train_data":
+                105,
+            "num_test_data":
+                45,
+            "num_features":
+                4,
+            "num_classes":
+                3,
+            "neurons":
+                11,
+            "sigma":
+                1e-3,
+            "class_labels":
+                ['iris-setosa', 'iris-versicolor', 'iris-virginica'],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npz"),
+            "path_to_cm":
+                BWELM_PATHS.get_data_path("cm_iris"),
+            "path_to_metrics":
+                BWELM_PATHS.get_data_path("metrics_iris"),
+            "path_to_results":
+                BWELM_PATHS.get_data_path("results_iris"),
+        },
+        "mnist": {
+            "dataset_name":
+                "mnist",
+            "num_train_data":
+                60000,
+            "num_test_data":
+                10000,
+            "num_features":
+                784,
+            "num_classes":
+                10,
+            "neurons":
+                100,
+            "sigma":
+                1e-3,
+            "class_labels":
+                ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
+            "path_to_cm":
+                BWELM_PATHS.get_data_path("cm_mnist"),
+            "path_to_metrics":
+                BWELM_PATHS.get_data_path("metrics_mnist"),
+            "path_to_results":
+                BWELM_PATHS.get_data_path("results_mnist"),
+        },
+        "satimages": {
+            "dataset_name":
+                "satimages",
+            "num_train_data":
+                4435,
+            "num_test_data":
+                2000,
+            "num_features":
+                36,
+            "num_classes":
+                6,
+            "neurons":
+                50,
+            "sigma":
+                1e-5,
+            "class_labels":
+                [0, 1, 2, 3, 4, 5],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npz"),
+            "path_to_cm":
+                BWELM_PATHS.get_data_path("cm_satimages"),
+            "path_to_metrics":
+                BWELM_PATHS.get_data_path("metrics_satimages"),
+            "path_to_results":
+                BWELM_PATHS.get_data_path("results_satimages")
+        },
+        "shuttle": {
+            "dataset_name":
+                "shuttle",
+            "num_train_data":
+                43500,
+            "num_test_data":
+                14500,
+            "num_features":
+                9,
+            "num_classes":
+                7,
+            "neurons":
+                40,
+            "sigma":
+                0.05,
+            "class_labels":
+                ["Rad Flow", "Fpv Close", "Fpv Open", "High", "Bypass", "Bpv Close", "Bpv Open"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "data.txt"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npz"),
+            "path_to_cm":
+                BWELM_PATHS.get_data_path("cm_shuttle"),
+            "path_to_metrics":
+                BWELM_PATHS.get_data_path("metrics_shuttle"),
+            "path_to_results":
+                BWELM_PATHS.get_data_path("results_shuttle"),
+        },
     }
 
     if dataset_type not in dataset_config:
