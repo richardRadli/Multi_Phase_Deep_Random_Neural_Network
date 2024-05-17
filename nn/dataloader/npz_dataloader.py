@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-class NpyDataset(Dataset):
+class NpzDataset(Dataset):
     def __init__(self, file_path, operation, transform=None):
         data = np.load(file_path, allow_pickle=True)
         self.transform = transform

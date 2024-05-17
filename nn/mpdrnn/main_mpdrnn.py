@@ -5,9 +5,9 @@ from torch.utils.data import DataLoader
 
 from additional_layers import AdditionalLayer
 from config.config import MPDRNNConfig
-from config.dataset_config import general_dataset_configs
+from config.dataset_config import elm_general_dataset_configs
 from inital_layer import InitialLayer
-from nn.dataloader.npy_dataloader import NpyDataset
+from nn.dataloader.npz_dataloader import NpzDataset
 from utils.utils import create_dir, display_dataset_info, setup_logger
 
 
@@ -22,7 +22,7 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         # Initialize paths and settings
         setup_logger()
         self.cfg = MPDRNNConfig().parse()
-        self.gen_ds_cfg = general_dataset_configs(self.cfg)
+        self.gen_ds_cfg = elm_general_dataset_configs(self.cfg)
         display_dataset_info(self.gen_ds_cfg)
 
         if self.cfg.method not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
@@ -39,9 +39,9 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         self.third_layer_hidden_nodes = self.get_num_of_neurons(self.method)[2]
 
         # Load data
-        file_path = general_dataset_configs(self.cfg).get("cached_dataset_file")
-        train_dataset = NpyDataset(file_path, operation="train")
-        test_dataset = NpyDataset(file_path, operation="test")
+        file_path = elm_general_dataset_configs(self.cfg).get("cached_dataset_file")
+        train_dataset = NpzDataset(file_path, operation="train")
+        test_dataset = NpzDataset(file_path, operation="test")
         self.train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
         self.test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
 

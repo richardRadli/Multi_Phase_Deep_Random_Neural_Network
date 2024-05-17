@@ -7,8 +7,8 @@ from sklearn.metrics import accuracy_score
 from typing import List, Tuple
 
 from config.config import HELMConfig
-from config.dataset_config import general_dataset_configs
-from nn.dataloader.npy_dataloader import NpyDataset
+from config.dataset_config import elm_general_dataset_configs
+from nn.dataloader.npz_dataloader import NpzDataset
 from utils.utils import measure_execution_time, setup_logger
 
 
@@ -16,11 +16,11 @@ class HELM:
     def __init__(self):
         setup_logger()
         helm_cfg = HELMConfig().parse()
-        gen_ds_cfg = general_dataset_configs(helm_cfg)
+        gen_ds_cfg = elm_general_dataset_configs(helm_cfg)
 
-        file_path = general_dataset_configs(helm_cfg).get("cached_dataset_file")
-        train_dataset = NpyDataset(file_path, operation="train")
-        test_dataset = NpyDataset(file_path, operation="test")
+        file_path = elm_general_dataset_configs(helm_cfg).get("cached_dataset_file")
+        train_dataset = NpzDataset(file_path, operation="train")
+        test_dataset = NpzDataset(file_path, operation="test")
         self.train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
         self.test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
 
@@ -140,7 +140,8 @@ class HELM:
         """
 
         # First layer RELM
-        h1 = np.hstack([self.train_loader.dataset.x, np.ones((self.train_loader.dataset.x.shape[0], 1)) * 0.1])
+        h1 = np.hstack([self.train_loader.dataset.x,
+                        np.ones((self.train_loader.dataset.x.shape[0], 1)) * 0.1])
         a1 = h1 @ self.random_weights_1
         a1, _ = self.min_max_scale(a1, "-1_1")
         beta1 = self.sparse_elm_autoencoder(a=a1, b=h1, lam=1e-3, itrs=50)

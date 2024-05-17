@@ -76,6 +76,26 @@ def create_dir(root_dir: str, method: str):
     return output_dir
 
 
+def create_save_dirs(timestamp, directory_path) -> str:
+    """
+    Creates and returns a directory path based on the provided network configuration.
+
+    Args:
+        cfg: Network configuration.
+        timestamp (str): The timestamp.
+        directory_path (str): The directory path.
+
+    Returns:
+        directory_to_create (str): The path of the created directory.
+    """
+
+    directory_to_create = (
+        os.path.join(directory_path, f"{timestamp}")
+    )
+    os.makedirs(directory_to_create, exist_ok=True)
+    return directory_to_create
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------------- P R E T T Y   P R I N T   R E S U L T S --------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------

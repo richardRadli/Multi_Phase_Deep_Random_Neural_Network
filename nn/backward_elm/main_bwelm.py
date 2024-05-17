@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from config.config import BWELMConfig
 from config.dataset_config import bwelm_dataset_configs
 from first_phase import FirstPhase
-from nn.dataloader.npy_dataloader import NpyDataset
+from nn.dataloader.npz_dataloader import NpzDataset
 from utils.utils import display_dataset_info, setup_logger
 
 
@@ -33,8 +33,8 @@ class BackwardELM:
 
         # Load data
         file_path = bwelm_dataset_configs(self.cfg).get("cached_dataset_file")
-        train_dataset = NpyDataset(file_path, operation="train")
-        test_dataset = NpyDataset(file_path, operation="test")
+        train_dataset = NpzDataset(file_path, operation="train")
+        test_dataset = NpzDataset(file_path, operation="test")
         self.train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
         self.test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
 

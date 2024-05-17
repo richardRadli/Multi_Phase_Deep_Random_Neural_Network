@@ -3,10 +3,11 @@ import os
 
 from typing import Dict
 
-from config.const import BWELM_PATHS, DATASET_FILES_PATHS, FCNN_PATHS, MPDRNN_PATHS
+from config.const import (BWELM_PATHS, ELM_DATASET_FILES_PATHS, FCNN_PATHS, MPDRNN_PATHS, ViTELM_PATHS,
+                          ViTELM_DATASET_FILES_PATHS)
 
 
-def general_dataset_configs(cfg) -> Dict:
+def elm_general_dataset_configs(cfg) -> Dict:
     dataset_type = cfg.dataset_name
     dataset_config = {
         "connect4": {
@@ -29,9 +30,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["x", "o", "b"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "connect4.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "connect4.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_connect4"),
             "path_to_metrics":
@@ -59,9 +60,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["Spruce", "Lodgepole-Pine", "Ponderosa-Pine", "Cottonwood", "Aspen", "Douglas-fir", "Krummholz"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_forest"),
             "path_to_metrics":
@@ -89,9 +90,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ['iris-setosa', 'iris-versicolor', 'iris-virginica'],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_iris"),
             "path_to_metrics":
@@ -119,9 +120,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 [],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "isolete.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "isolete.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_isolete"),
             "path_to_metrics":
@@ -150,9 +151,9 @@ def general_dataset_configs(cfg) -> Dict:
                 ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
                  'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "letter.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "letter.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_letter"),
             "path_to_metrics":
@@ -180,9 +181,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_mnist"),
             "path_to_metrics":
@@ -211,9 +212,9 @@ def general_dataset_configs(cfg) -> Dict:
                 ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt",
                  "Sneaker", "Bag", "Ankle boot"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
             "path_to_metrics":
@@ -241,9 +242,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["Musks", "Non musks"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "musk2.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "musk2.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_musk2"),
             "path_to_metrics":
@@ -271,9 +272,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "optdigits.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "optdigits.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_optdigits"),
             "path_to_metrics":
@@ -301,9 +302,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["text", "horiz. line", "graphic", "vert. line ", "picture"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "page_blocks.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "page_blocks.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_page_blocks"),
             "path_to_metrics":
@@ -331,9 +332,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["brickface", "sky", "foliage", "cement", "window", "path", "grass"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "segment.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "segment.npz"),
             "path_to_metrics":
                 MPDRNN_PATHS.get_data_path("metrics_segment"),
             "path_to_results":
@@ -359,9 +360,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["Rad Flow", "Fpv Close", "Fpv Open", "High", "Bypass", "Bpv Close", "Bpv Open"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_shuttle"),
             "path_to_metrics":
@@ -389,9 +390,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_spambase"),
             "path_to_metrics":
@@ -419,9 +420,9 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "usps.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "usps.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_usps"),
             "path_to_metrics":
@@ -449,15 +450,91 @@ def general_dataset_configs(cfg) -> Dict:
             "class_labels":
                 [],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npz"),
             "path_to_cm":
                 MPDRNN_PATHS.get_data_path("cm_satimages"),
             "path_to_metrics":
                 MPDRNN_PATHS.get_data_path("metrics_satimages"),
             "path_to_results":
                 MPDRNN_PATHS.get_data_path("results_satimages")
+        }
+    }
+
+    if dataset_type not in dataset_config:
+        raise ValueError(f'Invalid dataset name: {dataset_type}')
+
+    return dataset_config[dataset_type]
+
+
+def vitelm_general_dataset_config(cfg):
+    dataset_type = cfg.dataset_name
+    dataset_config = {
+        "cifar10": {
+            "dataset_name":
+                "cifar10",
+            "num_train_data":
+                50000,
+            "num_test_data":
+                10000,
+            "height":
+                32,
+            "width":
+                32,
+            "num_channels":
+                3,
+            "num_classes":
+                10,
+            "class_labels":
+                [],
+            "dataset_original_files":
+                ViTELM_DATASET_FILES_PATHS.get_data_path("original_files_dataset_path_cifar10"),
+            "path_to_cm":
+                ViTELM_PATHS.get_data_path("cm_cifar10"),
+            "path_to_metrics":
+                ViTELM_PATHS.get_data_path("metrics_cifar10"),
+            "path_to_results":
+                ViTELM_PATHS.get_data_path("results_cifar10"),
+            "ViT_saved_weights":
+                ViTELM_PATHS.get_data_path("ViT_weights_cifar10"),
+            "combined_model_saved_weights":
+                ViTELM_PATHS.get_data_path("combined_weights_cifar10"),
+            "logs":
+                ViTELM_PATHS.get_data_path("logs_cifar10"),
+        },
+        "mnist": {
+            "dataset_name":
+                "mnist",
+            "num_train_data":
+                60000,
+            "num_test_data":
+                10000,
+            "height":
+                28,
+            "width":
+                28,
+            "num_channels":
+                1,
+            "num_classes":
+                10,
+            "class_labels":
+                [],
+            "dataset_original_files":
+                ViTELM_DATASET_FILES_PATHS.get_data_path("original_files_dataset_path_mnist"),
+            "path_to_cm":
+                ViTELM_PATHS.get_data_path("cm_mnist"),
+            "path_to_metrics":
+                ViTELM_PATHS.get_data_path("metrics_mnist"),
+            "path_to_results":
+                ViTELM_PATHS.get_data_path("results_mnist"),
+
+            "ViT_saved_weights":
+                ViTELM_PATHS.get_data_path("ViT_weights_mnist"),
+            "combined_model_saved_weights":
+                ViTELM_PATHS.get_data_path("combined_weights_mist"),
+            "logs":
+                ViTELM_PATHS.get_data_path("logs_mnist")
         }
     }
 
@@ -488,9 +565,9 @@ def bwelm_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["Spruce", "Lodgepole-Pine", "Ponderosa-Pine", "Cottonwood", "Aspen", "Douglas-fir", "Krummholz"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npz"),
             "path_to_cm":
                 BWELM_PATHS.get_data_path("cm_forest"),
             "path_to_metrics":
@@ -516,9 +593,9 @@ def bwelm_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ['iris-setosa', 'iris-versicolor', 'iris-virginica'],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npz"),
             "path_to_cm":
                 BWELM_PATHS.get_data_path("cm_iris"),
             "path_to_metrics":
@@ -544,9 +621,9 @@ def bwelm_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
             "path_to_cm":
                 BWELM_PATHS.get_data_path("cm_mnist"),
             "path_to_metrics":
@@ -572,9 +649,9 @@ def bwelm_dataset_configs(cfg) -> Dict:
             "class_labels":
                 [0, 1, 2, 3, 4, 5],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npz"),
             "path_to_cm":
                 BWELM_PATHS.get_data_path("cm_satimages"),
             "path_to_metrics":
@@ -600,9 +677,9 @@ def bwelm_dataset_configs(cfg) -> Dict:
             "class_labels":
                 ["Rad Flow", "Fpv Close", "Fpv Open", "High", "Bypass", "Bpv Close", "Bpv Open"],
             "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "data.txt"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npz"),
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npz"),
             "path_to_cm":
                 BWELM_PATHS.get_data_path("cm_shuttle"),
             "path_to_metrics":

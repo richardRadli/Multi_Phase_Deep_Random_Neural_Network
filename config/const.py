@@ -17,7 +17,7 @@ class _Const(object):
             "PROJECT_ROOT":
                 "D:/research/ELM/storage",
             "DATASET_ROOT":
-                "D:/research/ELM/datasets"
+                "D:/research/ELM/datasets",
         }
     }
 
@@ -325,7 +325,39 @@ class BWELMPaths(_Const):
         return os.path.join(self.PROJECT_ROOT, self.dirs_dataset_paths.get(key, ""))
 
 
-class DatasetFilesPaths(_Const):
+class ViTELMPaths(_Const):
+    dirs_dataset_paths = {
+        "ViT_weights_cifar10":
+            "vitelm/data/ViT_weights/cifar10",
+        "ViT_weights_mnist":
+            "vitelm/data/ViT_weights/mnist",
+
+        "combined_weights_cifar10":
+            "vitelm/data/combined_weights/cifar10",
+        "combined_weights_mist":
+            "vitelm/data/combined_weights/mnist",
+
+        "logs_cifar10":
+            "vitelm/data/logs/cifar10",
+        "logs_mnist":
+            "vitelm/data/logs/mnist"
+    }
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------- I N I T -----------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super().__init__()
+        self.create_directories(self.dirs_dataset_paths, "PROJECT")
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def get_data_path(self, key):
+        return os.path.join(self.PROJECT_ROOT, self.dirs_dataset_paths.get(key, ""))
+
+
+class ELMDatasetFilesPaths(_Const):
     dirs_dataset_paths = {
         # Confusion matrices
         "dataset_path_connect4":
@@ -374,8 +406,32 @@ class DatasetFilesPaths(_Const):
         return os.path.join(self.DATASET_ROOT, self.dirs_dataset_paths.get(key, ""))
 
 
+class ViTELMDatasetFilesPaths(_Const):
+    dirs_dataset_paths = {
+        "original_files_dataset_path_cifar10":
+            "cifar10/original_files",
+        "original_files_dataset_path_mnist":
+            "mnist/original_files"
+    }
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------- I N I T -----------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super().__init__()
+        self.create_directories(self.dirs_dataset_paths, "DATASET")
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def get_data_path(self, key):
+        return os.path.join(self.DATASET_ROOT, self.dirs_dataset_paths.get(key, ""))
+
+
 CONST: _Const = _Const()
 BWELM_PATHS: BWELMPaths = BWELMPaths()
 FCNN_PATHS: FCNNPaths = FCNNPaths()
 MPDRNN_PATHS: MPDRNNPaths = MPDRNNPaths()
-DATASET_FILES_PATHS: DatasetFilesPaths = DatasetFilesPaths()
+ViTELM_PATHS: ViTELMPaths = ViTELMPaths()
+ELM_DATASET_FILES_PATHS: ELMDatasetFilesPaths = ELMDatasetFilesPaths()
+ViTELM_DATASET_FILES_PATHS: ViTELMDatasetFilesPaths = ViTELMDatasetFilesPaths()

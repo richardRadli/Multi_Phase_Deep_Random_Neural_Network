@@ -67,3 +67,25 @@ class MPDRNNConfig:
         self.opt = self.parser.parse_args()
 
         return self.opt
+
+
+class ViTELMConfig:
+    def __init__(self):
+        self.opt = None
+        self.parser = argparse.ArgumentParser()
+        self.parser.add_argument("--dataset_name", type=str, default="cifar10",
+                                 choices=["cifar10", "mnist"])
+        self.parser.add_argument("--activation_function", type=str, default="leaky_ReLU",
+                                 choices=["leaky_ReLU", "ReLU", "sigmoid", "identity", "sigmoid"])
+        self.parser.add_argument("--model_type", type=str, default="vitelm", choices=["vitelm", "vit"])
+        self.parser.add_argument("--batch_size", type=int, default=64)
+        self.parser.add_argument("--learning_rate", type=float, default=2e-5)
+        self.parser.add_argument("--seed", type=bool, default=False)
+        self.parser.add_argument("--train_set_size", type=float, default=0.8)
+        self.parser.add_argument("--epochs", type=int, default=1)
+        self.parser.add_argument("--load_weights", type=bool, default=False)
+
+    def parse(self):
+        self.opt = self.parser.parse_args()
+
+        return self.opt
