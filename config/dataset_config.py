@@ -487,13 +487,11 @@ def vitelm_general_dataset_config(cfg):
             "num_classes":
                 10,
             "class_labels":
-                [],
+                ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"],
             "dataset_original_files":
                 ViTELM_DATASET_FILES_PATHS.get_data_path("original_files_dataset_path_cifar10"),
             "path_to_cm":
                 ViTELM_PATHS.get_data_path("cm_cifar10"),
-            "path_to_metrics":
-                ViTELM_PATHS.get_data_path("metrics_cifar10"),
             "path_to_results":
                 ViTELM_PATHS.get_data_path("results_cifar10"),
             "ViT_saved_weights":
@@ -524,8 +522,6 @@ def vitelm_general_dataset_config(cfg):
                 ViTELM_DATASET_FILES_PATHS.get_data_path("original_files_dataset_path_mnist"),
             "path_to_cm":
                 ViTELM_PATHS.get_data_path("cm_mnist"),
-            "path_to_metrics":
-                ViTELM_PATHS.get_data_path("metrics_mnist"),
             "path_to_results":
                 ViTELM_PATHS.get_data_path("results_mnist"),
 

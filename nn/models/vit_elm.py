@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from torchvision.models import vit_b_16
+from torchvision.models import vit_b_16, vit_b_32, vit_l_16, vit_l_32
 
 
 class ELM(nn.Module):
@@ -21,7 +21,7 @@ class ELM(nn.Module):
                          requires_grad=False)
         )
 
-        self.activation = nn.ReLU()
+        self.activation = nn.LeakyReLU(negative_slope=0.2)
 
     def forward(self, x):
         hidden_layer = self.activation(x.matmul(self.alpha_weights))
@@ -31,23 +31,46 @@ class ELM(nn.Module):
     def fit(self, x, y):
         hidden_layer = self.activation(x.matmul(self.alpha_weights))
         pseudo_inverse_hidden_layer = torch.pinverse(hidden_layer)
-        self.beta_weights = nn.Parameter(pseudo_inverse_hidden_layer.matmul(y), requires_grad=False)
+        self.beta_weights.data = pseudo_inverse_hidden_layer.matmul(y)
 
 
 class ViTELM(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, vit_model_name, num_classes):
         super(ViTELM, self).__init__()
 
-        self.vit_model = vit_b_16(weights="DEFAULT")
-        self.vit_model.heads = nn.Identity()
-        self.elm_head = ELM(num_input_neurons=self.get_input_neurons(),
-                            num_hidden_neurons=self.get_input_neurons(),
-                            num_classes=num_classes)
+        self.vit_model = self.select_vit_model(vit_model_name)
+        self.vit_model.heads = nn.Sequential(
+            nn.Identity(),
+            ELM(num_input_neurons=self.get_input_neurons(),
+                num_hidden_neurons=self.get_input_neurons(),
+                num_classes=num_classes)
+        )
 
     def forward(self, x):
-        features = self.vit_model(x)
-        output = self.elm_head(features)
-        return output
+        return self.vit_model(x)
+
+    @staticmethod
+    def select_vit_model(vit_model: str):
+        """
+
+        Args:
+            vit_model: The name of the ViT model to use.
+
+        Returns:
+            The selected ViT model.
+        """
+
+        vit_model_dict = {
+            "vitb16":
+                vit_b_16(weights="DEFAULT"),
+            "vitb32":
+                vit_b_32(weights="DEFAULT"),
+            "vitl16":
+                vit_l_16(weights="DEFAULT"),
+            "vitl32":
+                vit_l_32(weights="DEFAULT"),
+        }
+        return vit_model_dict[vit_model]
 
     def get_input_neurons(self):
         layer = self.vit_model.encoder.ln
@@ -58,6 +81,4 @@ class ViTELM(nn.Module):
         return self.vit_model(x)
 
     def train_elm(self, x, y):
-        self.elm_head.fit(x, y)
-
-
+        self.vit_model.heads[1].fit(x, y)

@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from config.config import MPDRNNConfig
 from nn.models.elm import ELM
-from utils.utils import measure_execution_time, pretty_print_results
+from utils.utils import measure_execution_time, pretty_print_results_elm
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -132,7 +132,7 @@ class InitialLayer:
             cm = confusion_matrix(y_true_argmax, y_predicted_argmax)
             loss = mean_squared_error(y_true_argmax, y_predicted_argmax)
 
-            pretty_print_results(
+            pretty_print_results_elm(
                 acc=accuracy, precision=precision, recall=recall, fscore=fscore, loss=loss,
                 root_dir=self.directory_path.get("results"),
                 operation=operation, name=self.phase_name

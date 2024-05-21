@@ -77,10 +77,12 @@ class ViTELMConfig:
                                  choices=["cifar10", "mnist"])
         self.parser.add_argument("--activation_function", type=str, default="leaky_ReLU",
                                  choices=["leaky_ReLU", "ReLU", "sigmoid", "identity", "sigmoid"])
-        self.parser.add_argument("--model_type", type=str, default="vitelm", choices=["vitelm", "vit"])
+        self.parser.add_argument("--network_type", type=str, default="ViT", choices=["ViTELM", "ViT"])
+        self.parser.add_argument("--vit_model_name", type=str, default="vitb16",
+                                 choices=["vitb16", "vitb32, vitl16, vitl32"])
         self.parser.add_argument("--batch_size", type=int, default=64)
         self.parser.add_argument("--learning_rate", type=float, default=2e-5)
-        self.parser.add_argument("--seed", type=bool, default=False)
+        self.parser.add_argument("--seed", type=bool, default=True)
         self.parser.add_argument("--train_set_size", type=float, default=0.8)
         self.parser.add_argument("--epochs", type=int, default=1)
         self.parser.add_argument("--load_weights", type=bool, default=False)

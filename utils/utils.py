@@ -76,21 +76,23 @@ def create_dir(root_dir: str, method: str):
     return output_dir
 
 
-def create_save_dirs(timestamp, directory_path) -> str:
+def create_save_dirs(directory_path, timestamp, network_type, model_type) -> str:
     """
     Creates and returns a directory path based on the provided network configuration.
 
     Args:
-        cfg: Network configuration.
+
         timestamp (str): The timestamp.
         directory_path (str): The directory path.
+        network_type:
+        model_type:
 
     Returns:
         directory_to_create (str): The path of the created directory.
     """
 
     directory_to_create = (
-        os.path.join(directory_path, f"{timestamp}")
+        os.path.join(directory_path, f"{timestamp}_{network_type}_{model_type}")
     )
     os.makedirs(directory_to_create, exist_ok=True)
     return directory_to_create
@@ -99,7 +101,7 @@ def create_save_dirs(timestamp, directory_path) -> str:
 # ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------------- P R E T T Y   P R I N T   R E S U L T S --------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def pretty_print_results(acc, precision, recall, fscore, loss, root_dir: str, operation: str, name: str) \
+def pretty_print_results_elm(acc, precision, recall, fscore, loss, root_dir: str, operation: str, name: str) \
         -> None:
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
@@ -128,6 +130,39 @@ def pretty_print_results(acc, precision, recall, fscore, loss, root_dir: str, op
     lower_separator = "-" * 83
 
     logging.info("\n%s %s %s %s \n%s\n%s", upper_separator, name, operation, upper_separator, df, lower_separator)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------- P R E T T Y   P R I N T   R E S U L T S --------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+def pretty_print_results_vit(acc, precision, recall, fscore, root_dir: str) -> None:
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+
+    df = pd.DataFrame(
+        [
+            [
+                np.round(acc, 5), np.round(precision, 5), np.round(recall, 5), np.round(fscore, 5)
+            ]
+        ],
+        index=pd.Index(['Score']),
+        columns=pd.MultiIndex.from_product(
+            [
+                ['acc',
+                 'precision',
+                 'recall',
+                 'fscore'
+                 ]
+            ]
+        )
+    )
+
+    logging.info(df)
+
+    path_to_save = os.path.join(root_dir, f"results.txt")
+    df.to_csv(path_to_save, sep='\t', index=True)
 
 
 def measure_execution_time(func: Callable) -> Callable:
@@ -212,10 +247,16 @@ def display_dataset_info(gen_ds_cfg):
     logging.info(df)
 
 
+def display_config(cfg):
+    opt_dict = vars(cfg)
+    df = pd.DataFrame(list(opt_dict.items()), columns=['Argument', 'Value'])
+    logging.info(df)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
+def plot_confusion_matrix_elm(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
     fig, axis = plt.subplots(1, 3, figsize=(15, 5))
 
     for i, cm in enumerate(cm):
@@ -226,6 +267,24 @@ def plot_confusion_matrix(cm, path_to_plot, name_of_dataset: str, operation: str
         ax.set_ylabel('Actual')
 
     filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300)
+    plt.close()
+    gc.collect()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+def plot_confusion_matrix_vit(cm, path_to_plot, cfg, labels=None) -> None:
+    _, axis = plt.subplots(figsize=(10, 8))
+
+    sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=axis)
+    axis.set_title('%s, %s, %s' % (cfg.dataset_name, cfg.network_type, cfg.vit_model_name))
+    axis.set_xlabel('Predicted')
+    axis.set_ylabel('Actual')
+
+    filename = os.path.join(path_to_plot, f"confusion_matrix.png")
     plt.tight_layout()
     plt.savefig(filename, dpi=300)
     plt.close()

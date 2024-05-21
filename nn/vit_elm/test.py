@@ -1,51 +1,101 @@
+import cv2
 import logging
 import torch
 
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
 from config.config import ViTELMConfig
 from config.dataset_config import vitelm_general_dataset_config
-from nn.models.vit_elm import ViTELM
+from nn.models.model_selector import ModelFactory
 from nn.dataloader.vit_dataset_selector import create_dataset
-from utils.utils import use_gpu_if_available, setup_logger
+from utils.utils import (display_config, find_latest_file_in_latest_directory, setup_logger, use_gpu_if_available,
+                         pretty_print_results_vit, create_timestamp, create_save_dirs, plot_confusion_matrix_vit)
 
 
 class TestViTELM:
     def __init__(self):
-        torch.manual_seed(0)
+        timestamp = create_timestamp()
         setup_logger()
+        self.cfg = ViTELMConfig().parse()
+        display_config(self.cfg)
+        dataset_info = vitelm_general_dataset_config(self.cfg)
 
-        cfg = ViTELMConfig().parse()
-        dataset_info = vitelm_general_dataset_config(cfg)
+        self.num_classes = dataset_info.get("num_classes")
+        self.class_labels = dataset_info.get("class_labels")
         self.device = use_gpu_if_available()
-        self.combined_model = self.load_model()
+        self.model = self.load_model(dataset_info)
+
         test_dataset = create_dataset(train=False, dataset_info=dataset_info)
-        self.test_dataloader = DataLoader(test_dataset, batch_size=cfg.batch_size, shuffle=False)
+        self.test_dataloader = DataLoader(test_dataset, batch_size=self.cfg.batch_size, shuffle=False)
 
-    def load_model(self):
-        combined_model = ViTELM(10)
-        checkpoint = torch.load('C:/Users/ricsi/Desktop/combined_model.pth', map_location=self.device)
-        combined_model.vit_model.load_state_dict(checkpoint['vit_model_state_dict'])
-        combined_model.elm_head.alpha_weights.data = checkpoint['elm_alpha_weights']
-        combined_model.elm_head.beta_weights = checkpoint['elm_beta_weights']
-        return combined_model
+        self.save_results_path = (
+            create_save_dirs(
+                dataset_info.get("path_to_results"), timestamp, self.cfg.network_type, self.cfg.vit_model_name
+            )
+        )
 
-    def test_accuracy(self):
-        correct = 0
-        total = 0
+        self.cm_path = (
+            create_save_dirs(
+                dataset_info.get("path_to_cm"), timestamp, self.cfg.network_type, self.cfg.vit_model_name
+            )
+        )
+
+    def load_model(self, dataset_info):
+        model = ModelFactory.create_model(network_type=self.cfg.network_type,
+                                          vit_model_name=self.cfg.vit_model_name,
+                                          num_classes=self.num_classes,
+                                          device=self.device)
+
+        if self.cfg.network_type == "ViTELM":
+            latest_combined_model_path = (
+                find_latest_file_in_latest_directory(dataset_info.get("combined_model_saved_weights"))
+            )
+            checkpoint = torch.load(latest_combined_model_path, map_location=self.device)
+            model.vit_model.load_state_dict(checkpoint['vit_model_state_dict'])
+            model.elm_head.alpha_weights.data = checkpoint['elm_alpha_weights']
+            model.elm_head.beta_weights = checkpoint['elm_beta_weights']
+        else:
+            latest_model_path = find_latest_file_in_latest_directory(dataset_info.get("ViT_saved_weights"))
+            model.load_state_dict(torch.load(latest_model_path))
+
+        return model
+
+    def test_metrics(self):
+        all_labels = []
+        all_predictions = []
 
         with torch.no_grad():
-            for inputs, labels in tqdm(self.test_dataloader, total=len(self.test_dataloader), desc='Test'):
+            for inputs, labels in tqdm(self.test_dataloader,
+                                       total=len(self.test_dataloader),
+                                       desc=f'Evaluating {self.cfg.network_type} with {self.cfg.vit_model_name} model '
+                                            f'on the {self.cfg.dataset_name} dataset'):
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
-                outputs = self.combined_model(inputs)
+                outputs = self.model(inputs)
                 _, predicted = torch.max(outputs, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
 
-        logging.info(f'Accuracy of the combined model on the test images: {100 * correct / total} %')
+                all_labels.extend(labels.cpu().numpy())
+                all_predictions.extend(predicted.cpu().numpy())
+
+        accuracy = accuracy_score(all_labels, all_predictions)
+        precision, recall, fscore, _ = (
+            precision_recall_fscore_support(all_labels, all_predictions, average='macro')
+        )
+        cm = confusion_matrix(all_labels, all_predictions)
+
+        pretty_print_results_vit(acc=accuracy,
+                                 precision=precision,
+                                 recall=recall,
+                                 fscore=fscore,
+                                 root_dir=self.save_results_path)
+
+        plot_confusion_matrix_vit(cm, self.cm_path, labels=self.class_labels, cfg=self.cfg)
 
 
 if __name__ == '__main__':
-    test_vitelm = TestViTELM()
-    test_vitelm.test_accuracy()
+    try:
+        test_vitelm = TestViTELM()
+        test_vitelm.test_metrics()
+    except KeyboardInterrupt as kie:
+        logging.error(kie)
