@@ -85,7 +85,7 @@ class ViTELMConfig:
         self.parser.add_argument("--seed", type=bool, default=True)
         self.parser.add_argument("--train_set_size", type=float, default=0.8)
         self.parser.add_argument("--epochs", type=int, default=1)
-        self.parser.add_argument("--load_weights", type=bool, default=False)
+        self.parser.add_argument("--load_weights", type=bool, default=True)
 
     def parse(self):
         self.opt = self.parser.parse_args()

@@ -15,6 +15,7 @@ from typing import List, Tuple
 from config.config import ViTELMConfig
 from config.dataset_config import vitelm_general_dataset_config
 from nn.models.model_selector import ModelFactory
+from nn.models.vit_elm import ELM
 from nn.dataloader.vit_dataset_selector import create_dataset
 from utils.utils import (create_timestamp, create_save_dirs, use_gpu_if_available, setup_logger, display_config,
                          find_latest_file_in_latest_directory)
@@ -46,6 +47,7 @@ class ViTELMTrain:
         # Set up model
         self.model = ModelFactory.create_model(network_type=self.vitelm_cfg.network_type,
                                                vit_model_name=self.vitelm_cfg.vit_model_name,
+                                               num_neurons=768,
                                                num_classes=self.num_classes,
                                                device=self.device)
 
@@ -81,14 +83,14 @@ class ViTELMTrain:
             )
             self.writer = SummaryWriter(log_dir=save_path_logs)
 
-        if self.vitelm_cfg.network_type == "ViTELM":
-            self.save_path_combined_model_weights = (
-                create_save_dirs(directory_path=self.dataset_config.get("combined_model_saved_weights"),
-                                 timestamp=timestamp,
-                                 network_type=self.vitelm_cfg.network_type,
-                                 model_type=self.vitelm_cfg.vit_model_name
-                                 )
-            )
+        # if self.vitelm_cfg.network_type == "ViTELM":
+        self.save_path_combined_model_weights = (
+            create_save_dirs(directory_path=self.dataset_config.get("combined_model_saved_weights"),
+                             timestamp=timestamp,
+                             network_type=self.vitelm_cfg.network_type,
+                             model_type=self.vitelm_cfg.vit_model_name
+                             )
+        )
 
         self.best_valid_loss = float('inf')
         self.best_model_path = None
@@ -142,7 +144,7 @@ class ViTELMTrain:
         with torch.no_grad():
             for inputs, labels in tqdm(self.valid_loader,
                                        total=len(self.valid_loader),
-                                       desc=colorama.Fore.CYAN + f"Training {self.vitelm_cfg.network_type}, "
+                                       desc=colorama.Fore.CYAN + f"Validating {self.vitelm_cfg.network_type}, "
                                                                  f"with {self.vitelm_cfg.vit_model_name} model"):
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
@@ -168,10 +170,7 @@ class ViTELMTrain:
             if self.best_model_path is not None:
                 os.remove(self.best_model_path)
             self.best_model_path = os.path.join(self.save_path_vit_weights, "epoch_" + str(epoch) + ".pt")
-            if self.vitelm_cfg.network_type == "ViTELM":
-                torch.save(self.model.vit_model.state_dict(), self.best_model_path)
-            else:
-                torch.save(self.model.state_dict(), self.best_model_path)
+            torch.save(self.model.state_dict(), self.best_model_path)
             logging.info(f"New weights have been saved at epoch {epoch} with value of {valid_loss:.5f}")
         else:
             logging.warning(f"No new weights have been saved. Best valid loss was {self.best_valid_loss:.5f},\n "
@@ -191,13 +190,16 @@ class ViTELMTrain:
         """
 
         # Pre-allocate tensors for features and labels
-        num_input_neurons = self.model.get_input_neurons()
+        num_input_neurons = 768  # self.model.get_input_neurons()
         num_samples = len(self.train_dataset)
         all_features = torch.zeros((num_samples, num_input_neurons), device=self.device)
         all_labels = torch.zeros((num_samples, self.num_classes), device=self.device)
 
         # Extract features for ELM training
-        self.model.eval()
+        model = self.model
+        model.eval()
+        model.model.heads = nn.Sequential(nn.Identity())
+
         with torch.no_grad():
             start_idx = 0
             for inputs, labels in tqdm(self.train_loader,
@@ -205,7 +207,7 @@ class ViTELMTrain:
                                        desc=colorama.Fore.MAGENTA + "Extracting features"):
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 batch_size = inputs.size(0)
-                features = self.model.extract_vit_features(inputs)
+                features = model.forward(inputs)
                 end_idx = start_idx + batch_size
                 all_features[start_idx:end_idx] = features
                 all_labels[start_idx:end_idx] = \
@@ -231,11 +233,8 @@ class ViTELMTrain:
 
         logging.info("Training ELM")
         self.model.train_elm(all_features, all_labels)
-        torch.save({
-            'vit_model_state_dict': self.model.vit_model.state_dict(),
-            'elm_alpha_weights': self.model.elm_head.alpha_weights,
-            'elm_beta_weights': self.model.elm_head.beta_weights
-        }, os.path.join(self.save_path_combined_model_weights, "combined_model.pth"))
+        torch.save(self.model.state_dict(),
+                   os.path.join(self.save_path_combined_model_weights, "combined_model.pth"))
 
     def fit(self):
         """
@@ -270,18 +269,26 @@ class ViTELMTrain:
             latest_vit_weight_file = (
                 find_latest_file_in_latest_directory(self.dataset_config.get("ViT_saved_weights"))
             )
-            checkpoint = torch.load(latest_vit_weight_file, map_location=self.device)
-            self.model.load_state_dict(checkpoint)
-            # self.model = self.model.load_state_dict(torch.load(latest_vit_weight_file))
+            state_dict = torch.load(latest_vit_weight_file)
+            self.model.load_state_dict(state_dict)
 
-        if self.vitelm_cfg.network_type == "ViTELM":
+        # if self.vitelm_cfg.network_type == "ViTELM":
             # Collect features
-            all_features, all_labels = self.extract_features()
+        all_features, all_labels = self.extract_features()
 
-            # Train ELM classifier
-            self.train_elm(all_features, all_labels)
+        all_features = all_features.to("cpu")
+        all_labels = all_labels.to("cpu")
+
+        elm = ELM(768, 768, 10)
+        elm.fit(all_features, all_labels)
+
+        # Train ELM classifier
+        # self.train_elm(all_features, all_labels)
 
 
 if __name__ == "__main__":
-    vitelm_train = ViTELMTrain()
-    vitelm_train.fit()
+    try:
+        vitelm_train = ViTELMTrain()
+        vitelm_train.fit()
+    except KeyboardInterrupt as kie:
+        logging.error(kie)

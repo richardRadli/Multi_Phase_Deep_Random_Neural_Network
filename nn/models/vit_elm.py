@@ -13,17 +13,21 @@ class ELM(nn.Module):
         self.num_classes = num_classes
 
         self.alpha_weights = (
-            nn.Parameter(torch.randn(self.num_input_neurons, self.num_hidden_neurons),
-                         requires_grad=False)
+            nn.Parameter(
+                torch.randn(self.num_input_neurons, self.num_hidden_neurons),
+                requires_grad=False
+            )
         )
         self.beta_weights = (
-            nn.Parameter(torch.randn(self.num_hidden_neurons, self.num_classes),
-                         requires_grad=False)
+            nn.Parameter(
+                torch.randn(self.num_hidden_neurons, self.num_classes),
+                requires_grad=False
+            )
         )
 
         self.activation = nn.LeakyReLU(negative_slope=0.2)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         hidden_layer = self.activation(x.matmul(self.alpha_weights))
         output = hidden_layer.matmul(self.beta_weights)
         return output
@@ -35,15 +39,17 @@ class ELM(nn.Module):
 
 
 class ViTELM(nn.Module):
-    def __init__(self, vit_model_name, num_classes):
+    def __init__(self, vit_model_name, num_neurons, num_classes):
         super(ViTELM, self).__init__()
+
+        self.elm = ELM(num_input_neurons=num_neurons,
+                       num_hidden_neurons=num_neurons,
+                       num_classes=num_classes)
 
         self.vit_model = self.select_vit_model(vit_model_name)
         self.vit_model.heads = nn.Sequential(
             nn.Identity(),
-            ELM(num_input_neurons=self.get_input_neurons(),
-                num_hidden_neurons=self.get_input_neurons(),
-                num_classes=num_classes)
+            self.elm
         )
 
     def forward(self, x):
@@ -81,4 +87,4 @@ class ViTELM(nn.Module):
         return self.vit_model(x)
 
     def train_elm(self, x, y):
-        self.vit_model.heads[1].fit(x, y)
+        self.elm.fit(x, y)

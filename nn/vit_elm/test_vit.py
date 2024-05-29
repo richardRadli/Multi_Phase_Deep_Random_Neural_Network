@@ -1,4 +1,3 @@
-import cv2
 import logging
 import torch
 
@@ -45,6 +44,7 @@ class TestViTELM:
     def load_model(self, dataset_info):
         model = ModelFactory.create_model(network_type=self.cfg.network_type,
                                           vit_model_name=self.cfg.vit_model_name,
+                                          num_neurons=768,
                                           num_classes=self.num_classes,
                                           device=self.device)
 
@@ -53,9 +53,7 @@ class TestViTELM:
                 find_latest_file_in_latest_directory(dataset_info.get("combined_model_saved_weights"))
             )
             checkpoint = torch.load(latest_combined_model_path, map_location=self.device)
-            model.vit_model.load_state_dict(checkpoint['vit_model_state_dict'])
-            model.elm_head.alpha_weights.data = checkpoint['elm_alpha_weights']
-            model.elm_head.beta_weights = checkpoint['elm_beta_weights']
+            model.load_state_dict(checkpoint)
         else:
             latest_model_path = find_latest_file_in_latest_directory(dataset_info.get("ViT_saved_weights"))
             model.load_state_dict(torch.load(latest_model_path))

@@ -24,8 +24,8 @@ class ViTModelWrapper(BaseModel):
 
 
 class ViTELMModelWrapper(BaseModel):
-    def __init__(self, vit_model_name, num_classes):
-        self.model = ViTELM(vit_model_name, num_classes)
+    def __init__(self, vit_model_name, num_neurons, num_classes):
+        self.model = ViTELM(vit_model_name, num_neurons, num_classes)
 
     def forward(self, x):
         return self.model(x)
@@ -33,11 +33,11 @@ class ViTELMModelWrapper(BaseModel):
 
 class ModelFactory:
     @staticmethod
-    def create_model(network_type, vit_model_name, num_classes, device=None):
+    def create_model(network_type, vit_model_name, num_neurons, num_classes, device=None):
         if network_type == "ViT":
             model = ViTModelWrapper(vit_model_name, num_classes).model
         elif network_type == "ViTELM":
-            model = ViTELMModelWrapper(vit_model_name, num_classes).model
+            model = ViTELMModelWrapper(vit_model_name, num_neurons, num_classes).model
         else:
             raise ValueError(f"Network type {network_type} not supported")
 
