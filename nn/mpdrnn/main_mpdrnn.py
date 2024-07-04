@@ -135,6 +135,9 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
                                       directory_path=self.directories)
         third_layer.main()
 
+        total_training_time = sum(third_layer.metrics.get('train_exe_time')) * 1000
+        logging.info(f"Total training time: {total_training_time:.4f} milliseconds")
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------- __M A I N__ -----------------------------------------------------

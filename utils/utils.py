@@ -76,46 +76,39 @@ def create_dir(root_dir: str, method: str):
     return output_dir
 
 
-def create_save_dirs(directory_path, timestamp, network_type, model_type) -> str:
-    """
-    Creates and returns a directory path based on the provided network configuration.
-
-    Args:
-
-        timestamp (str): The timestamp.
-        directory_path (str): The directory path.
-        network_type:
-        model_type:
-
-    Returns:
-        directory_to_create (str): The path of the created directory.
-    """
-
-    directory_to_create = (
-        os.path.join(directory_path, f"{timestamp}_{network_type}_{model_type}")
-    )
-    os.makedirs(directory_to_create, exist_ok=True)
-    return directory_to_create
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------------- P R E T T Y   P R I N T   R E S U L T S --------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def pretty_print_results_elm(acc, precision, recall, fscore, loss, root_dir: str, operation: str, name: str) \
-        -> None:
+def pretty_print_results(acc, precision, recall, fscore, loss, root_dir: str, operation: str, name: str,
+                         exe_time=None) -> None:
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    df = pd.DataFrame([[
-        np.round(loss, 4), np.round(acc, 4), np.round(precision, 4), np.round(recall, 4), np.round(fscore, 4)]],
-        index=pd.Index(['Score']),
-        columns=pd.MultiIndex.from_product([['%s loss' % operation,
-                                             '%s acc' % operation,
-                                             '%s precision' % operation,
-                                             '%s recall' % operation,
-                                             '%s fscore' % operation]]))
+    columns = [
+        f"{operation} loss",
+        f"{operation} acc",
+        f"{operation} precision",
+        f"{operation} recall",
+        f"{operation} fscore",
+    ]
+
+    data = [
+        np.round(loss, 4),
+        np.round(acc, 4),
+        np.round(precision, 4),
+        np.round(recall, 4),
+        np.round(fscore, 4)
+    ]
+
+    if exe_time is not None:
+        columns.append(f"{operation} exe time")
+        data.append(np.round(exe_time, 4))
+
+    df = pd.DataFrame([data],
+                      index=pd.Index(['Score']),
+                      columns=pd.MultiIndex.from_product([columns]))
 
     path_to_save = os.path.join(root_dir, f"{operation}.txt")
     try:
@@ -130,39 +123,6 @@ def pretty_print_results_elm(acc, precision, recall, fscore, loss, root_dir: str
     lower_separator = "-" * 83
 
     logging.info("\n%s %s %s %s \n%s\n%s", upper_separator, name, operation, upper_separator, df, lower_separator)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# --------------------------------------- P R E T T Y   P R I N T   R E S U L T S --------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def pretty_print_results_vit(acc, precision, recall, fscore, root_dir: str) -> None:
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', None)
-    pd.set_option('display.max_colwidth', None)
-
-    df = pd.DataFrame(
-        [
-            [
-                np.round(acc, 5), np.round(precision, 5), np.round(recall, 5), np.round(fscore, 5)
-            ]
-        ],
-        index=pd.Index(['Score']),
-        columns=pd.MultiIndex.from_product(
-            [
-                ['acc',
-                 'precision',
-                 'recall',
-                 'fscore'
-                 ]
-            ]
-        )
-    )
-
-    logging.info(df)
-
-    path_to_save = os.path.join(root_dir, f"results.txt")
-    df.to_csv(path_to_save, sep='\t', index=True)
 
 
 def measure_execution_time(func: Callable) -> Callable:
@@ -192,33 +152,11 @@ def measure_execution_time(func: Callable) -> Callable:
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
-        execution_time = end_time - start_time
-        logging.info(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
-        return result, execution_time
-
-    return wrapper
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# ------------------------------------- M E A S U R E   E X E C U T I O N   T I M E ------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def measure_execution_time_fcnn(func):
-    """
-    Decorator to measure the execution time.
-
-    :param func:
-    :return:
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        logging.info(f"Execution time of {func.__name__}: {execution_time} seconds")
+        wrapper.execution_time = end_time - start_time
+        # logging.info(f"Execution time of {func.__name__}: {wrapper.execution_time:.4f} seconds")
         return result
 
+    wrapper.execution_time = None
     return wrapper
 
 
@@ -247,16 +185,10 @@ def display_dataset_info(gen_ds_cfg):
     logging.info(df)
 
 
-def display_config(cfg):
-    opt_dict = vars(cfg)
-    df = pd.DataFrame(list(opt_dict.items()), columns=['Argument', 'Value'])
-    logging.info(df)
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix_elm(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
+def plot_confusion_matrix(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
     fig, axis = plt.subplots(1, 3, figsize=(15, 5))
 
     for i, cm in enumerate(cm):
@@ -267,24 +199,6 @@ def plot_confusion_matrix_elm(cm, path_to_plot, name_of_dataset: str, operation:
         ax.set_ylabel('Actual')
 
     filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
-    gc.collect()
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix_vit(cm, path_to_plot, cfg, labels=None) -> None:
-    _, axis = plt.subplots(figsize=(10, 8))
-
-    sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=axis)
-    axis.set_title('%s, %s, %s' % (cfg.dataset_name, cfg.network_type, cfg.vit_model_name))
-    axis.set_xlabel('Predicted')
-    axis.set_ylabel('Actual')
-
-    filename = os.path.join(path_to_plot, f"confusion_matrix.png")
     plt.tight_layout()
     plt.savefig(filename, dpi=300)
     plt.close()
@@ -336,35 +250,3 @@ def use_gpu_if_available() -> torch.device:
         logging.info("Only CPU is available!")
 
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# ----------------------- F I N D   L A T E S T   F I L E   I N   L A T E S T   D I R E C T O R Y ----------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def find_latest_file_in_latest_directory(path: str) -> str:
-    """
-    Finds the latest file in the latest directory within the given path.
-
-    :param path: str, the path to the directory where we should look for the latest file
-    :return: str, the path to the latest file
-    :raise: when no directories or files found
-    """
-
-    dirs = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-
-    if not dirs:
-        raise ValueError(f"No directories found in {path}")
-
-    dirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    latest_dir = dirs[0]
-    files = [os.path.join(latest_dir, f) for f in os.listdir(latest_dir) if
-             os.path.isfile(os.path.join(latest_dir, f))]
-
-    if not files:
-        raise ValueError(f"No files found in {latest_dir}")
-
-    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    latest_file = files[0]
-    logging.info(f"The latest file is {latest_file}")
-
-    return latest_file

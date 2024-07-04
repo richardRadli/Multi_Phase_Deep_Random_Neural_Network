@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_f
 from tqdm import tqdm
 
 from nn.models.elm import ELM
-from utils.utils import measure_execution_time, pretty_print_results_elm, plot_confusion_matrix_elm, plot_metrics
+from utils.utils import measure_execution_time, pretty_print_results, plot_confusion_matrix, plot_metrics
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -126,12 +126,19 @@ class AdditionalLayer:
 
         keys = [f'{operation}_accuracy', f'{operation}_precision', f'{operation}_recall',
                 f'{operation}_fscore', f'{operation}_loss', f'{operation}_cm']
+        values = [accuracy, precision, recall, fscore, loss, cm]
 
-        for key, value in zip(keys, [accuracy, precision, recall, fscore, loss, cm]):
+        if operation == "train":
+            keys.append(f"{operation}_exe_time")
+            values.append(self.train.execution_time)
+
+        for key, value in zip(keys, values):
             if key in self.metrics:
                 if not isinstance(self.metrics[key], list):
                     self.metrics[key] = [self.metrics[key]]
                 self.metrics[key].append(value)
+            else:
+                self.metrics[key] = [value]
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------- P R E D I C T --------------------------------------------------
@@ -169,10 +176,16 @@ class AdditionalLayer:
             cm = confusion_matrix(y_true_argmax, y_predicted_argmax)
             loss = mean_squared_error(y_true_argmax, y_predicted_argmax)
 
-            pretty_print_results_elm(
-                acc=accuracy, precision=precision, recall=recall, fscore=fscore, loss=loss,
+            pretty_print_results(
+                acc=accuracy,
+                precision=precision,
+                recall=recall,
+                fscore=fscore,
+                loss=loss,
                 root_dir=self.directory_path.get("results"),
-                operation=operation, name=self.phase_name
+                operation=operation,
+                name=self.phase_name,
+                exe_time=self.train.execution_time if operation == "train" else None
             )
 
             self.collect_metrics(operation, accuracy, precision, recall, fscore, loss, cm)
@@ -187,19 +200,19 @@ class AdditionalLayer:
 
         """
 
-        plot_confusion_matrix_elm(cm=self.metrics.get(f"{operation}_cm"),
-                                  path_to_plot=self.directory_path.get("cm"),
-                                  name_of_dataset=self.config.dataset_name,
-                                  operation=operation,
-                                  method=self.config.method,
-                                  labels=self.gen_settings.get("class_labels"))
+        plot_confusion_matrix(cm=self.metrics.get(f"{operation}_cm"),
+                              path_to_plot=self.directory_path.get("cm"),
+                              name_of_dataset=self.config.dataset_name,
+                              operation=operation,
+                              method=self.config.method,
+                              labels=self.gen_settings.get("class_labels"))
 
         plot_metrics(train=self.metrics.get(f"train_accuracy"),
                      test=self.metrics.get(f"test_accuracy"),
                      metric_type="Accuracy",
                      path_to_plot=self.directory_path.get("metrics"),
                      name_of_dataset=self.config.dataset_name,
-                     method=self.config.method,)
+                     method=self.config.method, )
 
         plot_metrics(train=self.metrics.get(f"train_precision"),
                      test=self.metrics.get(f"test_precision"),

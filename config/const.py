@@ -14,23 +14,17 @@ class _Const(object):
     user = os.getlogin()
     root_mapping = {
         "ricsi": {
-            "PROJECT_ROOT_ELM":
+            "PROJECT_ROOT":
                 "D:/storage/ELM",
-            "DATASET_ROOT_ELM":
+            "DATASET_ROOT":
                 "D:/storage/ELM/datasets",
-            "PROJECT_ROOT_VIT":
-                "D:/storage/ViT",
-            "DATASET_ROOT_VIT":
-                "D:/storage/ViT/datasets",
         }
     }
 
     if user in root_mapping:
         root_info = root_mapping[user]
-        PROJECT_ROOT_ELM = root_info["PROJECT_ROOT_ELM"]
-        DATASET_ROOT_ELM = root_info["DATASET_ROOT_ELM"]
-        PROJECT_ROOT_VIT = root_info["PROJECT_ROOT_VIT"]
-        DATASET_ROOT_VIT = root_info["DATASET_ROOT_VIT"]
+        PROJECT_ROOT = root_info["PROJECT_ROOT"]
+        DATASET_ROOT = root_info["DATASET_ROOT"]
     else:
         raise ValueError("Wrong user!")
 
@@ -47,130 +41,16 @@ class _Const(object):
         """
 
         for _, path in dirs.items():
-            if root_type == "PROJECT_ELM":
-                dir_path = os.path.join(cls.PROJECT_ROOT_ELM, path)
-            elif root_type == "DATASET_ELM":
-                dir_path = os.path.join(cls.DATASET_ROOT_ELM, path)
-            elif root_type == "PROJECT_VIT":
-                dir_path = os.path.join(cls.PROJECT_ROOT_VIT, path)
-            elif root_type == "DATASET_VIT":
-                dir_path = os.path.join(cls.DATASET_ROOT_VIT, path)
+            if root_type == "PROJECT":
+                dir_path = os.path.join(cls.PROJECT_ROOT, path)
+            elif root_type == "DATASET":
+                dir_path = os.path.join(cls.DATASET_ROOT, path)
             else:
                 raise ValueError("Wrong root type!")
 
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
                 logging.info(f"Directory {dir_path} has been created")
-
-
-class FCNNPaths(_Const):
-    dirs_dataset_paths = {
-        # FCNN saved weights
-        "sw_connect4":
-            "fcnn/saved_weights_fcnn/connect4",
-        "sw_isolete":
-            "fcnn/saved_weights_fcnn/isolete",
-        "sw_letter":
-            "fcnn/saved_weights_fcnn/letter",
-        "sw_mnist":
-            "fcnn/saved_weights_fcnn/mnist",
-        "sw_mnist_fashion":
-            "fcnn/saved_weights_fcnn/mnist_fashion",
-        "sw_musk2":
-            "fcnn/saved_weights_fcnn/musk2",
-        "sw_optdigits":
-            "fcnn/saved_weights_fcnn/optdigits",
-        "sw_page_blocks":
-            "fcnn/saved_weights_fcnn/page_blocks",
-        "sw_segment":
-            "fcnn/saved_weights_fcnn/segment",
-        "sw_shuttle":
-            "fcnn/saved_weights_fcnn/shuttle",
-        "sw_spambase":
-            "fcnn/saved_weights_fcnn/spambase",
-        "sw_usps":
-            "fcnn/saved_weights_fcnn/usps",
-        "sw_iris":
-            "fcnn/saved_weights_fcnn/iris",
-        "sw_forest":
-            "fcnn/saved_weights_fcnn/forest",
-        "sw_satimages":
-            "fcnn/saved_weights_fcnn/satimages",
-
-        # FCNN logs
-        "logs_connect4":
-            "fcnn/logs_fcnn/connect4",
-        "logs_isolete":
-            "fcnn/logs_fcnn/isolete",
-        "logs_letter":
-            "fcnn/logs_fcnn/letter",
-        "logs_mnist":
-            "fcnn/logs_fcnn/mnist",
-        "logs_mnist_fashion":
-            "fcnn/logs_fcnn/mnist_fashion",
-        "logs_musk2":
-            "fcnn/logs_fcnn/musk2",
-        "logs_optdigits":
-            "fcnn/logs_fcnn/optdigits",
-        "logs_page_blocks":
-            "fcnn/logs_fcnn/page_blocks",
-        "logs_segment":
-            "fcnn/logs_fcnn/segment",
-        "logs_shuttle":
-            "fcnn/logs_fcnn/shuttle",
-        "logs_spambase":
-            "fcnn/logs_fcnn/spambase",
-        "logs_usps":
-            "fcnn/logs_fcnn/usps",
-        "logs_iris":
-            "fcnn/logs_fcnn/iris",
-        "logs_forest":
-            "fcnn/logs_fcnn/forest",
-        "logs_satimages":
-            "fcnn/logs_fcnn/satiamges",
-
-        "results_connect4":
-            "fcnn/results_fcnn/connect4",
-        "results_forest":
-            "fcnn/results_fcnn/forest",
-        "results_iris":
-            "fcnn/results_fcnn/iris",
-        "results_isolete":
-            "fcnn/results_fcnn/isolete",
-        "results_letter":
-            "fcnn/results_fcnn/letter",
-        "results_mnist":
-            "fcnn/results_fcnn/mnist",
-        "results_mnist_fashion":
-            "fcnn/results_fcnn/mnist_fashion",
-        "results_musk2":
-            "fcnn/results_fcnn/musk2",
-        "results_optdigits":
-            "fcnn/results_fcnn/optdigits",
-        "results_page_blocks":
-            "fcnn/results_fcnn/page_blocks",
-        "results_segment":
-            "fcnn/results_fcnn/segment",
-        "results_shuttle":
-            "fcnn/results_fcnn/shuttle",
-        "results_spambase":
-            "fcnn/results_fcnn/spambase",
-        "results_usps":
-            "fcnn/results_fcnn/usps",
-    }
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ---------------------------------------------------- I N I T -----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def __init__(self):
-        super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "PROJECT_ELM")
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def get_data_path(self, key):
-        return os.path.join(self.PROJECT_ROOT_ELM, self.dirs_dataset_paths.get(key, ""))
 
 
 class MPDRNNPaths(_Const):
@@ -275,64 +155,13 @@ class MPDRNNPaths(_Const):
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "PROJECT_ELM")
+        self.create_directories(self.dirs_dataset_paths, "PROJECT")
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def get_data_path(self, key):
-        return os.path.join(self.PROJECT_ROOT_ELM, self.dirs_dataset_paths.get(key, ""))
-
-
-class BWELMPaths(_Const):
-    dirs_dataset_paths = {
-        # Confusion matrices
-        "cm_mnist":
-            "bwelm/images/confusion_matrix/mnist",
-        "cm_shuttle":
-            "bwelm/images/confusion_matrix/shuttle",
-        "cm_iris":
-            "bwelm/images/confusion_matrix/iris",
-        "cm_forest":
-            "bwelm/images/confusion_matrix/forest",
-        "cm_satimages":
-            "bwelm/images/confusion_matrix/satimages",
-
-        "metrics_mnist":
-            "bwelm/images/metrics/mnist",
-        "metrics_shuttle":
-            "bwelm/images/metrics/shuttle",
-        "metrics_iris":
-            "bwelm/images/metrics/iris",
-        "metrics_forest":
-            "bwelm/images/metrics/forest",
-        "metrics_satimages":
-            "bwelm/images/metrics/satimages",
-
-        "results_mnist":
-            "bwelm/data/results/mnist",
-        "results_shuttle":
-            "bwelm/data/results/shuttle",
-        "results_iris":
-            "bwelm/data/results/iris",
-        "results_forest":
-            "bwelm/data/results/forest",
-        "results_satimages":
-            "bwelm/data/results/satimages"
-    }
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ---------------------------------------------------- I N I T -----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def __init__(self):
-        super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "PROJECT_ELM")
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def get_data_path(self, key):
-        return os.path.join(self.PROJECT_ROOT_ELM, self.dirs_dataset_paths.get(key, ""))
+        return os.path.join(self.PROJECT_ROOT, self.dirs_dataset_paths.get(key, ""))
 
 
 class ELMDatasetFilesPaths(_Const):
@@ -375,83 +204,16 @@ class ELMDatasetFilesPaths(_Const):
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "DATASET_ELM")
+        self.create_directories(self.dirs_dataset_paths, "DATASET")
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def get_data_path(self, key):
-        return os.path.join(self.DATASET_ROOT_ELM, self.dirs_dataset_paths.get(key, ""))
-
-
-class ViTELMPaths(_Const):
-    dirs_dataset_paths = {
-        "ViT_weights_cifar10":
-            "data/ViT_weights/cifar10",
-        "ViT_weights_mnist":
-            "data/ViT_weights/mnist",
-
-        "combined_weights_cifar10":
-            "data/combined_weights/cifar10",
-        "combined_weights_mist":
-            "data/combined_weights/mnist",
-
-        "logs_cifar10":
-            "data/logs/cifar10",
-        "logs_mnist":
-            "data/logs/mnist",
-
-        "results_cifar10":
-            "data/results/cifar10",
-        "results_mnist":
-            "data/results/mnist",
-
-        "cm_cifar10":
-            "images/confusion_matrix/cifar10",
-        "cm_mnist":
-            "images/confusion_matrix/mnist"
-    }
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ---------------------------------------------------- I N I T -----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def __init__(self):
-        super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "PROJECT_VIT")
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def get_data_path(self, key):
-        return os.path.join(self.PROJECT_ROOT_VIT, self.dirs_dataset_paths.get(key, ""))
-
-
-class ViTELMDatasetFilesPaths(_Const):
-    dirs_dataset_paths = {
-        "original_files_dataset_path_cifar10":
-            "cifar10/original_files",
-        "original_files_dataset_path_mnist":
-            "mnist/original_files"
-    }
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ---------------------------------------------------- I N I T -----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def __init__(self):
-        super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "DATASET_VIT")
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def get_data_path(self, key):
-        return os.path.join(self.DATASET_ROOT_VIT, self.dirs_dataset_paths.get(key, ""))
+        return os.path.join(self.DATASET_ROOT, self.dirs_dataset_paths.get(key, ""))
 
 
 CONST: _Const = _Const()
-BWELM_PATHS: BWELMPaths = BWELMPaths()
-FCNN_PATHS: FCNNPaths = FCNNPaths()
+
 MPDRNN_PATHS: MPDRNNPaths = MPDRNNPaths()
-ViTELM_PATHS: ViTELMPaths = ViTELMPaths()
 ELM_DATASET_FILES_PATHS: ELMDatasetFilesPaths = ELMDatasetFilesPaths()
-ViTELM_DATASET_FILES_PATHS: ViTELMDatasetFilesPaths = ViTELMDatasetFilesPaths()
