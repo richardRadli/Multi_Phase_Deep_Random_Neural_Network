@@ -1,7 +1,7 @@
 import logging
 import torch
 
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 
 from additional_layers import AdditionalLayer
 from config.config import MPDRNNConfig
@@ -33,19 +33,42 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
 
         self.method = self.cfg.method
         self.activation = self.cfg.activation
+
+        # Load data
+        file_path = elm_general_dataset_configs(self.cfg).get("cached_dataset_file")
+        self.train_loader, self.test_loader = (
+            self.create_datasets(file_path, subset_percentage=self.cfg.subset_percentage)
+        )
+
+        # Load neurons
         self.first_layer_input_nodes = self.gen_ds_cfg.get("num_features")
         self.first_layer_hidden_nodes = self.get_num_of_neurons(self.method)[0]
         self.second_layer_hidden_nodes = self.get_num_of_neurons(self.method)[1]
         self.third_layer_hidden_nodes = self.get_num_of_neurons(self.method)[2]
 
-        # Load data
-        file_path = elm_general_dataset_configs(self.cfg).get("cached_dataset_file")
-        train_dataset = NpzDataset(file_path, operation="train")
-        test_dataset = NpzDataset(file_path, operation="test")
-        self.train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
-        self.test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
-
         self.directories = self.generate_directories()
+
+    @staticmethod
+    def create_subset(dataset, percentage):
+        total_samples = len(dataset)
+        subset_size = int(total_samples * percentage)
+        indices = list(range(total_samples))
+
+        selected_indices = indices[:subset_size]
+        subset = Subset(dataset, selected_indices)
+
+        return subset
+
+    def create_datasets(self, file_path, subset_percentage=0.2):
+        full_train_dataset = NpzDataset(file_path, operation="train")
+        test_dataset = NpzDataset(file_path, operation="test")
+
+        train_dataset = self.create_subset(full_train_dataset, subset_percentage)
+
+        train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
+        test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
+
+        return train_loader, test_loader
 
     def generate_directories(self):
         directories_path = {}

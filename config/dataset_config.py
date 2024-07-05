@@ -310,6 +310,36 @@ def elm_general_dataset_configs(cfg) -> Dict:
             "path_to_results":
                 MPDRNN_PATHS.get_data_path("results_page_blocks"),
         },
+        "satimages": {
+            "dataset_name":
+                "satimages",
+            "num_train_data":
+                4435,
+            "num_test_data":
+                2000,
+            "num_features":
+                36,
+            "num_classes":
+                6,
+            "eq_neurons":
+                [1000, 1000, 1000],
+            "exp_neurons":
+                [100, 40, 10],
+            "helm_neurons":
+                [50, 50, 51],
+            "class_labels":
+                [],
+            "dataset_file":
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
+            "cached_dataset_file":
+                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npz"),
+            "path_to_cm":
+                MPDRNN_PATHS.get_data_path("cm_satimages"),
+            "path_to_metrics":
+                MPDRNN_PATHS.get_data_path("metrics_satimages"),
+            "path_to_results":
+                MPDRNN_PATHS.get_data_path("results_satimages")
+        },
         "segment": {
             "dataset_name":
                 "segment",
@@ -427,36 +457,6 @@ def elm_general_dataset_configs(cfg) -> Dict:
                 MPDRNN_PATHS.get_data_path("metrics_usps"),
             "path_to_results":
                 MPDRNN_PATHS.get_data_path("results_usps")
-        },
-        "satimages": {
-            "dataset_name":
-                "satimages",
-            "num_train_data":
-                4435,
-            "num_test_data":
-                2000,
-            "num_features":
-                36,
-            "num_classes":
-                6,
-            "eq_neurons":
-                [1000, 1000, 1000],
-            "exp_neurons":
-                [100, 40, 10],
-            "helm_neurons":
-                [50, 50, 51],
-            "class_labels":
-                [],
-            "dataset_file":
-                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(ELM_DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npz"),
-            "path_to_cm":
-                MPDRNN_PATHS.get_data_path("cm_satimages"),
-            "path_to_metrics":
-                MPDRNN_PATHS.get_data_path("metrics_satimages"),
-            "path_to_results":
-                MPDRNN_PATHS.get_data_path("results_satimages")
         }
     }
 

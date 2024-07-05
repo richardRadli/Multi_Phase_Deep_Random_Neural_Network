@@ -188,4 +188,4 @@ class InitialLayer:
 
         self.train()
         self.predict_and_evaluate(operation="train")
-        self.predict_and_evaluate(operation="test")
+        # self.predict_and_evaluate(operation="test")

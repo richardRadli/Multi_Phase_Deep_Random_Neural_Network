@@ -268,6 +268,6 @@ class AdditionalLayer:
     def main(self):
         self.train()
         self.predict_and_evaluate("train")
-        self.predict_and_evaluate("test")
-        if self.phase_name == "Phase 3":
-            self.plot_results("train")
+        # self.predict_and_evaluate("test")
+        # if self.phase_name == "Phase 3":
+        #     self.plot_results("train")
