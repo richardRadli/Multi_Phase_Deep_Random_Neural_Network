@@ -5,9 +5,9 @@ class MPDRNNConfig:
     def __init__(self):
         self.opt = None
         self.parser = argparse.ArgumentParser()
-        self.parser.add_argument("--dataset_name", type=str, default="connect4",
+        self.parser.add_argument("--dataset_name", type=str, default="iris",
                                  choices=["connect4", "forest", "iris", "isolete", "letter", "mnist", "mnist_fashion",
-                                          "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle",
+                                          "musk2", "optdigits", "page_blocks", "satimages", "shuttle",
                                           "spambase", "usps"])
         self.parser.add_argument("--method", type=str, default="BASE", choices=["BASE", "EXP_ORT", "EXP_ORT_C"])
         self.parser.add_argument("--activation", type=str, default="leaky_ReLU",

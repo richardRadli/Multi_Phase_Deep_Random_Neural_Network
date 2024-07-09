@@ -1,58 +1,18 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.utils.prune as prune
 
-from sklearn.metrics import accuracy_score
-from tqdm import tqdm
 from nn.dataloader.npz_dataloader import NpzDataset
 from torch.utils.data import DataLoader, Subset
 
 from config.config import MPDRNNConfig
 from config.dataset_config import elm_general_dataset_configs
+from nn.models.mdprnn_model import MultiPhaseDeepRandomizedNeuralNetwork
 from utils.utils import display_dataset_info, setup_logger
 
 
-class Model(nn.Module):
-    def __init__(self, num_data, num_features, hidden_nodes, output_nodes, activation_function):
-        super(Model, self).__init__()
-        self.activation_function = self.get_activation(activation_function)
-        self.alpha_weights = nn.Parameter(torch.randn(num_features, hidden_nodes), requires_grad=True)
-        self.beta_weights = nn.Parameter(torch.zeros(hidden_nodes, output_nodes), requires_grad=True)
-        self.h1 = nn.Parameter(torch.randn(num_data, hidden_nodes), requires_grad=True)
-
-    def forward(self, hidden_layer_1):
-        return hidden_layer_1 @ self.beta_weights
-
-    def train_first_layer(self, train_loader):
-        for train_x, train_y in tqdm(train_loader, total=len(train_loader), desc="Training"):
-            self.h1.data = self.activation_function(train_x @ self.alpha_weights)
-            self.beta_weights.data = torch.pinverse(self.h1).matmul(train_y)
-
-    def predict_and_evaluate(self, dataloader):
-        for _, y in tqdm(dataloader, total=len(dataloader), desc=f"Predicting"):
-            predictions = self.forward(self.h1)
-
-            y_predicted_argmax = torch.argmax(predictions, dim=-1)
-            y_true_argmax = torch.argmax(y, dim=-1)
-            accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
-
-        print(f"Accuracy: {accuracy}")
-
-    @staticmethod
-    def get_activation(activation):
-        activation_map = {
-            "sigmoid": nn.Sigmoid(),
-            "identity": nn.Identity(),
-            "ReLU": nn.ReLU(),
-            "leaky_ReLU": nn.LeakyReLU(negative_slope=0.2),
-            "tanh": nn.Tanh(),
-        }
-
-        return activation_map[activation]
-
-
-class MultiPhaseDeepRandomizedNeuralNetwork:
+class Experiment:
     # ------------------------------------------------------------------------------------------------------------------
     # -------------------------------------------------- __I N I T__ ---------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -92,27 +52,58 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         }
         return num_neurons[method]
 
-    @staticmethod
-    def create_subset(dataset, percentage):
-        total_samples = len(dataset)
-        subset_size = int(total_samples * percentage)
-        indices = list(range(total_samples))
+    # @staticmethod
+    # def create_subset_percentage(dataset, percentage):
+    #     total_samples = len(dataset)
+    #     subset_size = int(total_samples * percentage)
+    #     indices = list(range(total_samples))
+    #
+    #     selected_indices = indices[:subset_size]
+    #     subset = Subset(dataset, selected_indices)
+    #
+    #     return subset
 
-        selected_indices = indices[:subset_size]
-        subset = Subset(dataset, selected_indices)
+    @staticmethod
+    def create_subsets(dataset, num_splits):
+        total_samples = len(dataset)
+        indices = list(range(total_samples))
+        split_size = total_samples // num_splits
+
+        subset = []
+        for i in range(num_splits):
+            start_idx = i * split_size
+            if i == num_splits - 1:
+                end_idx = total_samples
+            else:
+                end_idx = (i+1) * split_size
+            subset_indices = indices[start_idx:end_idx]
+            subset.append(Subset(dataset, subset_indices))
 
         return subset
+
+    # def create_datasets_split(self, file_path, subset_percentage):
+    #     full_train_dataset = NpzDataset(file_path, operation="train")
+    #     test_dataset = NpzDataset(file_path, operation="test")
+    #
+    #     train_dataset = self.create_subset(full_train_dataset, subset_percentage)
+    #
+    #     train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
+    #     test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
+    #
+    #     return train_loader, test_loader
 
     def create_datasets(self, file_path, subset_percentage):
         full_train_dataset = NpzDataset(file_path, operation="train")
         test_dataset = NpzDataset(file_path, operation="test")
 
-        train_dataset = self.create_subset(full_train_dataset, subset_percentage)
+        num_splits = 5
+        train_subsets = self.create_subsets(full_train_dataset, num_splits)
 
-        train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
+        # Create data loaders for each subset
+        train_loaders = [DataLoader(dataset=subset, batch_size=len(subset), shuffle=False) for subset in train_subsets]
         test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
 
-        return train_loader, test_loader
+        return train_loaders, test_loader
 
     @staticmethod
     def replace_zeros_with_random(module, param_name):
@@ -122,39 +113,142 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         param.data[mask] = random_values
 
     @staticmethod
-    def check_for_zeros(parameters):
-        for module, param_name in parameters:
-            param = getattr(module, param_name)
-            if torch.any(param == 0):
-                print(f"Parameter {param_name} in module {module} contains zeros.")
-            else:
-                print(f"Parameter {param_name} in module {module} does not contain any zeros.")
+    def check_for_zeros(module, param_name):
+        param = getattr(module, param_name)
+        if torch.any(param == 0):
+            print(f"Parameter {param_name} in module {module} contains zeros.")
+        else:
+            print(f"Parameter {param_name} in module {module} does not contain any zeros.")
 
-    def main(self):
-        model = Model(num_data=self.first_layer_num_data,
-                      num_features=self.first_layer_input_nodes,
-                      hidden_nodes=self.first_layer_hidden_nodes,
-                      output_nodes=self.first_layer_output_nodes,
-                      activation_function="leaky_ReLU")
+    @staticmethod
+    def visualize_weights(pruned_weights, title):
+        plt.figure(figsize=(12, 6))
+        plt.subplot(1, 2, 1)
+        plt.hist(pruned_weights.flatten(), bins=50, color='blue', alpha=0.7)
+        plt.title(f'Histogram of Alpha Weights {title} pruning')
+        plt.xlabel('Weight Values')
+        plt.ylabel('Frequency')
+        plt.tight_layout()
+        plt.show()
 
+    def main_subsets(self):
+        model = MultiPhaseDeepRandomizedNeuralNetwork(num_data=self.first_layer_num_data,
+                                                      num_features=self.first_layer_input_nodes,
+                                                      hidden_nodes=self.first_layer_hidden_nodes,
+                                                      output_nodes=self.first_layer_output_nodes,
+                                                      activation_function="leaky_ReLU")
+
+        alpha_weights_list = []
+
+        for train_loader in self.train_loader:
+            weights = model.alpha_weights.detach().numpy()
+            self.visualize_weights(weights, "before")
+
+            file_path = elm_general_dataset_configs(self.cfg).get("cached_dataset_file")
+            train_loader, test_loader = self.create_datasets_full(file_path)
+
+            model.train_first_layer(train_loader)
+            model.predict_and_evaluate(train_loader, "train")
+            model.predict_and_evaluate(test_loader, "test")
+
+            model.prune_alpha_weights(0.2)
+
+            pruned_alpha_weights = model.alpha_weights.detach().numpy()
+            self.visualize_weights(pruned_alpha_weights, "after")
+
+            # prune.l1_unstructured(model, name="alpha_weights", amount=0.2)
+            # prune.remove(model, name="alpha_weights")
+
+            model.train_first_layer(train_loader)
+            model.predict_and_evaluate(train_loader, "train")
+            model.predict_and_evaluate(test_loader, "test")
+
+            model.alpha_weights = (
+                nn.Parameter(torch.randn(self.first_layer_input_nodes, self.first_layer_hidden_nodes),
+                             requires_grad=True)
+            )
+            new_alpha_weights = model.alpha_weights.detach().numpy()
+
+            subs_percentage = 0.2
+            least_imp_old, most_imp_old = self.find_weights_importance(pruned_alpha_weights, subs_percentage)
+            least_imp_new, most_imp_new = self.find_weights_importance(new_alpha_weights, subs_percentage)
+            substituted_weights = self.substitute_weights(pruned_alpha_weights, new_alpha_weights, least_imp_old,
+                                                          most_imp_new)
+
+            model.alpha_weights = nn.Parameter(torch.from_numpy(substituted_weights))
+            model.train_first_layer(train_loader)
+            model.predict_and_evaluate(train_loader, "train")
+            model.predict_and_evaluate(test_loader, "test")
+
+            weights = model.alpha_weights.detach().numpy()
+            self.visualize_weights(weights, "after2")
+
+    @staticmethod
+    def create_datasets_full(file_path):
+        train_dataset = NpzDataset(file_path, operation="train")
+        test_dataset = NpzDataset(file_path, operation="test")
+
+        train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
+        test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
+
+        return train_loader, test_loader
+
+    def main_full_sets(self):
+        # Load data
         file_path = elm_general_dataset_configs(self.cfg).get("cached_dataset_file")
-        train_loader, test_loader = self.create_datasets(file_path, self.cfg.subset_percentage)
+        train_loader, test_loader = self.create_datasets_full(file_path)
+
+        # Create model
+        model = MultiPhaseDeepRandomizedNeuralNetwork(num_data=self.first_layer_num_data,
+                                                      num_features=self.first_layer_input_nodes,
+                                                      hidden_nodes=self.first_layer_hidden_nodes,
+                                                      output_nodes=self.first_layer_output_nodes,
+                                                      activation_function="leaky_ReLU")
+
+        # Visualize original alpha weights
+        alpha_weights = model.alpha_weights.detach().numpy()
+        self.visualize_weights(alpha_weights, "before")
+
+        # Train and evaluate the model
+        model.train_first_layer(train_loader)
+        model.predict_and_evaluate(train_loader, "train")
+        model.predict_and_evaluate(test_loader, "test")
+
+        # Pruning
+        most_important_prune_indies, least_important_prune_indies = model.pruning(pruning_percentage=0.2)
+        model.alpha_weights.data[:, least_important_prune_indies] = 0
+        best_weights = model.alpha_weights.data[:, most_important_prune_indies]
+
+        # Visualize pruned alpha weights
+        pruned_alpha_weights = model.alpha_weights.detach().numpy()
+        self.visualize_weights(pruned_alpha_weights, "after")
+
+        # Train and evaluate network again with pruned weights
+        model.train_first_layer(train_loader)
+        model.predict_and_evaluate(train_loader, "train")
+        model.predict_and_evaluate(test_loader, "test")
+
+        # Generate new alpha weights
+        model.alpha_weights = (
+            nn.Parameter(torch.randn(self.first_layer_input_nodes, self.first_layer_hidden_nodes), requires_grad=True)
+        )
+
+        # Visualize new alpha weights
+        new_alpha_weights = model.alpha_weights.detach().numpy()
+        self.visualize_weights(new_alpha_weights, "new alpha")
+
+        _, least_important_prune_indies = model.pruning(pruning_percentage=0.2)
+
+        model.alpha_weights.data[:, least_important_prune_indies] = best_weights
 
         model.train_first_layer(train_loader)
-        model.predict_and_evaluate(train_loader)
+        model.predict_and_evaluate(train_loader, "train")
+        model.predict_and_evaluate(test_loader, "test")
 
-        # Prune the parameters by magnitude
-        prune.l1_unstructured(model, name="alpha_weights", amount=0.2)
-
-        # Remove the pruning re-parameterization to make it permanent
-        prune.remove(model, name="alpha_weights")
-
-        self.replace_zeros_with_random(model, "alpha_weights")
-
-        model.train_first_layer(train_loader)
-        model.predict_and_evaluate(train_loader)
+        weights = model.alpha_weights.detach().numpy()
+        self.visualize_weights(weights, "substitute")
 
 
 if __name__ == "__main__":
-    mpdrnn = MultiPhaseDeepRandomizedNeuralNetwork()
-    mpdrnn.main()
+    mpdrnn = Experiment()
+    mpdrnn.main_full_sets()
