@@ -1,0 +1,30 @@
+{
+  "dataset_name": {
+    "value": "connect4",
+    "hint": "'connect4', 'forest', 'iris', 'isolete', 'letter', 'musk2', 'optdigits', 'page_blocks', 'satimages', 'shuttle', 'spambase', 'usps'"
+  },
+  "method": {
+    "value": "BASE",
+    "hint": "'BASE', 'EXP_ORT', 'EXP_ORT_C'"
+  },
+  "activation": {
+    "value": "leaky_ReLU",
+    "hint": "'ReLU', 'leaky_ReLU', 'tanh', 'sigmoid', 'identity'"
+  },
+  "number_of_tests": {
+    "value": 50,
+    "hint": "Number of tests to be performed."
+  },
+  "seed": {
+    "value": "True",
+    "hint": "Controls the way to generate random values. If set True, in every execution the same values will be generated."
+  },
+  "subset_percentage": {
+    "value": 0.2,
+    "hint": "Percentage size of the subset of the full dataset."
+  },
+  "pruning_method": {
+    "value": "max_rank",
+    "hint": "'max_rank', 'sum_weight'"
+  }
+}

@@ -1,8 +1,11 @@
+import json
+
 import colorlog
 import gc
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
+import openpyxl
 import os
 import pandas as pd
 import seaborn as sns
@@ -250,3 +253,56 @@ def use_gpu_if_available() -> torch.device:
         logging.info("Only CPU is available!")
 
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def insert_data_to_excel(filename, dataset_name, row, data):
+    try:
+        workbook = openpyxl.load_workbook(filename)
+    except FileNotFoundError:
+        workbook = openpyxl.Workbook()
+
+    if dataset_name not in workbook.sheetnames:
+        workbook.create_sheet(dataset_name)
+
+    sheet = workbook[dataset_name]
+
+    values = ["train acc 1", "test acc 1",
+              "train acc 2", "test acc 2",
+              "train acc 3", "test acc 3",
+              "train acc 4", "test acc 4"]
+    for col, value in enumerate(values, start=1):
+        sheet.cell(row=1, column=col, value=value)
+
+    for col, value in enumerate(data[0], start=1):
+        sheet.cell(row=row, column=col, value=str(value))
+
+    workbook.save(filename)
+
+
+def average_columns_in_excel(filename: str):
+    excel_file = pd.ExcelFile(filename)
+
+    results = {}
+
+    for sheet_name in excel_file.sheet_names:
+        df = pd.read_excel(filename, sheet_name=sheet_name)
+        column_averages = df.mean(numeric_only=True)
+        results[sheet_name] = column_averages
+
+    workbook = openpyxl.load_workbook(filename)
+
+    for sheet_name, avg in results.items():
+        sheet = workbook[sheet_name]
+        first_empty_row = sheet.max_row + 1
+
+        for col_num, (col_name, value) in enumerate(avg.items(), start=1):
+            sheet.cell(row=first_empty_row, column=col_num, value=value)
+
+    workbook.save(filename)
+
+
+def load_config_json(json_filename: str):
+    with open(json_filename, "r") as f:
+        config = json.load(f)
+
+    return config
