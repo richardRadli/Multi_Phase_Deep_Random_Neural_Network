@@ -1,7 +1,7 @@
-import json
-
 import colorlog
 import gc
+import json
+import jsonschema
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,6 +14,7 @@ import torch
 
 from datetime import datetime
 from functools import wraps
+from jsonschema import validate
 from typing import Any, Callable
 
 
@@ -181,13 +182,6 @@ def calc_exp_neurons(total_neurons: int, n_layers: int):
     return sorted(neurons_per_layer, reverse=True)
 
 
-def display_dataset_info(gen_ds_cfg):
-    df = pd.DataFrame.from_dict(gen_ds_cfg, orient='index')
-    df = df.drop("cached_dataset_file", axis=0)
-    df = df.drop("path_to_cm", axis=0)
-    logging.info(df)
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
@@ -266,15 +260,19 @@ def insert_data_to_excel(filename, dataset_name, row, data):
 
     sheet = workbook[dataset_name]
 
-    values = ["train acc 1", "test acc 1",
-              "train acc 2", "test acc 2",
-              "train acc 3", "test acc 3",
-              "train acc 4", "test acc 4"]
+    values = ["train acc initial model", "test acc initial model",
+              "train acc initial model after pruning", "test acc initial model after pruning",
+              "train acc initial model after substitute 1", "test acc initial model after substitute 1",
+              "train acc initial model after substitute 2", "test acc initial model after substitute 2"]
+
     for col, value in enumerate(values, start=1):
         sheet.cell(row=1, column=col, value=value)
 
     for col, value in enumerate(data[0], start=1):
         sheet.cell(row=row, column=col, value=str(value))
+
+    if "Sheet" in workbook.sheetnames:
+        del workbook['Sheet']
 
     workbook.save(filename)
 
@@ -301,8 +299,37 @@ def average_columns_in_excel(filename: str):
     workbook.save(filename)
 
 
-def load_config_json(json_filename: str):
-    with open(json_filename, "r") as f:
-        config = json.load(f)
+def load_config_json(json_schema_filename: str, json_filename: str):
+    with open(json_schema_filename, "r") as schema_file:
+        schema = json.load(schema_file)
 
-    return config
+    with open(json_filename, "r") as config_file:
+        config = json.load(config_file)
+
+    try:
+        validate(config, schema)
+        logging.info("JSON data is valid.")
+        return config
+    except jsonschema.exceptions.ValidationError as err:
+        logging.error(f"JSON data is invalid: {err}")
+
+
+def find_latest_file_in_latest_directory(path: str) -> str:
+    dirs = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+
+    if not dirs:
+        raise ValueError(f"No directories found in {path}")
+
+    dirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    latest_dir = dirs[0]
+    files = [os.path.join(latest_dir, f) for f in os.listdir(latest_dir) if
+             os.path.isfile(os.path.join(latest_dir, f))]
+
+    if not files:
+        raise ValueError(f"No files found in {latest_dir}")
+
+    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    latest_file = files[0]
+    logging.info(f"Latest file found: {latest_file}")
+
+    return latest_file

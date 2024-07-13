@@ -18,13 +18,5 @@
   "seed": {
     "value": "True",
     "hint": "Controls the way to generate random values. If set True, in every execution the same values will be generated."
-  },
-  "subset_percentage": {
-    "value": 0.2,
-    "hint": "Percentage size of the subset of the full dataset."
-  },
-  "pruning_method": {
-    "value": "max_rank",
-    "hint": "'max_rank', 'sum_weight'"
   }
 }

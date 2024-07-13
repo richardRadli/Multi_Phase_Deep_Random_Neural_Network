@@ -5,9 +5,9 @@ from torch.utils.data import DataLoader, Subset
 
 from additional_layers import AdditionalLayer
 from config.config import MPDRNNConfig
-from config.dataset_config import elm_general_dataset_configs
+from config.dataset_config import general_dataset_configs
 from inital_layer import InitialLayer
-from nn.dataloader.npz_dataloader import NpzDataset
+from nn.dataloaders.npz_dataloader import NpzDataset
 from utils.utils import create_dir, display_dataset_info, setup_logger
 
 
@@ -22,7 +22,7 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         # Initialize paths and settings
         setup_logger()
         self.cfg = MPDRNNConfig().parse()
-        self.gen_ds_cfg = elm_general_dataset_configs(self.cfg)
+        self.gen_ds_cfg = general_dataset_configs(self.cfg)
         display_dataset_info(self.gen_ds_cfg)
 
         if self.cfg.method not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
@@ -35,7 +35,7 @@ class MultiPhaseDeepRandomizedNeuralNetwork:
         self.activation = self.cfg.activation
 
         # Load data
-        file_path = elm_general_dataset_configs(self.cfg).get("cached_dataset_file")
+        file_path = general_dataset_configs(self.cfg).get("cached_dataset_file")
         self.train_loader, self.test_loader = (
             self.create_datasets(file_path, subset_percentage=self.cfg.subset_percentage)
         )

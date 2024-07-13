@@ -5,7 +5,7 @@ from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 from sklearn.model_selection import train_test_split
 
-from config.dataset_config import elm_general_dataset_configs
+from config.dataset_config import general_dataset_configs
 from config.config import MPDRNNConfig
 from utils.utils import setup_logger
 
@@ -30,9 +30,9 @@ def main():
     cfg = MPDRNNConfig().parse()
     setup_logger()
 
-    path_to_dataset = elm_general_dataset_configs(cfg).get("dataset_file")
-    num_data = elm_general_dataset_configs(cfg).get("num_train_data") + elm_general_dataset_configs(cfg).get("num_test_data")
-    num_features = elm_general_dataset_configs(cfg).get("num_features")
+    path_to_dataset = general_dataset_configs(cfg).get("dataset_file")
+    num_data = general_dataset_configs(cfg).get("num_train_data") + general_dataset_configs(cfg).get("num_test_data")
+    num_features = general_dataset_configs(cfg).get("num_features")
 
     try:
         with open(path_to_dataset, "r") as file:
@@ -74,12 +74,12 @@ def main():
             train_test_split(
                 normalized_features,
                 encoded_labels,
-                test_size=elm_general_dataset_configs(cfg).get("num_test_data"),
+                test_size=general_dataset_configs(cfg).get("num_test_data"),
                 random_state=42
             )
         )
 
-        file_save_name = elm_general_dataset_configs(cfg).get("cached_dataset_file")
+        file_save_name = general_dataset_configs(cfg).get("cached_dataset_file")
         np.savez(file_save_name,
                  train_x=train_x,
                  test_x=test_x,
