@@ -1,7 +1,7 @@
 {
-  "dataset_name": "connect4",
-  "patience": 5,
-  "valid_size": 0.15,
+  "dataset_name": "isolete",
+  "patience": 15,
+  "valid_size": 0.2,
   "number_of_tests": 50,
   "seed": true,
   "learning_rate": 2e-4,

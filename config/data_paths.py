@@ -366,7 +366,32 @@ class FCNNPaths(_Const):
         "results_spambase":
             "fcnn_data/results_fcnn/spambase",
         "results_usps":
-            "fcnn_data/results_fcnn/usps"
+            "fcnn_data/results_fcnn/usps",
+
+        "hyperparam_tuning_connect4":
+            "fcnn_data/hyperparam_tuning/connect4",
+        "hyperparam_tuning_isolete":
+            "fcnn_data/hyperparam_tuning/isolete",
+        "hyperparam_tuning_letter":
+            "fcnn_data/hyperparam_tuning/letter",
+        "hyperparam_tuning_mnist":
+            "fcnn_data/hyperparam_tuning/mnist",
+        "hyperparam_tuning_mnist_fashion":
+            "fcnn_data/hyperparam_tuning/mnist_fashion",
+        "hyperparam_tuning_musk2":
+            "fcnn_data/hyperparam_tuning/musk2",
+        "hyperparam_tuning_optdigits":
+            "fcnn_data/hyperparam_tuning/optdigits",
+        "hyperparam_tuning_page_blocks":
+            "fcnn_data/hyperparam_tuning/page_blocks",
+        "hyperparam_tuning_segment":
+            "fcnn_data/hyperparam_tuning/segment",
+        "hyperparam_tuning_shuttle":
+            "fcnn_data/hyperparam_tuning/shuttle",
+        "hyperparam_tuning_spambase":
+            "fcnn_data/hyperparam_tuning/spambase",
+        "hyperparam_tuning_usps":
+            "fcnn_data/hyperparam_tuning/usps"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -374,7 +399,7 @@ class FCNNPaths(_Const):
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "PROJECT")
+        self.create_directories(self.dirs_dataset_paths, "STORAGE")
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------

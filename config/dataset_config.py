@@ -573,7 +573,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_connect4"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_connect4")
+                FCNN_PATHS.get_data_path("results_connect4"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_connect4"),
         },
         "isolete": {
             "fcnn_saved_weights":
@@ -581,7 +583,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_isolete"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_isolete")
+                FCNN_PATHS.get_data_path("results_isolete"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_isolete"),
         },
         "letter": {
             "fcnn_saved_weights":
@@ -589,7 +593,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_letter"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_letter")
+                FCNN_PATHS.get_data_path("results_letter"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_letter"),
         },
         "mnist": {
             "fcnn_saved_weights":
@@ -597,7 +603,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_mnist"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_mnist")
+                FCNN_PATHS.get_data_path("results_mnist"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_mnist"),
         },
         "mnist_fashion": {
             "fcnn_saved_weights":
@@ -605,7 +613,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_mnist_fashion"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_mnist_fashion")
+                FCNN_PATHS.get_data_path("results_mnist_fashion"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_mnist_fashion"),
         },
         "musk2": {
             "fcnn_saved_weights":
@@ -613,7 +623,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_musk2"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_musk2")
+                FCNN_PATHS.get_data_path("results_musk2"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_musk2"),
         },
         "optdigits": {
             "fcnn_saved_weights":
@@ -621,7 +633,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_optdigits"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_optdigits")
+                FCNN_PATHS.get_data_path("results_optdigits"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_optdigits"),
         },
         "page_blocks": {
             "fcnn_saved_weights":
@@ -629,7 +643,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_page_blocks"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_page_blocks")
+                FCNN_PATHS.get_data_path("results_page_blocks"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_page_blocks"),
         },
         "satimages": {
             "fcnn_saved_weights":
@@ -637,7 +653,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_satimages"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_satimages")
+                FCNN_PATHS.get_data_path("results_satimages"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_satimages"),
         },
         "segment": {
             "fcnn_saved_weights":
@@ -645,7 +663,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_segment"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_segment")
+                FCNN_PATHS.get_data_path("results_segment"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_segment"),
         },
         "shuttle": {
             "fcnn_saved_weights":
@@ -653,7 +673,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_shuttle"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_shuttle")
+                FCNN_PATHS.get_data_path("results_shuttle"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_shuttle"),
         },
         "spambase": {
             "fcnn_saved_weights":
@@ -661,7 +683,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_spambase"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_spambase")
+                FCNN_PATHS.get_data_path("results_spambase"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_spambase"),
         },
         "usps": {
             "fcnn_saved_weights":
@@ -669,7 +693,9 @@ def fcnn_paths_configs(dataset_type) -> Dict:
             "logs":
                 FCNN_PATHS.get_data_path("logs_usps"),
             "saved_results":
-                FCNN_PATHS.get_data_path("results_usps")
+                FCNN_PATHS.get_data_path("results_usps"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_usps"),
         }
     }
 
