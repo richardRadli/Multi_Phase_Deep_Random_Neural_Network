@@ -15,6 +15,7 @@ import torch
 from datetime import datetime
 from functools import wraps
 from jsonschema import validate
+from openpyxl.styles import PatternFill
 from typing import Any, Callable
 
 
@@ -306,6 +307,10 @@ def average_columns_in_excel(filename: str):
         for col_num, (col_name, value) in enumerate(avg.items(), start=1):
             sheet.cell(row=first_empty_row, column=col_num, value=value)
 
+        fill = PatternFill(start_color="00CCFF", end_color="00CCFF", fill_type="solid")
+        for cell in sheet[first_empty_row]:
+            cell.fill = fill
+
     workbook.save(filename)
 
 
@@ -319,6 +324,8 @@ def load_config_json(json_schema_filename: str, json_filename: str):
     try:
         validate(config, schema)
         logging.info("JSON data is valid.")
+        df = pd.DataFrame.from_dict(config, orient='index')
+        logging.info(df)
         return config
     except jsonschema.exceptions.ValidationError as err:
         logging.error(f"JSON data is invalid: {err}")

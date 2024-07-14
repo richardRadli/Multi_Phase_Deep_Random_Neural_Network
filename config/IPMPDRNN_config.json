@@ -1,9 +1,9 @@
 {
-  "dataset_name": "segment",
+  "dataset_name": "connect4",
   "activation": "leaky_ReLU",
   "number_of_tests": 50,
   "seed": true,
   "subset_percentage": 0.3,
-  "pruning_method": "max_rank",
+  "pruning_method": "sum_weight",
   "method": "BASE"
 }

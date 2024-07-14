@@ -179,8 +179,9 @@ class Experiment2:
                                  dataset_name=self.cfg.get("dataset_name"),
                                  row=i + 2,
                                  data=accuracies)
-            average_columns_in_excel(self.save_filename)
             accuracies.clear()
+
+        average_columns_in_excel(self.save_filename)
 
 
 if __name__ == "__main__":

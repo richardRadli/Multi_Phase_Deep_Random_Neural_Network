@@ -181,8 +181,9 @@ class Experiment:
                                  row=i + 2,
                                  data=accuracies)
 
-            average_columns_in_excel(self.filename)
             accuracies.clear()
+
+        average_columns_in_excel(self.filename)
 
 
 if __name__ == "__main__":
