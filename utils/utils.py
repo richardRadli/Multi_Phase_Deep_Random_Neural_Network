@@ -185,7 +185,7 @@ def calc_exp_neurons(total_neurons: int, n_layers: int):
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
+def plot_confusion_matrix_mpdrnn(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
     fig, axis = plt.subplots(1, 3, figsize=(15, 5))
 
     for i, cm in enumerate(cm):
@@ -201,6 +201,16 @@ def plot_confusion_matrix(cm, path_to_plot, name_of_dataset: str, operation: str
     plt.close()
     gc.collect()
 
+
+def plot_confusion_matrix_fcnn(cm, operation, class_labels, dataset_name):
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt=".0f", cmap="Blues",
+                xticklabels=class_labels, yticklabels=class_labels)
+    plt.xlabel("Predicted labels")
+    plt.ylabel("Actual labels")
+    plt.title(f"Confusion matrix of {dataset_name} on the {operation} set.")
+    plt.tight_layout()
+    plt.show()
 
 # ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------- P L O T   T R A I N   A N D   V A L I D   D A T A ----------------------------------

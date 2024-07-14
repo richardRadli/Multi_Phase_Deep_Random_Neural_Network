@@ -1,9 +1,9 @@
 import colorama
 import logging
 import os
-import pandas as pd
 import torch
 
+from sklearn.metrics import accuracy_score, recall_score, precision_score, confusion_matrix, f1_score
 from torchinfo import summary
 from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
@@ -13,7 +13,7 @@ from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FCNN
 from nn.dataloaders.npz_dataloader import NpzDataset
 from utils.utils import (create_timestamp, setup_logger, use_gpu_if_available, load_config_json,
-                         find_latest_file_in_latest_directory)
+                         find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
 
 
 class EvalFCNN:
@@ -31,6 +31,8 @@ class EvalFCNN:
         gen_ds_cfg = (
             general_dataset_configs(self.cfg.get("dataset_name"))
         )
+
+        self.class_labels = gen_ds_cfg.get("class_labels")
 
         fcnn_ds_cfg = (
             fcnn_paths_configs(self.cfg.get("dataset_name"))
@@ -66,6 +68,12 @@ class EvalFCNN:
 
         self.training_acc = []
         self.testing_acc = []
+        self.training_prec = []
+        self.testing_prec = []
+        self.training_recall = []
+        self.testing_recall = []
+        self.training_f1_score = []
+        self.testing_f1_score = []
 
     def create_train_test_datasets(self, file_path):
         full_train_dataset = NpzDataset(file_path, operation="train")
@@ -88,20 +96,37 @@ class EvalFCNN:
         total_samples = 0
         correct_predictions = 0
 
+        all_preds, all_labels = [], []
+
         with torch.no_grad():
-            for batch_data, batch_labels in dataloader:
+            for batch_data, batch_labels in tqdm(dataloader, total=len(dataloader), desc=f"Evaluating {operation} set"):
                 batch_data, batch_labels = batch_data.to(self.device), batch_labels.to(self.device)
                 output = self.model(batch_data)
 
                 predicted_labels = torch.argmax(output, 1)
-                correct_predictions += (predicted_labels == torch.argmax(batch_labels, dim=1)).sum().item()
+                ground_truth_labels = torch.argmax(batch_labels, 1)
+
+                correct_predictions += (predicted_labels == ground_truth_labels).sum().item()
                 total_samples += batch_labels.size(0)
 
-        accuracy = correct_predictions / total_samples
+                all_preds.extend(predicted_labels.cpu().numpy())
+                all_labels.extend(ground_truth_labels.cpu().numpy())
 
-        logging.info(f"{operation} accuracy: {accuracy}")
+        accuracy = accuracy_score(all_labels, all_preds)
+        precision = precision_score(all_labels, all_preds, average='macro', zero_division=0)
+        recall = recall_score(all_labels, all_preds, average='macro', zero_division=0)
+        f1sore = f1_score(all_labels, all_preds, average='macro', zero_division=0)
+        cm = confusion_matrix(all_labels, all_preds)
+
+        plot_confusion_matrix_fcnn(cm, operation, self.class_labels, self.cfg.get("dataset_name"))
+        logging.info(f"{operation} accuracy: {accuracy:.4f}")
+        logging.info(f"{operation} precision: {precision:.4f}")
+        logging.info(f"{operation} recall: {recall:.4f}")
+        logging.info(f"{operation} F1-score: {f1sore:.4f}")
 
         self.training_acc.append(accuracy) if operation == "train" else self.testing_acc.append(accuracy)
+        self.training_prec.append(precision) if operation == "train" else self.testing_prec.append(precision)
+        self.training_recall.append(recall) if operation == "train" else self.testing_recall.append(recall)
 
     def main(self):
         self.evaluate_model(self.train_loader, "train")

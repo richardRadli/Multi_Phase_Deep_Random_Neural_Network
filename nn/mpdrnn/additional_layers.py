@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_f
 from tqdm import tqdm
 
 from nn.models.elm import ELM
-from utils.utils import measure_execution_time, pretty_print_results, plot_confusion_matrix, plot_metrics
+from utils.utils import measure_execution_time, pretty_print_results, plot_confusion_matrix_mpdrnn, plot_metrics
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -200,12 +200,12 @@ class AdditionalLayer:
 
         """
 
-        plot_confusion_matrix(cm=self.metrics.get(f"{operation}_cm"),
-                              path_to_plot=self.directory_path.get("cm"),
-                              name_of_dataset=self.config.dataset_name,
-                              operation=operation,
-                              method=self.config.method,
-                              labels=self.gen_settings.get("class_labels"))
+        plot_confusion_matrix_mpdrnn(cm=self.metrics.get(f"{operation}_cm"),
+                                     path_to_plot=self.directory_path.get("cm"),
+                                     name_of_dataset=self.config.dataset_name,
+                                     operation=operation,
+                                     method=self.config.method,
+                                     labels=self.gen_settings.get("class_labels"))
 
         plot_metrics(train=self.metrics.get(f"train_accuracy"),
                      test=self.metrics.get(f"test_accuracy"),
