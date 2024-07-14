@@ -5,9 +5,9 @@ from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 from sklearn.model_selection import train_test_split
 
+from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs
-from config.config import MPDRNNConfig
-from utils.utils import setup_logger
+from utils.utils import setup_logger, load_config_json
 
 
 def all_elements_numeric(nested_list):
@@ -27,12 +27,19 @@ def all_elements_numeric(nested_list):
 
 
 def main():
-    cfg = MPDRNNConfig().parse()
     setup_logger()
 
-    path_to_dataset = general_dataset_configs(cfg).get("dataset_file")
-    num_data = general_dataset_configs(cfg).get("num_train_data") + general_dataset_configs(cfg).get("num_test_data")
-    num_features = general_dataset_configs(cfg).get("num_features")
+    cfg = (
+        load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_ipmdrnn"),
+                         json_filename=JSON_FILES_PATHS.get_data_path("config_ipmdrnn"))
+    )
+
+    dataset_name = cfg.get("dataset_name")
+
+    path_to_dataset = general_dataset_configs(dataset_name).get("dataset_file")
+    num_data = (general_dataset_configs(dataset_name).get("num_train_data") +
+                general_dataset_configs(dataset_name).get("num_test_data"))
+    num_features = general_dataset_configs(dataset_name).get("num_features")
 
     try:
         with open(path_to_dataset, "r") as file:
@@ -44,16 +51,15 @@ def main():
         for line in tqdm(lines):
             split = line.strip().split(',')
             # label at the end
-            if cfg.dataset_name in ["connect4", "isolete", "iris", "musk2", "optdigits", "page_blocks", "satimages",
-                                    "shuttle", "spambase", "forest", "usps"]:
+            if dataset_name in ["connect4", "isolete", "iris", "musk2", "optdigits", "page_blocks", "satimages", "shuttle", "spambase", "forest", "usps"]:
                 labels.append(split[-1])
                 features.append(split[:-1])
             # label at the front
-            elif cfg.dataset_name in ["letter", "mnist", "mnist_fashion", "segment"]:
+            elif dataset_name in ["letter", "mnist", "mnist_fashion", "segment"]:
                 labels.append(split[0])
                 features.append(split[1:])
             else:
-                raise ValueError(f"Wrong dataset name {cfg.dataset_name}")
+                raise ValueError(f"Wrong dataset name {dataset_name}")
 
         label_encoder = OneHotEncoder(sparse_output=False)
         encoded_labels = label_encoder.fit_transform(np.array(labels).reshape(-1, 1))
@@ -74,12 +80,12 @@ def main():
             train_test_split(
                 normalized_features,
                 encoded_labels,
-                test_size=general_dataset_configs(cfg).get("num_test_data"),
+                test_size=general_dataset_configs(dataset_name).get("num_test_data"),
                 random_state=42
             )
         )
 
-        file_save_name = general_dataset_configs(cfg).get("cached_dataset_file")
+        file_save_name = general_dataset_configs(dataset_name).get("cached_dataset_file")
         np.savez(file_save_name,
                  train_x=train_x,
                  test_x=test_x,

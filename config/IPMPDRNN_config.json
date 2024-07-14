@@ -1,5 +1,5 @@
 {
-  "dataset_name": "connect4",
+  "dataset_name": "segment",
   "activation": "leaky_ReLU",
   "number_of_tests": 50,
   "seed": true,

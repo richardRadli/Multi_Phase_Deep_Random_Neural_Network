@@ -228,7 +228,7 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_name":
                 "segment",
             "num_train_data":
-                1732,
+                1733,
             "num_test_data":
                 577,
             "num_features":
