@@ -1,6 +1,5 @@
 import colorama
 import logging
-import os
 import torch
 
 from sklearn.metrics import accuracy_score, recall_score, precision_score, confusion_matrix, f1_score
@@ -54,7 +53,7 @@ class EvalFCNN:
         # Load the model
         self.model = (
             FCNN(input_size=gen_ds_cfg.get("num_features"),
-                 hidden_size=gen_ds_cfg.get("eq_neurons")[0],
+                 hidden_size=self.cfg.get("hidden_neurons"),
                  output_size=gen_ds_cfg.get("num_classes")).to(self.device)
         )
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),))
@@ -63,17 +62,14 @@ class EvalFCNN:
         self.model.load_state_dict(torch.load(checkpoint))
         self.model = self.model.to(self.device)
 
-        self.save_path = os.path.join(fcnn_ds_cfg.get("saved_results"), timestamp)
-        os.makedirs(self.save_path, exist_ok=True)
-
-        self.training_acc = []
-        self.testing_acc = []
-        self.training_prec = []
-        self.testing_prec = []
-        self.training_recall = []
-        self.testing_recall = []
-        self.training_f1_score = []
-        self.testing_f1_score = []
+        self.train_accuracy = None
+        self.test_accuracy = None
+        self.train_precision = None
+        self.test_precision = None
+        self.train_recall = None
+        self.test_recall = None
+        self.train_f1sore = None
+        self.test_f1sore = None
 
     def create_train_test_datasets(self, file_path):
         full_train_dataset = NpzDataset(file_path, operation="train")
@@ -118,15 +114,18 @@ class EvalFCNN:
         f1sore = f1_score(all_labels, all_preds, average='macro', zero_division=0)
         cm = confusion_matrix(all_labels, all_preds)
 
+        # Using getattr and setattr to dynamically set attributes
+        setattr(self, f"{operation}_accuracy", accuracy)
+        setattr(self, f"{operation}_precision", precision)
+        setattr(self, f"{operation}_recall", recall)
+        setattr(self, f"{operation}_f1sore", f1sore)
+        setattr(self, f"{operation}_cm", cm)
+
         plot_confusion_matrix_fcnn(cm, operation, self.class_labels, self.cfg.get("dataset_name"))
         logging.info(f"{operation} accuracy: {accuracy:.4f}")
         logging.info(f"{operation} precision: {precision:.4f}")
         logging.info(f"{operation} recall: {recall:.4f}")
         logging.info(f"{operation} F1-score: {f1sore:.4f}")
-
-        self.training_acc.append(accuracy) if operation == "train" else self.testing_acc.append(accuracy)
-        self.training_prec.append(precision) if operation == "train" else self.testing_prec.append(precision)
-        self.training_recall.append(recall) if operation == "train" else self.testing_recall.append(recall)
 
     def main(self):
         self.evaluate_model(self.train_loader, "train")

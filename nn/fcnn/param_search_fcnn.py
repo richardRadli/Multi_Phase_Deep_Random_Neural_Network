@@ -1,3 +1,4 @@
+import os
 import logging
 import torch
 import torch.nn as nn
@@ -12,7 +13,7 @@ from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FCNN
 from nn.dataloaders.npz_dataloader import NpzDataset
-from utils.utils import use_gpu_if_available, load_config_json
+from utils.utils import use_gpu_if_available, load_config_json, save_log_to_txt
 
 
 class HyperparameterSearch:
@@ -31,14 +32,14 @@ class HyperparameterSearch:
         )
 
         self.save_path = fcnn_paths_configs(self.cfg.get("dataset_name")).get("hyperparam_tuning")
+        self.save_log_file = os.path.join(self.save_path, "hyperparam_search_best_results.txt")
 
         self.device = use_gpu_if_available()
 
         self.hyperparam_config = {
-            "lr": tune.loguniform(5e-4, 1e-1),
-            "hidden_size": tune.choice([1000, 1500, 2000, 2500]),
-            "batch_size": tune.choice([32, 64, 128, 256]),
-            "patience": tune.choice([5, 10, 20, 50, 100]),
+            "lr": tune.loguniform(4e-4, 1e-1),
+            "hidden_size": tune.grid_search([216, 500, 866, 1000]),
+            "batch_size": tune.choice([32, 64, 128])
         }
 
     def fit(self, config):
@@ -56,9 +57,6 @@ class HyperparameterSearch:
 
         train_loader = DataLoader(train_dataset, batch_size=int(config["batch_size"]), shuffle=False)
         val_loader = DataLoader(val_dataset, batch_size=int(config["batch_size"]), shuffle=False)
-
-        best_valid_loss = float('inf')
-        epoch_without_improvement = 0
 
         for epoch in range(self.cfg.get("epochs")):
             # Training
@@ -95,48 +93,35 @@ class HyperparameterSearch:
             val_loss /= len(val_loader)
             val_accuracy = correct_predictions / total_samples
 
-            if val_loss < best_valid_loss:
-                best_valid_loss = val_loss
-                epoch_without_improvement = 0
-                logging.info(f'New best weights have been found at epoch {epoch} with value of {best_valid_loss:.4f}')
-            else:
-                logging.warning(f"No new best weights have been found. Best valid loss was {best_valid_loss:.5f},\n "
-                                f"current valid loss is {val_loss:.5f}")
-                epoch_without_improvement += 1
-                if epoch_without_improvement >= config["patience"]:
-                    break
-
             session.report({"loss": val_loss, "accuracy": val_accuracy})
     
     def tune_params(self):
         scheduler = ASHAScheduler(
             metric="loss",
             mode="min",
-            max_t=100,
+            max_t=self.cfg.get("epochs"),
             grace_period=10,
             reduction_factor=2
         )
 
         reporter = tune.CLIReporter(
-            parameter_columns=["lr", "batch_size", "hidden_size", "patience"],
+            parameter_columns=["lr", "batch_size", "hidden_size"],
             metric_columns=["loss", "accuracy", "training_iteration"]
         )
 
         result = tune.run(
             self.fit,
-            resources_per_trial={"cpu": 2, "gpu": 1},
+            resources_per_trial={"cpu": 4, "gpu": 1},
             config=self.hyperparam_config,
-            num_samples=50,
+            num_samples=25,
             scheduler=scheduler,
             progress_reporter=reporter,
             storage_path=self.save_path
         )
 
-        best_trial = result.get_best_trial("loss", "min", "last")
-        print("Best trial config: {}".format(best_trial.config))
-        print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
-        print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
-        
+        save_log_to_txt(output_file=self.save_log_file,
+                        result=result)
+
 
 if __name__ == '__main__':
     try:

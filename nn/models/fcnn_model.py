@@ -18,6 +18,5 @@ class FCNN(nn.Module):
         x = self.fc3(x)
         x = nn.LeakyReLU(negative_slope=0.2)(x)
         x = self.fc4(x)
-        x = torch.sigmoid(x)
 
         return x

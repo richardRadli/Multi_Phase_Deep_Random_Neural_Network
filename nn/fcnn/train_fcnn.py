@@ -49,7 +49,7 @@ class TrainFCNN:
         # Load the model
         self.model = (
             FCNN(input_size=gen_ds_cfg.get("num_features"),
-                 hidden_size=gen_ds_cfg.get("eq_neurons")[0],
+                 hidden_size=self.cfg.get("hidden_neurons"),
                  output_size=gen_ds_cfg.get("num_classes")).to(self.device)
         )
 

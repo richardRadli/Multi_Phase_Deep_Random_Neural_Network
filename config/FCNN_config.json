@@ -1,10 +1,10 @@
 {
-  "dataset_name": "segment",
+  "dataset_name": "connect4",
   "patience": 15,
   "valid_size": 0.2,
-  "number_of_tests": 50,
-  "seed": true,
-  "learning_rate": 2e-4,
-  "batch_size": 128,
+  "seed": false,
+  "learning_rate": 0.014840476104628093,
+  "hidden_neurons": 216,
+  "batch_size": 64,
   "epochs": 1000
 }

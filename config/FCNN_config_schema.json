@@ -16,10 +16,6 @@
       "type": "number",
       "description": "Percentage of the size of the validation set."
     },
-    "number_of_tests": {
-      "type": "integer",
-      "description": "Number of tests to be performed."
-    },
     "seed": {
       "type": "boolean",
       "description": "Controls the way to generate random values. If set to True, the same values will be generated in every execution."
@@ -27,6 +23,10 @@
     "learning_rate": {
       "type": "number",
       "description": "Value of the learning rate."
+    },
+    "hidden_neurons": {
+      "type": "integer",
+      "description": "Number of hidden nodes in the hidden layers."
     },
     "batch_size": {
       "type": "integer",
@@ -37,5 +37,5 @@
       "description": "Number epochs."
     }
   },
-  "required": ["dataset_name", "patience", "valid_size" ,"number_of_tests", "seed", "learning_rate", "batch_size", "epochs"]
+  "required": ["dataset_name", "patience", "valid_size", "seed", "learning_rate", "hidden_neurons", "batch_size", "epochs"]
 }

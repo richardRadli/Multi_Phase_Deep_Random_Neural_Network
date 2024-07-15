@@ -179,7 +179,8 @@ class Experiment:
             insert_data_to_excel(filename=self.filename,
                                  dataset_name=self.cfg.get("dataset_name"),
                                  row=i + 2,
-                                 data=accuracies)
+                                 data=accuracies,
+                                 network="ipmpdrnn")
 
             accuracies.clear()
 

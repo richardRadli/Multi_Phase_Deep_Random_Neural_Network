@@ -11,6 +11,7 @@ import pandas as pd
 import seaborn as sns
 import time
 import torch
+import sys
 
 from datetime import datetime
 from functools import wraps
@@ -260,7 +261,7 @@ def use_gpu_if_available() -> torch.device:
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def insert_data_to_excel(filename, dataset_name, row, data):
+def insert_data_to_excel(filename, dataset_name, row, data, network):
     try:
         workbook = openpyxl.load_workbook(filename)
     except FileNotFoundError:
@@ -271,10 +272,16 @@ def insert_data_to_excel(filename, dataset_name, row, data):
 
     sheet = workbook[dataset_name]
 
-    values = ["train acc initial model", "test acc initial model",
-              "train acc initial model after pruning", "test acc initial model after pruning",
-              "train acc initial model after substitute 1", "test acc initial model after substitute 1",
-              "train acc initial model after substitute 2", "test acc initial model after substitute 2"]
+    if network == "ipmpdrnn":
+        values = ["train acc initial model", "test acc initial model",
+                  "train acc initial model after pruning", "test acc initial model after pruning",
+                  "train acc initial model after substitute 1", "test acc initial model after substitute 1",
+                  "train acc initial model after substitute 2", "test acc initial model after substitute 2"]
+    elif network == "fcnn":
+        values = ["train acc", "test acc", "train precision", "test precision", "train recall", "test recall",
+                  "train f1", "test f1", "training time"]
+    else:
+        raise ValueError(f"Wrong network: {network}")
 
     for col, value in enumerate(values, start=1):
         sheet.cell(row=1, column=col, value=value)
@@ -350,3 +357,19 @@ def find_latest_file_in_latest_directory(path: str) -> str:
     logging.info(f"Latest file found: {latest_file}")
 
     return latest_file
+
+
+def save_log_to_txt(output_file, result):
+    original_stdout = sys.stdout
+
+    with open(output_file, "w") as log_file:
+        sys.stdout = log_file
+
+        best_trial = result.get_best_trial("loss", "min", "last")
+        print("Best trial config: {}".format(best_trial.config))
+        print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
+        print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+
+    sys.stdout = original_stdout
+
+    logging.info(f"Saving log to {output_file}")

@@ -359,6 +359,8 @@ class FCNNPaths(_Const):
             "fcnn_data/results_fcnn/optdigits",
         "results_page_blocks":
             "fcnn_data/results_fcnn/page_blocks",
+        "results_satimages":
+            "fcnn_data/results_fcnn/satimages",
         "results_segment":
             "fcnn_data/results_fcnn/segment",
         "results_shuttle":
@@ -386,6 +388,8 @@ class FCNNPaths(_Const):
             "fcnn_data/hyperparam_tuning/page_blocks",
         "hyperparam_tuning_segment":
             "fcnn_data/hyperparam_tuning/segment",
+        "hyperparam_tuning_satimages":
+            "fcnn_data/hyperparam_tuning/satimages",
         "hyperparam_tuning_shuttle":
             "fcnn_data/hyperparam_tuning/shuttle",
         "hyperparam_tuning_spambase":
