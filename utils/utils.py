@@ -214,6 +214,7 @@ def plot_confusion_matrix_fcnn(cm, operation, class_labels, dataset_name):
     plt.tight_layout()
     plt.show()
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 # --------------------------------- P L O T   T R A I N   A N D   V A L I D   D A T A ----------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
@@ -238,14 +239,17 @@ def plot_metrics(train, test, metric_type: str, path_to_plot: str, name_of_datas
     gc.collect()
 
 
-def use_gpu_if_available() -> torch.device:
+def device_selector(preferred_device) -> torch.device:
     """
     Provides information about the currently available GPUs and returns a torch device for training and inference.
 
     :return: A torch device for either "cuda" or "cpu".
     """
+    if preferred_device not in ["cuda", "cpu"]:
+        logging.warning("Preferred device is not valid. Using CPU instead.")
+        return torch.device("cpu")
 
-    if torch.cuda.is_available():
+    if preferred_device == "cuda" and torch.cuda.is_available():
         cuda_info = {
             'CUDA Available': [torch.cuda.is_available()],
             'CUDA Device Count': [torch.cuda.device_count()],
@@ -255,10 +259,15 @@ def use_gpu_if_available() -> torch.device:
 
         df = pd.DataFrame(cuda_info)
         logging.info(df)
-    else:
-        logging.info("Only CPU is available!")
+        return torch.device("cuda")
 
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if preferred_device in ["cuda"] and not torch.cuda.is_available():
+        logging.info("Only CPU is available!")
+        return torch.device("cpu")
+
+    if preferred_device == "cpu":
+        logging.info("Selected CPU device")
+        return torch.device("cpu")
 
 
 def insert_data_to_excel(filename, dataset_name, row, data, network):

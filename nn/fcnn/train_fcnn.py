@@ -15,7 +15,7 @@ from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FCNN
 from nn.dataloaders.npz_dataloader import NpzDataset
-from utils.utils import create_timestamp, setup_logger, use_gpu_if_available, load_config_json, measure_execution_time
+from utils.utils import create_timestamp, setup_logger, device_selector, load_config_json, measure_execution_time
 
 
 class TrainFCNN:
@@ -43,17 +43,16 @@ class TrainFCNN:
 
         # Setup device
         self.device = (
-            use_gpu_if_available()
+            device_selector(preferred_device=self.cfg.get("device"))
         )
 
         # Load the model
         self.model = (
             FCNN(input_size=gen_ds_cfg.get("num_features"),
                  hidden_size=self.cfg.get("hidden_neurons"),
-                 output_size=gen_ds_cfg.get("num_classes")).to(self.device)
-        )
-
-        summary(self.model, input_size=(gen_ds_cfg.get("num_features"),))
+                 output_size=gen_ds_cfg.get("num_classes"))
+        ).to(self.device)
+        summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
 
         # Load the dataset
         file_path = (
@@ -114,9 +113,7 @@ class TrainFCNN:
 
     def train_loop(self, batch_data, batch_labels, train_losses):
         batch_data, batch_labels = batch_data.to(self.device), batch_labels.to(self.device)
-
         self.optimizer.zero_grad()
-
         output = self.model(batch_data)
 
         loss = self.criterion(output, batch_labels)

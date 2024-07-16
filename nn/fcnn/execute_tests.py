@@ -1,4 +1,7 @@
+import colorama
 import os
+
+from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import fcnn_paths_configs
@@ -9,6 +12,7 @@ from utils.utils import create_timestamp, insert_data_to_excel, load_config_json
 
 def main():
     timestamp = create_timestamp()
+    colorama.init()
 
     cfg = (
         load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
@@ -20,12 +24,13 @@ def main():
     filename = (
         os.path.join(
             fcnn_config.get("saved_results"),
-            f"{timestamp}_bs_{cfg.get('batch_size')}_hn_{cfg.get('hidden_neurons')}_{cfg.get('learning_rate')}.xlsx")
+            f"{timestamp}_bs_{cfg.get('batch_size')}_hn_{cfg.get('hidden_neurons')}_lr_{cfg.get('learning_rate')}_"
+            f"device_{cfg.get('device')}.xlsx")
     )
 
     collected_data = []
 
-    for i in range(10):
+    for i in tqdm(range(10), desc=f"{colorama.Fore.LIGHTBLUE_EX} Testing cycle"):
         train_fcnn = TrainFCNN()
         train_fcnn.fit()
         training_time = train_fcnn.fit.execution_time

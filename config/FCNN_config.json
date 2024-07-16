@@ -1,10 +1,11 @@
 {
-  "dataset_name": "connect4",
-  "patience": 15,
+  "dataset_name": "mnist",
+  "patience": 50,
   "valid_size": 0.2,
   "seed": false,
-  "learning_rate": 0.014840476104628093,
-  "hidden_neurons": 216,
-  "batch_size": 64,
-  "epochs": 1000
+  "learning_rate": 0.0005541711466489801,
+  "hidden_neurons": 2000,
+  "batch_size": 128,
+  "epochs": 100,
+  "device": "cuda"
 }

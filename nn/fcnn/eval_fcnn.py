@@ -11,7 +11,7 @@ from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FCNN
 from nn.dataloaders.npz_dataloader import NpzDataset
-from utils.utils import (create_timestamp, setup_logger, use_gpu_if_available, load_config_json,
+from utils.utils import (create_timestamp, setup_logger, device_selector, load_config_json,
                          find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
 
 
@@ -47,7 +47,7 @@ class EvalFCNN:
 
         # Setup device
         self.device = (
-            use_gpu_if_available()
+            device_selector(preferred_device="cpu")
         )
 
         # Load the model
@@ -56,7 +56,7 @@ class EvalFCNN:
                  hidden_size=self.cfg.get("hidden_neurons"),
                  output_size=gen_ds_cfg.get("num_classes")).to(self.device)
         )
-        summary(self.model, input_size=(gen_ds_cfg.get("num_features"),))
+        summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
 
         checkpoint = find_latest_file_in_latest_directory(fcnn_ds_cfg.get("fcnn_saved_weights"))
         self.model.load_state_dict(torch.load(checkpoint))

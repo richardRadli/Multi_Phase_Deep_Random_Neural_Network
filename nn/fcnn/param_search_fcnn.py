@@ -13,7 +13,7 @@ from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FCNN
 from nn.dataloaders.npz_dataloader import NpzDataset
-from utils.utils import use_gpu_if_available, load_config_json, save_log_to_txt
+from utils.utils import device_selector, load_config_json, save_log_to_txt
 
 
 class HyperparameterSearch:
@@ -34,7 +34,7 @@ class HyperparameterSearch:
         self.save_path = fcnn_paths_configs(self.cfg.get("dataset_name")).get("hyperparam_tuning")
         self.save_log_file = os.path.join(self.save_path, "hyperparam_search_best_results.txt")
 
-        self.device = use_gpu_if_available()
+        self.device = device_selector(preferred_device="cuda")
 
         self.hyperparam_config = {
             "lr": tune.loguniform(4e-4, 1e-1),

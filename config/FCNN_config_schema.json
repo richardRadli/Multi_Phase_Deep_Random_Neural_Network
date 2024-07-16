@@ -35,6 +35,11 @@
     "epochs": {
       "type": "integer",
       "description": "Number epochs."
+    },
+    "device": {
+      "type": "string",
+      "enum": ["gpu", "cuda", "cpu"],
+      "description": "The selected device where the computations will be executed."
     }
   },
   "required": ["dataset_name", "patience", "valid_size", "seed", "learning_rate", "hidden_neurons", "batch_size", "epochs"]
