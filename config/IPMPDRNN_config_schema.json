@@ -10,7 +10,7 @@
     },
     "activation": {
       "type": "string",
-      "enum": ["ReLU", "leaky_ReLU", "tanh", "sigmoid", "identity"],
+      "enum": ["ReLU", "LeakyReLU", "Tanh", "Sigmoid", "Identity"],
       "description": "The activation function to be used in the neural network."
     },
     "number_of_tests": {

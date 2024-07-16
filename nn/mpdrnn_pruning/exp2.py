@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, drnn_paths_config
-from nn.models.mdprnn_model import MultiPhaseDeepRandomizedNeuralNetwork
+from nn.models.mpdrnn_model import MultiPhaseDeepRandomizedNeuralNetworkBase
 from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel, setup_logger,
                          load_config_json)
 
@@ -112,11 +112,11 @@ class Experiment2:
     def create_train_prune_aux_model(self, initial_model, train_loader, least_important_prune_indices=None):
         first_layer_num_data = train_loader.batch_size
         # Generate new alpha weights
-        aux_model = MultiPhaseDeepRandomizedNeuralNetwork(num_data=first_layer_num_data,
-                                                          num_features=self.first_layer_input_nodes,
-                                                          hidden_nodes=self.first_layer_hidden_nodes,
-                                                          output_nodes=self.first_layer_output_nodes,
-                                                          activation_function="leaky_ReLU")
+        aux_model = MultiPhaseDeepRandomizedNeuralNetworkBase(num_data=first_layer_num_data,
+                                                              num_features=self.first_layer_input_nodes,
+                                                              hidden_nodes=self.first_layer_hidden_nodes,
+                                                              output_nodes=self.first_layer_output_nodes,
+                                                              activation_function="leaky_ReLU")
 
         aux_model.train_first_layer(train_loader)
         most_important_prune_indices, _ = aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
@@ -138,11 +138,11 @@ class Experiment2:
             train_loader_3 = self.sub_train_loader[2]
 
             first_layer_num_data = train_loader_1.batch_size
-            initial_model = MultiPhaseDeepRandomizedNeuralNetwork(num_data=first_layer_num_data,
-                                                                  num_features=self.first_layer_input_nodes,
-                                                                  hidden_nodes=self.first_layer_hidden_nodes,
-                                                                  output_nodes=self.first_layer_output_nodes,
-                                                                  activation_function="leaky_ReLU")
+            initial_model = MultiPhaseDeepRandomizedNeuralNetworkBase(num_data=first_layer_num_data,
+                                                                      num_features=self.first_layer_input_nodes,
+                                                                      hidden_nodes=self.first_layer_hidden_nodes,
+                                                                      output_nodes=self.first_layer_output_nodes,
+                                                                      activation_function="leaky_ReLU")
 
             initial_model, base_model_training_acc, base_model_testing_acc = (
                 self.initial_model_training(initial_model, train_loader_1)

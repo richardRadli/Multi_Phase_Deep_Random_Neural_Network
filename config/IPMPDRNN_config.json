@@ -1,6 +1,6 @@
 {
-  "dataset_name": "connect4",
-  "activation": "leaky_ReLU",
+  "dataset_name": "satimages",
+  "activation": "LeakyReLU",
   "number_of_tests": 50,
   "seed": true,
   "subset_percentage": 0.3,

@@ -9,7 +9,8 @@ from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, drnn_paths_config
-from nn.models.mdprnn_model import MultiPhaseDeepRandomizedNeuralNetwork
+from nn.models.mpdrnn_model import (MultiPhaseDeepRandomizedNeuralNetworkBase,
+                                    MultiPhaseDeepRandomizedNeuralNetworkSubsequent)
 from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel, setup_logger,
                          load_config_json)
 
@@ -72,29 +73,29 @@ class Experiment:
 
         return train_loader, test_loader
 
-    @staticmethod
-    def calc_ort(x):
-        x = x.reshape(x.shape[0], 1)
-        q, _ = torch.linalg.qr(x)
-        return q
+    # @staticmethod
+    # def calc_ort(x):
+    #     x = x.reshape(x.shape[0], 1)
+    #     q, _ = torch.linalg.qr(x)
+    #     return q
+    #
+    # def change_ort(self, model, least_important_prune_indices):
+    #     worst_weights = model.alpha_weights.data[:, least_important_prune_indices]
+    #     ort_list = [self.calc_ort(row) for row in worst_weights]
+    #     ort = torch.stack(ort_list, dim=0)
+    #     return ort.squeeze(-1)
 
-    def change_ort(self, model, least_important_prune_indices):
-        worst_weights = model.alpha_weights.data[:, least_important_prune_indices]
-        ort_list = [self.calc_ort(row) for row in worst_weights]
-        ort = torch.stack(ort_list, dim=0)
-        return ort.squeeze(-1)
+    # def random_weights(self, model, least_important_prune_indices, train_loader, test_loader):
+    #     num_neurons_to_prune = int(self.cfg.get("subset_percentage") * model.beta_weights.shape[0])
+    #     best_weights = torch.randn((self.first_layer_input_nodes, num_neurons_to_prune))
+    #     model.alpha_weights.data[:, least_important_prune_indices] = best_weights
+    #     model.train_first_layer(train_loader)
+    #     training_acc = model.predict_and_evaluate(train_loader, "train")
+    #     testing_acc = model.predict_and_evaluate(test_loader, "test")
+    #
+    #     return training_acc, testing_acc
 
-    def random_weights(self, model, least_important_prune_indices, train_loader, test_loader):
-        num_neurons_to_prune = int(self.cfg.get("subset_percentage") * model.beta_weights.shape[0])
-        best_weights = torch.randn((self.first_layer_input_nodes, num_neurons_to_prune))
-        model.alpha_weights.data[:, least_important_prune_indices] = best_weights
-        model.train_first_layer(train_loader)
-        training_acc = model.predict_and_evaluate(train_loader, "train")
-        testing_acc = model.predict_and_evaluate(test_loader, "test")
-
-        return training_acc, testing_acc
-
-    def initial_model_training(self, initial_model):
+    def initial_model_training_and_eval(self, initial_model):
         initial_model.train_first_layer(self.train_loader)
         tr1acc = initial_model.predict_and_evaluate(self.train_loader, "train")
         te1acc = initial_model.predict_and_evaluate(self.test_loader, "test")
@@ -114,11 +115,11 @@ class Experiment:
             return least_important_prune_indices
 
     def create_train_prune_aux_model(self, initial_model, least_important_prune_indices=None):
-        aux_model = MultiPhaseDeepRandomizedNeuralNetwork(num_data=self.first_layer_num_data,
-                                                          num_features=self.first_layer_input_nodes,
-                                                          hidden_nodes=self.first_layer_hidden_nodes,
-                                                          output_nodes=self.first_layer_output_nodes,
-                                                          activation_function=self.cfg.get('activation'))
+        aux_model = MultiPhaseDeepRandomizedNeuralNetworkBase(num_data=self.first_layer_num_data,
+                                                              num_features=self.first_layer_input_nodes,
+                                                              hidden_nodes=self.first_layer_hidden_nodes,
+                                                              output_nodes=self.first_layer_output_nodes,
+                                                              activation_function=self.cfg.get('activation'))
 
         aux_model.train_first_layer(self.train_loader)
         most_important_prune_indices, _ = aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
@@ -131,21 +132,53 @@ class Experiment:
 
         return initial_model
 
+    def subsequent_model_training_and_eval(self, subsequent_model):
+        subsequent_model.train_second_layer(self.train_loader)
+        tr2acc = subsequent_model.predict_and_evaluate(self.train_loader, "train")
+        te2acc = subsequent_model.predict_and_evaluate(self.test_loader, "test")
+
+        return subsequent_model, tr2acc, te2acc
+
+    def prune_subsequent_model(self, subsequent_model, set_weights_to_zero: bool):
+        _, least_important_prune_indices = (
+            subsequent_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
+                                     pruning_method=self.cfg.get("pruning_method"))
+        )
+
+        if set_weights_to_zero:
+            subsequent_model.extended_beta_weights.data[:, least_important_prune_indices] = 0
+            return subsequent_model, least_important_prune_indices
+        else:
+            return least_important_prune_indices
+
+    def create_train_prune_aux_sub_model(self, subsequent_model, least_important_prune_indices=None):
+        aux_model = MultiPhaseDeepRandomizedNeuralNetworkSubsequent(subsequent_model, 0, 0.15)
+        aux_model.train_first_layer(self.train_loader)
+        most_important_prune_indices, _ = aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
+                                                            pruning_method=self.cfg.get("pruning_method"))
+
+        best_weights = aux_model.extended_beta_weights.data[:, most_important_prune_indices]
+        if least_important_prune_indices is None:
+            least_important_prune_indices = self.prune_subsequent_model(subsequent_model, set_weights_to_zero=False)
+        subsequent_model.extended_beta_weights.data[:, least_important_prune_indices] = best_weights
+
+        return subsequent_model
+
     def main(self):
         # Load data
         accuracies = []
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
             # Create model
-            initial_model = MultiPhaseDeepRandomizedNeuralNetwork(num_data=self.first_layer_num_data,
-                                                                  num_features=self.first_layer_input_nodes,
-                                                                  hidden_nodes=self.first_layer_hidden_nodes,
-                                                                  output_nodes=self.first_layer_output_nodes,
-                                                                  activation_function=self.cfg.get('activation'))
+            initial_model = MultiPhaseDeepRandomizedNeuralNetworkBase(num_data=self.first_layer_num_data,
+                                                                      num_features=self.first_layer_input_nodes,
+                                                                      hidden_nodes=self.first_layer_hidden_nodes,
+                                                                      output_nodes=self.first_layer_output_nodes,
+                                                                      activation_function=self.cfg.get('activation'))
 
             # Train and evaluate the model
             initial_model, initial_model_training_acc, initial_model_testing_acc = (
-                self.initial_model_training(initial_model)
+                self.initial_model_training_and_eval(initial_model)
             )
 
             # Pruning
@@ -155,20 +188,48 @@ class Experiment:
 
             # Train and evaluate network again with pruned weights
             initial_model, initial_model_pruned_training_acc, initial_model_pruned_testing_acc = (
-                self.initial_model_training(initial_model)
+                self.initial_model_training_and_eval(initial_model)
             )
 
             # Create aux model 1
-            initial_model = self.create_train_prune_aux_model(initial_model, least_important_prune_indices)
+            initial_model = (
+                self.create_train_prune_aux_model(initial_model=initial_model,
+                                                  least_important_prune_indices=least_important_prune_indices)
+            )
             initial_model, initial_model_subs_weights_training_acc, initial_model_subs_weights_testing_acc = (
-                self.initial_model_training(initial_model)
+                self.initial_model_training_and_eval(initial_model=initial_model)
             )
 
             # Create aux model 2
-            initial_model = self.create_train_prune_aux_model(initial_model, least_important_prune_indices)
+            initial_model = self.create_train_prune_aux_model(initial_model)
             initial_model, initial_model_subs_weights_training_acc_2, initial_model_subs_weights_testing_acc_2 = (
-                self.initial_model_training(initial_model)
+                self.initial_model_training_and_eval(initial_model)
             )
+
+            # ----------------------------------------------------------------------------------------------------------
+
+            # Subsequent Model
+            subsequent_model = (
+                MultiPhaseDeepRandomizedNeuralNetworkSubsequent(base_instance=initial_model,
+                                                                mu=0,
+                                                                sigma=0.15)
+            )
+            subsequent_model, subsequent_model_training_acc, subsequent_model_testing_acc = (
+                self.subsequent_model_training_and_eval(subsequent_model)
+            )
+
+            # Pruning
+            subsequent_model, least_important_prune_indices = (
+                self.prune_subsequent_model(subsequent_model, set_weights_to_zero=True)
+            )
+
+            subsequent_model, subsequent_model_pruned_training_acc, subsequent_model_pruned_testing_acc = (
+                self.subsequent_model_training_and_eval(subsequent_model)
+            )
+
+            subsequent_model = self.create_train_prune_aux_sub_model(subsequent_model, least_important_prune_indices)
+            self.subsequent_model_training_and_eval(subsequent_model)
+
 
             # Excel
             accuracies.append((initial_model_training_acc, initial_model_testing_acc,
