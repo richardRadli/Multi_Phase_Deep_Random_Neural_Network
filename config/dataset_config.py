@@ -22,10 +22,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 42,
             "num_classes":
                 3,
-            "eq_neurons":
-                [866, 866, 866],
-            "exp_neurons":
-                [2049, 452, 100],
             "class_labels":
                 ["x", "o", "b"],
             "dataset_file":
@@ -48,10 +44,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 617,
             "num_classes":
                 26,
-            "eq_neurons":
-                [1300, 1300, 1300],
-            "exp_neurons":
-                [2000, 1500, 600],
             "class_labels":
                 ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17",
                  "18", "19", "20", "21", "22", "23", "24", "25", "26"],
@@ -75,10 +67,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 16,
             "num_classes":
                 26,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
             "class_labels":
                 ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
                  'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
@@ -102,10 +90,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 784,
             "num_classes":
                 10,
-            "eq_neurons":
-                [1000, 1000, 1000],
-            "exp_neurons":
-                [8000, 5000, 3000],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
@@ -128,10 +112,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 784,
             "num_classes":
                 10,
-            "eq_neurons":
-                [5333, 5333, 5333],
-            "exp_neurons":
-                [8000, 5000, 3000],
             "class_labels":
                 ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt",
                  "Sneaker", "Bag", "Ankle boot"],
@@ -156,10 +136,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 168,
             "num_classes":
                 2,
-            "eq_neurons":
-                [866, 866, 866],
-            "exp_neurons":
-                [1500, 750, 350],
             "class_labels":
                 ["Musks", "Non musks"],
             "dataset_file":
@@ -182,10 +158,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 64,
             "num_classes":
                 10,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [325, 325, 325],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
@@ -208,10 +180,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 10,
             "num_classes":
                 5,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
             "class_labels":
                 ["text", "horiz. line", "graphic", "vert. line ", "picture"],
             "dataset_file":
@@ -234,10 +202,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 36,
             "num_classes":
                 6,
-            "eq_neurons":
-                [1000, 1000, 1000],
-            "exp_neurons":
-                [100, 40, 10],
             "class_labels":
                 [],
             "dataset_file":
@@ -276,10 +240,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 19,
             "num_classes":
                 7,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
             "class_labels":
                 ["brickface", "sky", "foliage", "cement", "window", "path", "grass"],
             "dataset_file":
@@ -302,10 +262,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 9,
             "num_classes":
                 7,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
             "class_labels":
                 ["Rad Flow", "Fpv Close", "Fpv Open", "High", "Bypass", "Bpv Close", "Bpv Open"],
             "dataset_file":
@@ -328,10 +284,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 57,
             "num_classes":
                 2,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
             "class_labels":
                 ["0", "1"],
             "dataset_file":
@@ -355,10 +307,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 256,
             "num_classes":
                 10,
-            "eq_neurons":
-                [866, 866, 866],
-            "exp_neurons":
-                [2049, 452, 100],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":

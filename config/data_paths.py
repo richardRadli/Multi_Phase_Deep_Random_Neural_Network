@@ -62,14 +62,16 @@ class ConfigFilePaths(_Const):
     dirs_config_paths = {
         "config_mpdrnn":
             "config/MPDRNN_config.json",
-        "config_ipmdrnn":
-            "config/IPMPDRNN_config.json",
-        "config_fcnn":
-            "config/FCNN_config.json",
         "config_schema_mpdrnn":
             "config/MPDRNN_config_schema.json",
+
+        "config_ipmdrnn":
+            "config/IPMPDRNN_config.json",
         "config_schema_ipmdrnn":
             "config/IPMPDRNN_config_schema.json",
+
+        "config_fcnn":
+            "config/FCNN_config.json",
         "config_schema_fcnn":
             "config/FCNN_config_schema.json"
     }
