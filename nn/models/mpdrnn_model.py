@@ -18,35 +18,46 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
 
         colorama.init()
 
-    def forward(self, hidden_layer_1):
-        return hidden_layer_1 @ self.beta_weights
+    @staticmethod
+    def forward(hidden_layer, weights):
+        return hidden_layer @ weights
 
     def train_first_layer(self, train_loader):
         for train_x, train_y in tqdm(train_loader, total=len(train_loader), desc=colorama.Fore.MAGENTA + "Training"):
             self.h1.data = self.activation_function(train_x @ self.alpha_weights)
             self.beta_weights.data = torch.linalg.pinv(self.h1).matmul(train_y)
 
-    def pruning(self, pruning_percentage: float, pruning_method: str):
-        abs_beta_weights = torch.abs(self.beta_weights)
+    @staticmethod
+    def prune_weights(weights, pruning_percentage: float, pruning_method: str):
+        abs_weights = torch.abs(weights)
 
         if pruning_method == "max_rank":
-            ranking_matrix = abs_beta_weights.argsort(dim=0).argsort(dim=0)
+            ranking_matrix = abs_weights.argsort(dim=0).argsort(dim=0)
             importance_score, not_used = torch.max(ranking_matrix, dim=1)
         elif pruning_method == "sum_weight":
-            importance_score = torch.sum(abs_beta_weights, dim=1)
+            importance_score = torch.sum(abs_weights, dim=1)
         else:
             raise ValueError("Pruning method must be either 'max_rank' or 'sum_weight'")
 
-        num_neurons_to_prune = int(pruning_percentage * abs_beta_weights.shape[0])
+        num_neurons_to_prune = int(pruning_percentage * abs_weights.shape[0])
         least_important_prune_indices = torch.argsort(importance_score)[:num_neurons_to_prune]
         most_important_prune_indices = torch.argsort(importance_score, descending=True)[:num_neurons_to_prune]
 
         return most_important_prune_indices, least_important_prune_indices
 
-    def predict_and_evaluate(self, dataloader, operation: str, verbose: bool = True):
+    def pruning(self, pruning_percentage: float, pruning_method: str):
+        return self.prune_weights(self.beta_weights, pruning_percentage, pruning_method)
+
+    def predict_and_evaluate(self, dataloader, operation: str, layer_weights=None, num_hidden_layers=None, verbose: bool = True):
         for x, y in tqdm(dataloader, total=len(dataloader), desc=f"Predicting {operation} set"):
             h1 = self.activation_function(x @ self.alpha_weights)
-            predictions = self.forward(h1)
+            if num_hidden_layers == 1:
+                predictions = self.forward(h1, layer_weights)
+            elif num_hidden_layers == 2:
+                h2 = self.activation_function(h1 @ layer_weights[0])
+                predictions = self.forward(h2, layer_weights[1])
+            else:
+                raise ValueError(f"Number of hidden layers must be either 1 or 2")
 
             y_predicted_argmax = torch.argmax(predictions, dim=-1)
             y_true_argmax = torch.argmax(y, dim=-1)
@@ -109,42 +120,17 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
 
         return hidden_layer_i
 
-    def forward(self, hidden_layer_2):
-        return hidden_layer_2 @ self.gamma_weights
-
     def train_second_layer(self, train_loader):
         for _, train_y in tqdm(train_loader, total=len(train_loader), desc="Training"):
             self.h2.data = self.activation_function(self.h1 @ self.extended_beta_weights)
             self.gamma_weights.data = torch.linalg.pinv(self.h2).matmul(train_y)
 
-    def predict_and_evaluate(self, dataloader, operation: str, verbose: bool = True):
-        for x, y in tqdm(dataloader, total=len(dataloader), desc=f"Predicting {operation} set"):
-            h1 = self.activation_function(x @ self.alpha_weights)
-            h2 = self.activation_function(h1 @ self.extended_beta_weights)
-            predictions = self.forward(h2)
-
-            y_predicted_argmax = torch.argmax(predictions, dim=-1)
-            y_true_argmax = torch.argmax(y, dim=-1)
-            accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
-
-            if verbose:
-                logging.info(f"Accuracy of {operation} set: {accuracy:.4f}")
-
-            return accuracy
+    def predict_and_evaluate(
+            self, dataloader, operation: str, layer_weights=None, num_hidden_layers=None, verbose: bool = True
+    ):
+        super().predict_and_evaluate(
+            dataloader, operation, [self.extended_beta_weights, self.gamma_weights], 2, verbose
+        )
 
     def pruning(self, pruning_percentage: float, pruning_method: str):
-        abs_gamma_weights = torch.abs(self.gamma_weights)
-
-        if pruning_method == "max_rank":
-            ranking_matrix = abs_gamma_weights.argsort(dim=0).argsort(dim=0)
-            importance_score, not_used = torch.max(ranking_matrix, dim=1)
-        elif pruning_method == "sum_weight":
-            importance_score = torch.sum(abs_gamma_weights, dim=1)
-        else:
-            raise ValueError("Pruning method must be either 'max_rank' or 'sum_weight'")
-
-        num_neurons_to_prune = int(pruning_percentage * abs_gamma_weights.shape[0])
-        least_important_prune_indices = torch.argsort(importance_score)[:num_neurons_to_prune]
-        most_important_prune_indices = torch.argsort(importance_score, descending=True)[:num_neurons_to_prune]
-
-        return most_important_prune_indices, least_important_prune_indices
+        return self.prune_weights(self.gamma_weights, pruning_percentage, pruning_method)

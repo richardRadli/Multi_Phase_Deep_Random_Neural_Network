@@ -155,6 +155,10 @@
       "type": "integer",
       "description": "Number of epochs."
     },
+    "num_tests": {
+      "type": "integer",
+      "description": "How many times a test should be repeated."
+    },
     "device": {
       "type": "string",
       "enum": ["gpu", "cuda", "cpu"],

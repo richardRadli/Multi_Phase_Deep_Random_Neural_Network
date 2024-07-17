@@ -18,19 +18,19 @@ def main():
         load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
                          json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
     )
-
-    fcnn_config = fcnn_paths_configs(cfg.get("dataset_name"))
+    dataset_name = cfg.get("dataset_name")
+    fcnn_config = fcnn_paths_configs(dataset_name)
 
     filename = (
         os.path.join(
             fcnn_config.get("saved_results"),
-            f"{timestamp}_bs_{cfg.get('batch_size')}_hn_{cfg.get('hidden_neurons')}_lr_{cfg.get('learning_rate')}_"
-            f"device_{cfg.get('device')}.xlsx")
+            f"{timestamp}_bs_{cfg.get('batch_size').get(dataset_name)}_hn_{cfg.get('hidden_neurons').get(dataset_name)}"
+            f"_lr_{cfg.get('learning_rate').get(dataset_name)}_device_{cfg.get('device')}.xlsx")
     )
 
     collected_data = []
 
-    for i in tqdm(range(10), desc=f"{colorama.Fore.LIGHTBLUE_EX} Testing cycle"):
+    for i in tqdm(range(cfg.get("num_tests")), desc=f"{colorama.Fore.LIGHTBLUE_EX} Testing cycle"):
         train_fcnn = TrainFCNN()
         train_fcnn.fit()
         training_time = train_fcnn.fit.execution_time
@@ -44,7 +44,7 @@ def main():
                                training_time))
 
         insert_data_to_excel(filename=filename,
-                             dataset_name=cfg.get("dataset_name"),
+                             dataset_name=dataset_name,
                              row=i + 2,
                              data=collected_data,
                              network="fcnn")

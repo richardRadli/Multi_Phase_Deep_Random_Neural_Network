@@ -1,9 +1,10 @@
 {
-  "dataset_name": "connect4",
-  "patience": 20,
+  "dataset_name": "mnist",
+  "patience": 10,
   "seed": false,
-  "epochs": 100,
-  "device": "cuda",
+  "epochs": 1000,
+  "device": "cpu",
+  "num_tests": 10,
   "learning_rate": {
     "connect4": 0.0014840476104628093,
     "isolete": 0.001907640069101866,

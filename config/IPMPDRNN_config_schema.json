@@ -34,6 +34,14 @@
       "type": "string",
       "enum": ["BASE", "EXP_ORT", "EXP_ORT_C"],
       "description": "The method to generate new weights in consecutive layers."
+    },
+    "mu": {
+      "type": "number",
+      "description": "The mean of a uniform distribution is the midpoint of the interval."
+    },
+    "sigma": {
+      "type": "number",
+      "default": "The standard deviation of a uniform distribution is a measure of the spread of the distribution."
     }
   },
   "required": ["dataset_name", "activation", "number_of_tests", "seed", "subset_percentage", "pruning_method", "method"]

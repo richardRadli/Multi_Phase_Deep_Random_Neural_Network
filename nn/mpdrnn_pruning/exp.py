@@ -51,7 +51,9 @@ class Experiment:
         self.first_layer_output_nodes = self.gen_ds_cfg.get("num_classes")
 
         file_path = general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
-        self.train_loader, self.test_loader = self.create_train_test_datasets(file_path)
+        self.train_loader, self.valid_loader, self.test_loader = (
+            self.create_train_valid_test_datasets(file_path)
+        )
 
         colorama.init()
 
@@ -64,14 +66,16 @@ class Experiment:
         return num_neurons[method]
 
     @staticmethod
-    def create_train_test_datasets(file_path):
+    def create_train_valid_test_datasets(file_path):
         train_dataset = NpzDataset(file_path, operation="train")
+        valid_dataset = NpzDataset(file_path, operation="valid")
         test_dataset = NpzDataset(file_path, operation="test")
 
         train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
+        valid_loader = DataLoader(dataset=valid_dataset, batch_size=len(valid_dataset), shuffle=False)
         test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
 
-        return train_loader, test_loader
+        return train_loader, valid_loader, test_loader
 
     # @staticmethod
     # def calc_ort(x):
@@ -97,8 +101,8 @@ class Experiment:
 
     def initial_model_training_and_eval(self, initial_model):
         initial_model.train_first_layer(self.train_loader)
-        tr1acc = initial_model.predict_and_evaluate(self.train_loader, "train")
-        te1acc = initial_model.predict_and_evaluate(self.test_loader, "test")
+        tr1acc = initial_model.predict_and_evaluate(self.train_loader, "train", verbose=initial_model.beta_weights)
+        te1acc = initial_model.predict_and_evaluate(self.test_loader, "test", verbose=initial_model.beta_weights)
 
         return initial_model, tr1acc, te1acc
 
@@ -152,7 +156,11 @@ class Experiment:
             return least_important_prune_indices
 
     def create_train_prune_aux_sub_model(self, subsequent_model, least_important_prune_indices=None):
-        aux_model = MultiPhaseDeepRandomizedNeuralNetworkSubsequent(subsequent_model, 0, 0.15)
+        aux_model = (
+            MultiPhaseDeepRandomizedNeuralNetworkSubsequent(base_instance=subsequent_model,
+                                                            mu=self.cfg.get("mu"),
+                                                            sigma=self.cfg.get("sigma"))
+        )
         aux_model.train_first_layer(self.train_loader)
         most_important_prune_indices, _ = aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
                                                             pruning_method=self.cfg.get("pruning_method"))
@@ -211,8 +219,8 @@ class Experiment:
             # Subsequent Model
             subsequent_model = (
                 MultiPhaseDeepRandomizedNeuralNetworkSubsequent(base_instance=initial_model,
-                                                                mu=0,
-                                                                sigma=0.15)
+                                                                mu=self.cfg.get("mu"),
+                                                                sigma=self.cfg.get("sigma"))
             )
             subsequent_model, subsequent_model_training_acc, subsequent_model_testing_acc = (
                 self.subsequent_model_training_and_eval(subsequent_model)
@@ -229,7 +237,6 @@ class Experiment:
 
             subsequent_model = self.create_train_prune_aux_sub_model(subsequent_model, least_important_prune_indices)
             self.subsequent_model_training_and_eval(subsequent_model)
-
 
             # Excel
             accuracies.append((initial_model_training_acc, initial_model_testing_acc,

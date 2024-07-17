@@ -1,9 +1,11 @@
 {
-  "dataset_name": "satimages",
+  "dataset_name": "usps",
   "activation": "LeakyReLU",
   "number_of_tests": 50,
   "seed": true,
   "subset_percentage": 0.3,
   "pruning_method": "sum_weight",
-  "method": "BASE"
+  "method": "BASE",
+  "mu": 0,
+  "sigma": 0.15
 }
