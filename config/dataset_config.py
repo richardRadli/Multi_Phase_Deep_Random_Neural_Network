@@ -10,10 +10,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "connect4": {
             "dataset_name":
                 "connect4",
+            "dataset_size":
+                67557,
             "num_train_data":
-                49980,
+                47290,
+            "num_valid_data":
+                10134,
             "num_test_data":
-                17577,
+                10133,
             "num_features":
                 42,
             "num_classes":
@@ -32,10 +36,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "isolete": {
             "dataset_name":
                 "isolete",
+            "dataset_size":
+                7797,
             "num_train_data":
-                6238,
+                5458,
+            "num_valid_data":
+                1170,
             "num_test_data":
-                1559,
+                1169,
             "num_features":
                 617,
             "num_classes":
@@ -55,10 +63,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "letter": {
             "dataset_name":
                 "letter",
+            "dataset_size":
+                20000,
             "num_train_data":
-                10500,
+                14000,
+            "num_valid_data":
+                3000,
             "num_test_data":
-                9500,
+                3000,
             "num_features":
                 16,
             "num_classes":
@@ -78,10 +90,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "mnist": {
             "dataset_name":
                 "mnist",
+            "dataset_size":
+                70000,
             "num_train_data":
-                60000,
+                49000,
+            "num_valid_data":
+                10500,
             "num_test_data":
-                10000,
+                10500,
             "num_features":
                 784,
             "num_classes":
@@ -100,10 +116,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "mnist_fashion": {
             "dataset_name":
                 "mnist_fashion",
+            "dataset_size":
+                70000,
             "num_train_data":
-                60000,
+                49000,
+            "num_valid_data":
+                10500,
             "num_test_data":
-                10000,
+                10500,
             "num_features":
                 784,
             "num_classes":
@@ -124,10 +144,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "musk2": {
             "dataset_name":
                 "musk2",
+            "dataset_size":
+                6598,
             "num_train_data":
-                3000,
+                4619,
+            "num_valid_data":
+                990,
             "num_test_data":
-                3598,
+                989,
             "num_features":
                 168,
             "num_classes":
@@ -146,10 +170,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "optdigits": {
             "dataset_name":
                 "optdigits",
+            "dataset_size":
+                5620,
             "num_train_data":
-                3823,
+                3934,
+            "num_valid_data":
+                843,
             "num_test_data":
-                1797,
+                843,
             "num_features":
                 64,
             "num_classes":
@@ -168,10 +196,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "page_blocks": {
             "dataset_name":
                 "page_blocks",
+            "dataset_size":
+                5473,
             "num_train_data":
-                4373,
+                3831,
+            "num_valid_data":
+                822,
             "num_test_data":
-                1100,
+                820,
             "num_features":
                 10,
             "num_classes":
@@ -190,10 +222,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "satimages": {
             "dataset_name":
                 "satimages",
+            "dataset_size":
+                6435,
             "num_train_data":
-                4435,
+                4504,
+            "num_valid_data":
+                966,
             "num_test_data":
-                2000,
+                965,
             "num_features":
                 36,
             "num_classes":
@@ -228,10 +264,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "segment": {
             "dataset_name":
                 "segment",
+            "dataset_size":
+                2310,
             "num_train_data":
-                1733,
+                1617,
+            "num_valid_data":
+                347,
             "num_test_data":
-                577,
+                346,
             "num_features":
                 19,
             "num_classes":
@@ -250,10 +290,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "shuttle": {
             "dataset_name":
                 "shuttle",
+            "dataset_size":
+                58000,
             "num_train_data":
                 40600,
+            "num_valid_data":
+                8700,
             "num_test_data":
-                17400,
+                8700,
             "num_features":
                 9,
             "num_classes":
@@ -272,10 +316,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "spambase": {
             "dataset_name":
                 "spambase",
+            "dataset_size":
+                4601,
             "num_train_data":
-                3681,
+                3220,
+            "num_valid_data":
+                691,
             "num_test_data":
-                920,
+                690,
             "num_features":
                 57,
             "num_classes":
@@ -295,10 +343,14 @@ def general_dataset_configs(dataset_type) -> Dict:
         "usps": {
             "dataset_name":
                 "usps",
+            "dataset_size":
+                9298,
             "num_train_data":
-                7291,
+                6509,
+            "num_valid_data":
+                1395,
             "num_test_data":
-                2007,
+                1394,
             "num_features":
                 256,
             "num_classes":

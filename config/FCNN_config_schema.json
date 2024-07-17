@@ -10,31 +10,150 @@
     },
     "patience": {
       "type": "integer",
-      "description": "The number of epochs after the training should be stopped if the validation loss is not decreasing."
-    },
-    "valid_size": {
-      "type": "number",
-      "description": "Percentage of the size of the validation set."
+      "description": "The number of epochs after which the training should be stopped if the validation loss is not decreasing."
     },
     "seed": {
       "type": "boolean",
       "description": "Controls the way to generate random values. If set to True, the same values will be generated in every execution."
     },
     "learning_rate": {
-      "type": "number",
-      "description": "Value of the learning rate."
+      "type": "object",
+      "description": "Learning rates for different datasets.",
+      "properties": {
+        "connect4": {
+          "type": "number"
+        },
+        "isolete": {
+          "type": "number"
+        },
+        "letter": {
+          "type": "number"
+        },
+        "mnist": {
+          "type": "number"
+        },
+        "mnist_fashion": {
+          "type": "number"
+        },
+        "musk2": {
+          "type": "number"
+        },
+        "optdigits": {
+          "type": "number"
+        },
+        "page_blocks": {
+          "type": "number"
+        },
+        "satimages": {
+          "type": "number"
+        },
+        "segment": {
+          "type": "number"
+        },
+        "shuttle": {
+          "type": "number"
+        },
+        "spambase": {
+          "type": "number"
+        },
+        "usps": {
+          "type": "number"
+        }
+      }
     },
     "hidden_neurons": {
-      "type": "integer",
-      "description": "Number of hidden nodes in the hidden layers."
+      "type": "object",
+      "description": "Number of hidden nodes in the hidden layers for different datasets.",
+      "properties": {
+        "connect4": {
+          "type": "integer"
+        },
+        "isolete": {
+          "type": "integer"
+        },
+        "letter": {
+          "type": "integer"
+        },
+        "mnist": {
+          "type": "integer"
+        },
+        "mnist_fashion": {
+          "type": "integer"
+        },
+        "musk2": {
+          "type": "integer"
+        },
+        "optdigits": {
+          "type": "integer"
+        },
+        "page_blocks": {
+          "type": "integer"
+        },
+        "satimages": {
+          "type": "integer"
+        },
+        "segment": {
+          "type": "integer"
+        },
+        "shuttle": {
+          "type": "integer"
+        },
+        "spambase": {
+          "type": "integer"
+        },
+        "usps": {
+          "type": "integer"
+        }
+      }
     },
     "batch_size": {
-      "type": "integer",
-      "description": "The size of the batches."
+      "type": "object",
+      "description": "Batch sizes for different datasets.",
+      "properties": {
+        "connect4": {
+          "type": "integer"
+        },
+        "isolete": {
+          "type": "integer"
+        },
+        "letter": {
+          "type": "integer"
+        },
+        "mnist": {
+          "type": "integer"
+        },
+        "mnist_fashion": {
+          "type": "integer"
+        },
+        "musk2": {
+          "type": "integer"
+        },
+        "optdigits": {
+          "type": "integer"
+        },
+        "page_blocks": {
+          "type": "integer"
+        },
+        "satimages": {
+          "type": "integer"
+        },
+        "segment": {
+          "type": "integer"
+        },
+        "shuttle": {
+          "type": "integer"
+        },
+        "spambase": {
+          "type": "integer"
+        },
+        "usps": {
+          "type": "integer"
+        }
+      }
     },
     "epochs": {
       "type": "integer",
-      "description": "Number epochs."
+      "description": "Number of epochs."
     },
     "device": {
       "type": "string",
@@ -42,5 +161,5 @@
       "description": "The selected device where the computations will be executed."
     }
   },
-  "required": ["dataset_name", "patience", "valid_size", "seed", "learning_rate", "hidden_neurons", "batch_size", "epochs"]
+  "required": ["dataset_name", "patience", "seed", "learning_rate", "hidden_neurons", "batch_size", "epochs"]
 }

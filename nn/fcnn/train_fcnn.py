@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from tqdm import tqdm
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from torchinfo import summary
 from torch.utils.tensorboard import SummaryWriter
 
@@ -49,7 +49,7 @@ class TrainFCNN:
         # Load the model
         self.model = (
             FCNN(input_size=gen_ds_cfg.get("num_features"),
-                 hidden_size=self.cfg.get("hidden_neurons"),
+                 hidden_size=self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name")),
                  output_size=gen_ds_cfg.get("num_classes"))
         ).to(self.device)
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
@@ -59,7 +59,7 @@ class TrainFCNN:
             general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
         )
         self.train_loader, self.valid_loader, self.test_loader = (
-            self.create_train_test_datasets(file_path)
+            self.create_train_valid_test_datasets(file_path)
         )
 
         # Define loss function
@@ -70,7 +70,7 @@ class TrainFCNN:
         # Define optimizer
         self.optimizer = (
             optim.Adam(self.model.parameters(),
-                       lr=self.cfg.get("learning_rate"))
+                       lr=self.cfg.get("learning_rate").get(self.cfg.get("dataset_name")))
         )
 
         # Tensorboard
@@ -84,28 +84,24 @@ class TrainFCNN:
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
-    def create_train_test_datasets(self, file_path):
-        full_train_dataset = NpzDataset(file_path, operation="train")
+    def create_train_valid_test_datasets(self, file_path):
+        train_dataset = NpzDataset(file_path, operation="train")
+        valid_dataset = NpzDataset(file_path, operation="valid")
         test_dataset = NpzDataset(file_path, operation="test")
-
-        train_size = int(self.cfg.get("valid_size") * len(full_train_dataset))
-        valid_size = len(full_train_dataset) - train_size
-
-        train_dataset, valid_dataset = random_split(full_train_dataset, [train_size, valid_size])
 
         train_loader = (
             DataLoader(dataset=train_dataset,
-                       batch_size=self.cfg.get("batch_size"),
+                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
                        shuffle=False)
         )
         valid_loader = (
             DataLoader(dataset=valid_dataset,
-                       batch_size=self.cfg.get("batch_size"),
+                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
                        shuffle=False)
         )
         test_loader = (
             DataLoader(dataset=test_dataset,
-                       batch_size=self.cfg.get("batch_size"),
+                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
                        shuffle=False)
         )
 

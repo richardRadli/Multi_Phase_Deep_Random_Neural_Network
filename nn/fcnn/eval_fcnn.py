@@ -4,21 +4,20 @@ import torch
 
 from sklearn.metrics import accuracy_score, recall_score, precision_score, confusion_matrix, f1_score
 from torchinfo import summary
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FCNN
 from nn.dataloaders.npz_dataloader import NpzDataset
-from utils.utils import (create_timestamp, setup_logger, device_selector, load_config_json,
+from utils.utils import (setup_logger, device_selector, load_config_json,
                          find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
 
 
 class EvalFCNN:
     def __init__(self):
         # Basic setup
-        timestamp = create_timestamp()
         colorama.init()
         setup_logger()
 
@@ -41,7 +40,7 @@ class EvalFCNN:
         file_path = (
             general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
         )
-        self.train_loader, _, self.test_loader = (
+        self.train_loader, self.test_loader = (
             self.create_train_test_datasets(file_path)
         )
 
@@ -53,7 +52,7 @@ class EvalFCNN:
         # Load the model
         self.model = (
             FCNN(input_size=gen_ds_cfg.get("num_features"),
-                 hidden_size=self.cfg.get("hidden_neurons"),
+                 hidden_size=self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name")),
                  output_size=gen_ds_cfg.get("num_classes")).to(self.device)
         )
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
@@ -72,19 +71,22 @@ class EvalFCNN:
         self.test_f1sore = None
 
     def create_train_test_datasets(self, file_path):
-        full_train_dataset = NpzDataset(file_path, operation="train")
+        train_dataset = NpzDataset(file_path, operation="train")
         test_dataset = NpzDataset(file_path, operation="test")
 
-        train_size = int(self.cfg.get("valid_size") * len(full_train_dataset))
-        valid_size = len(full_train_dataset) - train_size
+        train_loader = (
+            DataLoader(dataset=train_dataset,
+                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
+                       shuffle=False)
+        )
 
-        train_dataset, valid_dataset = random_split(full_train_dataset, [train_size, valid_size])
+        test_loader = (
+            DataLoader(dataset=test_dataset,
+                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
+                       shuffle=False)
+        )
 
-        train_loader = DataLoader(dataset=train_dataset, batch_size=self.cfg.get("batch_size"), shuffle=False)
-        valid_loader = DataLoader(dataset=valid_dataset, batch_size=self.cfg.get("batch_size"), shuffle=False)
-        test_loader = DataLoader(dataset=test_dataset, batch_size=self.cfg.get("batch_size"), shuffle=False)
-
-        return train_loader, valid_loader, test_loader
+        return train_loader, test_loader
 
     def evaluate_model(self, dataloader, operation):
         self.model.eval()

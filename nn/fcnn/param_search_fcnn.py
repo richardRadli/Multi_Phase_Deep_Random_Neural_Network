@@ -7,7 +7,7 @@ import torch.optim as optim
 from ray import tune
 from ray.tune.schedulers import ASHAScheduler
 from ray.air import session
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
@@ -50,10 +50,8 @@ class HyperparameterSearch:
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=config["lr"])
 
-        full_train_dataset = NpzDataset(self.file_path, operation="train")
-        train_size = int(self.cfg.get("valid_size") * len(full_train_dataset))
-        valid_size = len(full_train_dataset) - train_size
-        train_dataset, val_dataset = random_split(full_train_dataset, [train_size, valid_size])
+        train_dataset = NpzDataset(self.file_path, operation="train")
+        val_dataset = NpzDataset(self.file_path, operation="valid")
 
         train_loader = DataLoader(train_dataset, batch_size=int(config["batch_size"]), shuffle=False)
         val_loader = DataLoader(val_dataset, batch_size=int(config["batch_size"]), shuffle=False)

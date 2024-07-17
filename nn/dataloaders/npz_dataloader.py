@@ -12,6 +12,9 @@ class NpzDataset(Dataset):
         if operation == "train":
             self.x = torch.from_numpy(data.get("train_x")).float()
             self.y = torch.from_numpy(data.get("train_y")).float()
+        elif operation == "valid":
+            self.x = torch.from_numpy(data.get("valid_x")).float()
+            self.y = torch.from_numpy(data.get("valid_y")).float()
         elif operation == "test":
             self.x = torch.from_numpy(data.get("test_x")).float()
             self.y = torch.from_numpy(data.get("test_y")).float()

@@ -26,7 +26,16 @@ def all_elements_numeric(nested_list):
     return True
 
 
-def main():
+def main(split_ratio):
+    """
+
+    Args:
+        split_ratio: list, where elements denote train validation and test split ratio subsequently.
+
+    Returns:
+        Notes
+    """
+
     setup_logger()
 
     cfg = (
@@ -51,7 +60,8 @@ def main():
         for line in tqdm(lines):
             split = line.strip().split(',')
             # label at the end
-            if dataset_name in ["connect4", "isolete", "iris", "musk2", "optdigits", "page_blocks", "satimages", "shuttle", "spambase", "forest", "usps"]:
+            if dataset_name in ["connect4", "isolete", "iris", "musk2", "optdigits", "page_blocks", "satimages",
+                                "shuttle", "spambase", "forest", "usps"]:
                 labels.append(split[-1])
                 features.append(split[:-1])
             # label at the front
@@ -76,24 +86,54 @@ def main():
         scaler = MinMaxScaler()
         normalized_features = scaler.fit_transform(reshaped_features)
 
-        train_x, test_x, train_y, test_y = (
+        size_of_dataset = general_dataset_configs(dataset_name).get("dataset_size")
+        size_of_test_subset = int(size_of_dataset * split_ratio[2])
+
+        train_valid_x, test_x, train_valid_y, test_y = (
             train_test_split(
                 normalized_features,
                 encoded_labels,
-                test_size=general_dataset_configs(dataset_name).get("num_test_data"),
+                test_size=size_of_test_subset,
                 random_state=42
             )
+        )
+
+        validation_ratio = split_ratio[1] / (split_ratio[0] + split_ratio[2])
+
+        train_x, valid_x, train_y, valid_y = (
+            train_test_split(
+                train_valid_x,
+                train_valid_y,
+                test_size=validation_ratio,
+                random_state=42
+            )
+        )
+
+        # Check the assertions
+        logging.info(
+            f"Train set size: {train_x.shape}, {train_x.shape[0] / size_of_dataset:.4f} percent of the dataset"
+        )
+        logging.info(
+            f"Validation set size: {valid_x.shape}, {valid_x.shape[0] / size_of_dataset:.4f} percent of the dataset"
+        )
+        logging.info(
+            f"Test set size: {test_x.shape}, {test_x.shape[0] / size_of_dataset:.4f} percent of the dataset"
         )
 
         file_save_name = general_dataset_configs(dataset_name).get("cached_dataset_file")
         np.savez(file_save_name,
                  train_x=train_x,
+                 valid_x=valid_x,
                  test_x=test_x,
                  train_y=train_y,
+                 valid_y=valid_y,
                  test_y=test_y)
+
+        logging.info(f"Saved dataset to {file_save_name}")
+
     except FileNotFoundError:
         logging.error("File not found")
 
 
 if __name__ == "__main__":
-    main()
+    main(split_ratio=[0.7, 0.15, 0.15])
