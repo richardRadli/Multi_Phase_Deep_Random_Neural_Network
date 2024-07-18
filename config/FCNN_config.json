@@ -23,7 +23,7 @@
   "hidden_neurons": {
     "connect4": 866,
     "isolete": 1300,
-    "letter": 500,
+    "letter": 1500,
     "mnist": 2000,
     "mnist_fashion": 2000,
     "musk2": 866,

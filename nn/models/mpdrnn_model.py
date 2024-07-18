@@ -10,7 +10,7 @@ from utils.utils import measure_execution_time
 
 
 class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
-    def __init__(self, num_data, num_features, hidden_nodes, output_nodes, activation_function):
+    def __init__(self, num_data, num_features, hidden_nodes, output_nodes, activation_function, method):
         super(MultiPhaseDeepRandomizedNeuralNetworkBase, self).__init__()
 
         self.activation_function = (
@@ -26,21 +26,37 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
             nn.Parameter(torch.randn(num_data, hidden_nodes[0]), requires_grad=True)
         )
 
+        self.method = method
         self.hidden_nodes = hidden_nodes
 
         colorama.init()
 
     @measure_execution_time
-    def train_ith_layer(self, train_loader, hi, weights1, weights2, hi_prev=None):
+    def train_ith_layer(self, train_loader, hi, weights1, weights2, method, hi_prev=None):
         for train_x, train_y in tqdm(train_loader, total=len(train_loader), desc=colorama.Fore.MAGENTA + "Training"):
             if hi_prev is None:
                 hi.data = self.activation_function(train_x.matmul(weights1))
             else:
                 hi.data = self.activation_function(hi_prev.matmul(weights1))
-            weights2.data = torch.linalg.pinv(hi, rcond=1e-15).matmul(train_y)
+
+            if method in ['BASE', 'EXP_ORT']:
+                weights2.data = torch.linalg.pinv(hi, rcond=1e-15).matmul(train_y)
+            else:
+                C = 0.6
+                identity_matrix = torch.eye(hi.shape[1])
+                if hi.shape[0] > hi.shape[1]:
+                    weights2.data = (
+                        torch.linalg.pinv(hi.T.matmul(hi) + identity_matrix / C, rcond=1e-15).matmul(hi.T.matmul(train_y))
+                    )
+                elif hi.shape[0] < hi.shape[1]:
+                    weights2.data = (
+                        hi.T.matmul(
+                            torch.linalg.pinv(hi.matmul(hi.T) + identity_matrix / C, rcond=1e-15).matmul(train_y)
+                        )
+                    )
 
     def train_layer(self, train_loader):
-        return self.train_ith_layer(train_loader, self.h1, self.alpha_weights, self.beta_weights)
+        return self.train_ith_layer(train_loader, self.h1, self.alpha_weights, self.beta_weights, self.method)
 
     @staticmethod
     def prune_weights(weights, pruning_percentage: float, pruning_method: str):
@@ -127,7 +143,8 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             num_features=base_instance.alpha_weights.size(0),
             hidden_nodes=base_instance.hidden_nodes,
             output_nodes=base_instance.beta_weights.size(1),
-            activation_function=base_instance.activation_function.__class__.__name__
+            activation_function=base_instance.activation_function.__class__.__name__,
+            method=base_instance.method,
         )
 
         self.alpha_weights.data = base_instance.alpha_weights.data.clone()
@@ -137,6 +154,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
         self.mu = mu
         self.sigma = sigma
         self.n_hidden_nodes = base_instance.hidden_nodes
+        self.method = base_instance.method
 
         self.extended_beta_weights = self.create_hidden_layer(self.beta_weights)
 
@@ -155,8 +173,14 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
         w_rnd_out_i = weights + noise
         hidden_layer_i_a = torch.hstack((weights, w_rnd_out_i))
 
-        w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes))
-        hidden_layer_i = torch.hstack((hidden_layer_i_a, w_rnd))
+        if self.method not in ["EXP_ORT", "EXP_ORT_C"]:
+            w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes))
+            hidden_layer_i = torch.hstack((hidden_layer_i_a, w_rnd))
+        else:
+            w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes // 2))
+            q, _ = torch.linalg.qr(w_rnd)
+            orthogonal_matrix = torch.mm(q, q.t())
+            hidden_layer_i = torch.cat((hidden_layer_i_a, orthogonal_matrix), dim=1)
 
         return hidden_layer_i
 
@@ -166,6 +190,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             hi=self.h2,
             weights1=self.extended_beta_weights,
             weights2=self.gamma_weights,
+            method=self.method,
             hi_prev=self.h1
         )
 
@@ -200,6 +225,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralN
         self.sigma = sigma
 
         self.n_hidden_nodes = base_instance.hidden_nodes
+        self.method = base_instance.method
 
         self.extended_gamma_weights = self.create_hidden_layer(self.gamma_weights)
 
@@ -215,6 +241,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralN
             hi=self.h3,
             weights1=self.extended_gamma_weights,
             weights2=self.delta_weights,
+            method=self.method,
             hi_prev=self.h2
         )
 

@@ -1,6 +1,5 @@
 import colorama
 import os
-import logging
 import torch
 
 from nn.dataloaders.npz_dataloader import NpzDataset
@@ -12,7 +11,7 @@ from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.models.mpdrnn_model import (MultiPhaseDeepRandomizedNeuralNetworkBase,
                                     MultiPhaseDeepRandomizedNeuralNetworkSubsequent,
                                     MultiPhaseDeepRandomizedNeuralNetworkFinal)
-from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel, setup_logger,
+from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel,
                          load_config_json, reorder_metrics_lists)
 
 
@@ -22,7 +21,6 @@ class MPDRNN:
         timestamp = create_timestamp()
 
         # Initialize paths and settings
-        setup_logger()
         self.cfg = (
             load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_mpdrnn"),
                              json_filename=JSON_FILES_PATHS.get_data_path("config_mpdrnn"))
@@ -105,7 +103,8 @@ class MPDRNN:
                                                                       num_features=self.first_layer_input_nodes,
                                                                       hidden_nodes=self.first_layer_hidden_nodes,
                                                                       output_nodes=self.first_layer_output_nodes,
-                                                                      activation_function=self.cfg.get('activation'))
+                                                                      activation_function=self.cfg.get('activation'),
+                                                                      method=self.cfg.get("method"))
 
             initial_model, initial_model_training_metrics, initial_model_testing_metrics = (
                 self.model_training_and_evaluation(model=initial_model,
