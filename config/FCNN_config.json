@@ -1,9 +1,9 @@
 {
-  "dataset_name": "mnist",
+  "dataset_name": "page_blocks",
   "patience": 10,
   "seed": false,
   "epochs": 1000,
-  "device": "cpu",
+  "device": "cuda",
   "num_tests": 10,
   "learning_rate": {
     "connect4": 0.0014840476104628093,

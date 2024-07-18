@@ -286,7 +286,7 @@ def insert_data_to_excel(filename, dataset_name, row, data, network):
                   "train acc initial model after pruning", "test acc initial model after pruning",
                   "train acc initial model after substitute 1", "test acc initial model after substitute 1",
                   "train acc initial model after substitute 2", "test acc initial model after substitute 2"]
-    elif network == "fcnn":
+    elif network == "fcnn" or network == "mpdrnn":
         values = ["train acc", "test acc", "train precision", "test precision", "train recall", "test recall",
                   "train f1", "test f1", "training time"]
     else:
@@ -382,3 +382,25 @@ def save_log_to_txt(output_file, result):
     sys.stdout = original_stdout
 
     logging.info(f"Saving log to {output_file}")
+
+
+def reorder_metrics_lists(train_metrics, test_metrics, training_time_list):
+    training_time = sum(training_time_list)
+
+    train_acc, train_precision, train_recall, train_f1, = (
+        train_metrics[0], train_metrics[1], train_metrics[2], train_metrics[3]
+    )
+
+    test_acc, test_precision, test_recall, test_f1 = (
+        test_metrics[0], test_metrics[1], test_metrics[2], test_metrics[3]
+    )
+
+    combined_metrics = [
+        train_acc, test_acc,
+        train_precision, test_precision,
+        train_recall, test_recall,
+        train_f1, test_f1,
+        training_time
+    ]
+
+    return [tuple(combined_metrics)]
