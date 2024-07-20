@@ -73,7 +73,12 @@ class ConfigFilePaths(_Const):
         "config_fcnn":
             "config/FCNN_config.json",
         "config_schema_fcnn":
-            "config/FCNN_config_schema.json"
+            "config/FCNN_config_schema.json",
+
+        "config_helm":
+            "config/HELM_config.json",
+        "config_schema_helm":
+            "config/HELM_config_schema.json"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -118,33 +123,6 @@ class MPDRNNPaths(_Const):
             "mpdrnn/images/confusion_matrix/usps",
         "cm_satimages":
             "mpdrnn/images/confusion_matrix/satimages",
-
-        "metrics_connect4":
-            "mpdrnn/images/metrics/connect4",
-        "metrics_isolete":
-            "mpdrnn/images/metrics/isolete",
-        "metrics_letter":
-            "mpdrnn/images/metrics/letter",
-        "metrics_mnist":
-            "mpdrnn/images/metrics/mnist",
-        "metrics_mnist_fashion":
-            "mpdrnn/images/metrics/mnist_fashion",
-        "metrics_musk2":
-            "mpdrnn/images/metrics/musk2",
-        "metrics_optdigits":
-            "mpdrnn/images/metrics/optdigits",
-        "metrics_page_blocks":
-            "mpdrnn/images/metrics/page_blocks",
-        "metrics_segment":
-            "mpdrnn/images/metrics/segment",
-        "metrics_shuttle":
-            "mpdrnn/images/metrics/shuttle",
-        "metrics_spambase":
-            "mpdrnn/images/metrics/spambase",
-        "metrics_usps":
-            "mpdrnn/images/metrics/usps",
-        "metrics_satimages":
-            "mpdrnn/images/metrics/satimages",
 
         "results_connect4":
             "mpdrnn/data/results/connect4",
@@ -217,33 +195,6 @@ class IPMPDRNNPaths(_Const):
             "ipmpdrnn/images/confusion_matrix/usps",
         "cm_satimages":
             "ipmpdrnn/images/confusion_matrix/satimages",
-
-        "metrics_connect4":
-            "ipmpdrnn/images/metrics/connect4",
-        "metrics_isolete":
-            "ipmpdrnn/images/metrics/isolete",
-        "metrics_letter":
-            "ipmpdrnn/images/metrics/letter",
-        "metrics_mnist":
-            "ipmpdrnn/images/metrics/mnist",
-        "metrics_mnist_fashion":
-            "ipmpdrnn/images/metrics/mnist_fashion",
-        "metrics_musk2":
-            "ipmpdrnn/images/metrics/musk2",
-        "metrics_optdigits":
-            "ipmpdrnn/images/metrics/optdigits",
-        "metrics_page_blocks":
-            "ipmpdrnn/images/metrics/page_blocks",
-        "metrics_segment":
-            "ipmpdrnn/images/metrics/segment",
-        "metrics_shuttle":
-            "ipmpdrnn/images/metrics/shuttle",
-        "metrics_spambase":
-            "ipmpdrnn/images/metrics/spambase",
-        "metrics_usps":
-            "ipmpdrnn/images/metrics/usps",
-        "metrics_satimages":
-            "ipmpdrnn/images/metrics/satimages",
 
         "results_connect4":
             "ipmpdrnn/data/results/connect4",
@@ -414,6 +365,78 @@ class FCNNPaths(_Const):
         return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
 
 
+class HELMPaths(_Const):
+    dirs_dataset_paths = {
+        # Confusion matrices
+        "helm_connect4":
+            "helm/images/confusion_matrix/connect4",
+        "helm_isolete":
+            "helm/images/confusion_matrix/isolete",
+        "helm_letter":
+            "helm/images/confusion_matrix/letter",
+        "helm_mnist":
+            "helm/images/confusion_matrix/mnist",
+        "helm_mnist_fashion":
+            "helm/images/confusion_matrix/mnist_fashion",
+        "helm_musk2":
+            "helm/images/confusion_matrix/musk2",
+        "helm_optdigits":
+            "helm/images/confusion_matrix/optdigits",
+        "helm_page_blocks":
+            "helm/images/confusion_matrix/page_blocks",
+        "helm_segment":
+            "helm/images/confusion_matrix/segment",
+        "helm_shuttle":
+            "helm/images/confusion_matrix/shuttle",
+        "helm_spambase":
+            "helm/images/confusion_matrix/spambase",
+        "helm_usps":
+            "helm/images/confusion_matrix/usps",
+        "helm_satimages":
+            "helm/images/confusion_matrix/satimages",
+
+        "results_connect4":
+            "helm/data/results/connect4",
+        "results_isolete":
+            "helm/data/results/isolete",
+        "results_letter":
+            "helm/data/results/letter",
+        "results_mnist":
+            "helm/data/results/mnist",
+        "results_mnist_fashion":
+            "helm/data/results/mnist_fashion",
+        "results_musk2":
+            "helm/data/results/musk2",
+        "results_optdigits":
+            "helm/data/results/optdigits",
+        "results_page_blocks":
+            "helm/data/results/page_blocks",
+        "results_segment":
+            "helm/data/results/segment",
+        "results_shuttle":
+            "helm/data/results/shuttle",
+        "results_spambase":
+            "helm/data/results/spambase",
+        "results_usps":
+            "helm/data/results/usps",
+        "results_satimages":
+            "helm/data/results/satimages"
+    }
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------- I N I T -----------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super().__init__()
+        self.create_directories(self.dirs_dataset_paths, "STORAGE")
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def get_data_path(self, key):
+        return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
+
+
 class DatasetFilesPaths(_Const):
     dirs_dataset_paths = {
         # Confusion matrices
@@ -465,4 +488,5 @@ JSON_FILES_PATHS: ConfigFilePaths = ConfigFilePaths()
 MPDRNN_PATHS: MPDRNNPaths = MPDRNNPaths()
 IPMPDRNN_PATHS: IPMPDRNNPaths = IPMPDRNNPaths()
 FCNN_PATHS: FCNNPaths = FCNNPaths()
+HELM_PATHS: HELMPaths = HELMPaths()
 DATASET_FILES_PATHS: DatasetFilesPaths = DatasetFilesPaths()

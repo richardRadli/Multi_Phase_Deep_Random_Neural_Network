@@ -11,7 +11,7 @@ from utils.utils import measure_execution_time
 
 class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
     def __init__(self, num_data: int, num_features: int, hidden_nodes: list[int], output_nodes: int,
-                 activation_function: str, method: str):
+                 activation_function: str, method: str, penalty_term: float = None):
         """
        Initialize the MultiPhaseDeepRandomizedNeuralNetworkBase class.
 
@@ -22,6 +22,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
            output_nodes (int): Number of output nodes.
            activation_function (str): Activation function to be used in the network.
            method (str): Method to be used for training the network.
+           penalty_term (float): Penalty term to be used in the network.
        """
 
         super(MultiPhaseDeepRandomizedNeuralNetworkBase, self).__init__()
@@ -41,6 +42,9 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
 
         self.method = method
         self.hidden_nodes = hidden_nodes
+
+        if self.method == "EXP_ORT_C" and penalty_term is not None:
+            self.penalty_term = penalty_term
 
         colorama.init()
 
@@ -71,16 +75,15 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
             if method in ['BASE', 'EXP_ORT']:
                 weights2.data = torch.linalg.pinv(hi, rcond=1e-15).matmul(train_y)
             else:
-                C = 0.6
                 identity_matrix = torch.eye(hi.shape[1])
                 if hi.shape[0] > hi.shape[1]:
                     weights2.data = (
-                        torch.linalg.pinv(hi.T.matmul(hi) + identity_matrix / C, rcond=1e-15).matmul(hi.T.matmul(train_y))
+                        torch.linalg.pinv(hi.T.matmul(hi) + identity_matrix / self.penalty_term, rcond=1e-15).matmul(hi.T.matmul(train_y))
                     )
-                elif hi.shape[0] < hi.shape[1]:
+                else:
                     weights2.data = (
                         hi.T.matmul(
-                            torch.linalg.pinv(hi.matmul(hi.T) + identity_matrix / C, rcond=1e-15).matmul(train_y)
+                            torch.linalg.pinv(hi.matmul(hi.T) + identity_matrix / self.penalty_term, rcond=1e-15).matmul(train_y)
                         )
                     )
 
@@ -253,6 +256,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             output_nodes=base_instance.beta_weights.size(1),
             activation_function=base_instance.activation_function.__class__.__name__,
             method=base_instance.method,
+            penalty_term=base_instance.penalty_term
         )
 
         self.alpha_weights.data = base_instance.alpha_weights.data.clone()
@@ -350,7 +354,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             list: List containing accuracy, precision, recall, F1-score, and confusion matrix.
         """
 
-        super(MultiPhaseDeepRandomizedNeuralNetworkSubsequent, self).predict_and_evaluate(
+        return super(MultiPhaseDeepRandomizedNeuralNetworkSubsequent, self).predict_and_evaluate(
             dataloader, operation, layer_weights, num_hidden_layers, verbose
         )
 

@@ -1,0 +1,22 @@
+{
+  "dataset_name": "connect4",
+  "seed": true,
+  "penalty": 1e-10,
+  "scaling_factor": 0.8,
+  "num_tests": 50,
+  "hidden_neurons": {
+    "connect4": [400, 200, 2000],
+    "isolete": [800, 400, 3000],
+    "letter": [1000, 500, 5000],
+    "mnist": [1000, 2000, 3000],
+    "mnist_fashion": [1000, 2000, 3000],
+    "musk2": [400, 200, 2000],
+    "optdigits": [100, 50, 500],
+    "page_blocks": [100, 50, 500],
+    "satimages": [100, 50, 500],
+    "segment": [100, 50, 500],
+    "shuttle": [100, 50, 500],
+    "spambase": [400, 50, 50],
+    "usps": [400, 200, 2000]
+  }
+}

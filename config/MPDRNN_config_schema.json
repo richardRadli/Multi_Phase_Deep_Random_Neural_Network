@@ -125,6 +125,51 @@
           "type": "array"
         }
       }
+    },
+    "penalty": {
+      "type": "object",
+      "description": "Value of the L2 penalty term.",
+      "properties": {
+        "connect4": {
+          "type": "number"
+        },
+        "isolete": {
+          "type": "number"
+        },
+        "letter": {
+          "type": "number"
+        },
+        "mnist": {
+          "type": "number"
+        },
+        "mnist_fashion": {
+          "type": "number"
+        },
+        "musk2": {
+          "type": "number"
+        },
+        "optdigits": {
+          "type": "number"
+        },
+        "page_blocks": {
+          "type": "number"
+        },
+        "satimages": {
+          "type": "number"
+        },
+        "segment": {
+          "type": "number"
+        },
+        "shuttle": {
+          "type": "number"
+        },
+        "spambase": {
+          "type": "number"
+        },
+        "usps": {
+          "type": "number"
+        }
+      }
     }
   },
   "required": ["dataset_name", "activation", "number_of_tests", "seed", "method"]

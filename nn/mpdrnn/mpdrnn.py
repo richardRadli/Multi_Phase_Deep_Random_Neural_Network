@@ -32,7 +32,7 @@ class MPDRNN:
         self.filename = (
             os.path.join(
                 drnn_config.get("mpdrnn").get("path_to_results"),
-                f"{timestamp}_{dataset_name}_dataset_{self.cfg.get('method')}_method.xlsx")
+                f"{timestamp}_{dataset_name}_dataset_{self.cfg.get('method')}_method_{self.cfg.get('penalty').get(self.cfg.get('dataset_name'))}_penalty.xlsx")
         )
 
         if self.cfg.get("method") not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
@@ -99,12 +99,17 @@ class MPDRNN:
         training_time = []
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
-            initial_model = MultiPhaseDeepRandomizedNeuralNetworkBase(num_data=self.first_layer_num_data,
-                                                                      num_features=self.first_layer_input_nodes,
-                                                                      hidden_nodes=self.first_layer_hidden_nodes,
-                                                                      output_nodes=self.first_layer_output_nodes,
-                                                                      activation_function=self.cfg.get('activation'),
-                                                                      method=self.cfg.get("method"))
+            initial_model = (
+                MultiPhaseDeepRandomizedNeuralNetworkBase(
+                    num_data=self.first_layer_num_data,
+                    num_features=self.first_layer_input_nodes,
+                    hidden_nodes=self.first_layer_hidden_nodes,
+                    output_nodes=self.first_layer_output_nodes,
+                    activation_function=self.cfg.get('activation'),
+                    method=self.cfg.get("method"),
+                    penalty_term=self.cfg.get("penalty").get(self.cfg.get("dataset_name"))
+                )
+            )
 
             initial_model, initial_model_training_metrics, initial_model_testing_metrics = (
                 self.model_training_and_evaluation(model=initial_model,
@@ -132,9 +137,11 @@ class MPDRNN:
 
             training_time.append(subsequent_model.train_ith_layer.execution_time)
 
-            final_model = MultiPhaseDeepRandomizedNeuralNetworkFinal(base_instance=subsequent_model,
-                                                                     mu=self.cfg.get("mu"),
-                                                                     sigma=self.cfg.get("sigma"))
+            final_model = (
+                MultiPhaseDeepRandomizedNeuralNetworkFinal(subsequent_instance=subsequent_model,
+                                                           mu=self.cfg.get("mu"),
+                                                           sigma=self.cfg.get("sigma"))
+            )
 
             final_model, final_model_training_metrics, final_model_testing_metrics = (
                 self.model_training_and_evaluation(model=final_model,
@@ -148,9 +155,11 @@ class MPDRNN:
             training_time.append(final_model.train_ith_layer.execution_time)
 
             metrics = reorder_metrics_lists(train_metrics=final_model_training_metrics,
-                                            test_metrics=final_model_testing_metrics,
+                                            test_metrics=final_model_testing_metrics if final_model_testing_metrics[1] >
+                                                                                        subsequent_model_testing_metrics[
+                                                                                            1] else subsequent_model_testing_metrics,
                                             training_time_list=training_time)
-            insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), i+2, metrics, "mpdrnn")
+            insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), i + 2, metrics, "mpdrnn")
             training_time.clear()
 
         average_columns_in_excel(self.filename)

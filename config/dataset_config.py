@@ -2,7 +2,7 @@ import os
 
 from typing import Dict
 
-from config.data_paths import DATASET_FILES_PATHS, MPDRNN_PATHS, IPMPDRNN_PATHS, FCNN_PATHS
+from config.data_paths import DATASET_FILES_PATHS, MPDRNN_PATHS, IPMPDRNN_PATHS, FCNN_PATHS, HELM_PATHS
 
 
 def general_dataset_configs(dataset_type) -> Dict:
@@ -211,16 +211,12 @@ def general_dataset_configs(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_satimages"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_satimages"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_satimages")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_satimages"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_satimages"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_satimages")
             }
@@ -328,16 +324,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_connect4"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_connect4"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_connect4")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_connect4"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_connect4"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_connect4")
             }
@@ -346,16 +338,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_isolete"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_isolete"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_isolete"),
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_isolete"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_isolete"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_isolete"),
             }
@@ -364,16 +352,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_letter"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_letter"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_letter"),
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_letter"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_letter"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_letter"),
             }
@@ -382,16 +366,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_mnist"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_mnist"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_mnist"),
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_mnist"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_mnist"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_mnist"),
             }
@@ -400,16 +380,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_mnist_fashion"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_mnist_fashion")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_mnist_fashion"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_mnist_fashion")
             }
@@ -418,16 +394,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_musk2"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_musk2"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_musk2")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_musk2"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_musk2"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_musk2")
             }
@@ -436,16 +408,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_optdigits"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_optdigits"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_optdigits"),
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_optdigits"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_optdigits"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_optdigits"),
             }
@@ -454,16 +422,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_page_blocks"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_page_blocks"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_page_blocks")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_page_blocks"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_page_blocks"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_page_blocks")
             }
@@ -472,16 +436,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_satimages"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_satimages"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_satimages")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_satimages"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_satimages"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_satimages")
             }
@@ -490,16 +450,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_segment"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_segment"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_segment")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_segment"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_segment"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_segment")
             }
@@ -508,16 +464,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_shuttle"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_shuttle"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_shuttle"),
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_shuttle"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_shuttle"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_shuttle"),
             }
@@ -526,16 +478,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_spambase"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_spambase"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_spambase")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_spambase"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_spambase"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_spambase"),
             }
@@ -544,16 +492,12 @@ def drnn_paths_config(dataset_type) -> Dict:
             "mpdrnn": {
                 "path_to_cm":
                     MPDRNN_PATHS.get_data_path("cm_usps"),
-                "path_to_metrics":
-                    MPDRNN_PATHS.get_data_path("metrics_usps"),
                 "path_to_results":
                     MPDRNN_PATHS.get_data_path("results_usps")
             },
             "ipmpdrnn": {
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_usps"),
-                "path_to_metrics":
-                    IPMPDRNN_PATHS.get_data_path("metrics_usps"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_usps")
             }
@@ -702,5 +646,107 @@ def fcnn_paths_configs(dataset_type) -> Dict:
 
     if dataset_type not in dataset_config:
         raise ValueError(f"Invalid dataset name: {dataset_type}")
+
+    return dataset_config[dataset_type]
+
+
+def helm_paths_config(dataset_type) -> Dict:
+    dataset_config = {
+        "connect4": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_connect4"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_connect4")
+
+        },
+        "isolete": {
+
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_isolete"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_isolete"),
+
+        },
+        "letter": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_letter"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_letter"),
+
+        },
+        "mnist": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_mnist"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_mnist"),
+
+        },
+        "mnist_fashion": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_mnist_fashion"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_mnist_fashion")
+
+        },
+        "musk2": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_musk2"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_musk2")
+
+        },
+        "optdigits": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_optdigits"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_optdigits"),
+
+        },
+        "page_blocks": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_page_blocks"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_page_blocks")
+
+        },
+        "satimages": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_satimages"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_satimages")
+
+        },
+        "segment": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_segment"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_segment")
+
+        },
+        "shuttle": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_shuttle"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_shuttle"),
+
+        },
+        "spambase": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_spambase"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_spambase")
+
+        },
+        "usps": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_usps"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_usps")
+
+        }
+    }
+
+    if dataset_type not in dataset_config:
+        raise ValueError(f'Invalid dataset name: {dataset_type}')
 
     return dataset_config[dataset_type]
