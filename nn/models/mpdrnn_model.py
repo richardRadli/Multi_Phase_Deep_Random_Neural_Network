@@ -37,7 +37,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
             nn.Parameter(torch.zeros(hidden_nodes[0], output_nodes), requires_grad=True)
         )
         self.h1 = (
-            nn.Parameter(torch.randn(num_data, hidden_nodes[0]), requires_grad=True)
+            nn.Parameter(torch.zeros(num_data, hidden_nodes[0]), requires_grad=True)
         )
 
         self.method = method
@@ -256,7 +256,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             output_nodes=base_instance.beta_weights.size(1),
             activation_function=base_instance.activation_function.__class__.__name__,
             method=base_instance.method,
-            penalty_term=base_instance.penalty_term
+            # penalty_term=base_instance.penalty_term
         )
 
         self.alpha_weights.data = base_instance.alpha_weights.data.clone()
@@ -271,10 +271,10 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
         self.extended_beta_weights = self.create_hidden_layer(self.beta_weights)
 
         self.h2 = (
-            nn.Parameter(torch.randn(self.n_hidden_nodes[1], self.extended_beta_weights.size(1)), requires_grad=True)
+            nn.Parameter(torch.zeros(self.n_hidden_nodes[1], self.extended_beta_weights.size(1)), requires_grad=True)
         )
         self.gamma_weights = (
-            nn.Parameter(torch.randn(self.extended_beta_weights.size(1), self.beta_weights.size(1)), requires_grad=True)
+            nn.Parameter(torch.zeros(self.extended_beta_weights.size(1), self.beta_weights.size(1)), requires_grad=True)
         )
 
     def create_hidden_layer(self, weights: torch.Tensor) -> torch.Tensor:
@@ -338,8 +338,8 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
         )
 
     def predict_and_evaluate(
-            self, dataloader, operation: str, layer_weights: torch.Tensor = None, num_hidden_layers: int = None,
-            verbose: bool = True):
+            self, dataloader, operation: str, layer_weights  = None,
+            num_hidden_layers: int = None, verbose: bool = True):
         """
         Predict and evaluate the performance of the subsequent network layers.
 

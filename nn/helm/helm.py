@@ -4,14 +4,16 @@ import os
 import numpy as np
 import scipy.linalg as linalg
 
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from nn.dataloaders.npz_dataloader import NpzDataset
 from torch.utils.data import DataLoader
 from typing import List, Tuple
+from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, helm_paths_config
-from utils.utils import (create_timestamp, load_config_json, setup_logger)
+from utils.utils import (create_timestamp, load_config_json, setup_logger, measure_execution_time,
+                         reorder_metrics_lists, insert_data_to_excel, average_columns_in_excel)
 
 
 class HELM:
@@ -38,24 +40,9 @@ class HELM:
             self.create_train_valid_test_datasets(file_path)
         )
 
-        data_iter = iter(self.train_loader)
-        batch = next(data_iter)
-        train_data, _ = batch
+        self.num_features = general_dataset_configs(dataset_name).get("num_features")
 
         colorama.init()
-
-        self.random_weights_1 = (
-                2 * np.random.rand(train_data.shape[1] + 1, self.cfg.get("hidden_neurons").get(dataset_name)[0]) - 1
-        )
-        self.random_weights_2 = (
-                2 * np.random.rand(self.cfg.get("hidden_neurons").get(dataset_name)[0] + 1,
-                                   self.cfg.get("hidden_neurons").get(dataset_name)[1]) - 1
-        )
-        self.random_weights_3 = (
-            (2 * np.random.rand(self.cfg.get("hidden_neurons").get(dataset_name)[1] + 1,
-                                self.cfg.get("hidden_neurons").get(dataset_name)[2]) - 1).T
-        )
-        self.random_weights_3 = linalg.orth(self.random_weights_3).T
 
         self.C_penalty = self.cfg.get("penalty")
         self.scaling_factor = self.cfg.get("scaling_factor")
@@ -165,6 +152,7 @@ class HELM:
 
         return (data - min_values) / range_values
 
+    @measure_execution_time
     def train(self):
         """
         Train the model.
@@ -172,28 +160,40 @@ class HELM:
         :return: A tuple containing the results of training.
         """
 
+        random_weights_1 = (
+                2 * np.random.rand(self.num_features + 1, self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name"))[0]) - 1
+        )
+        random_weights_2 = (
+                2 * np.random.rand(self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name"))[0] + 1,
+                                   self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name"))[1]) - 1
+        )
+
+        self.random_weights_3 = (
+            (2 * np.random.rand(self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name"))[1] + 1,
+                                self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name"))[2]) - 1).T
+        )
+        self.random_weights_3 = linalg.orth(self.random_weights_3).T
+
         for train_data, train_labels in self.train_loader:
             # First layer RELM
             h1 = np.hstack([train_data, np.ones((train_data.shape[0], 1)) * 0.1])
-            a1 = h1 @ self.random_weights_1
+            a1 = h1 @ random_weights_1
             a1, _ = self.min_max_scale(a1, "-1_1")
             beta1 = self.sparse_elm_autoencoder(a=a1, b=h1, lam=1e-3, itrs=50)
             del a1
             t1 = h1 @ beta1.T
             del h1
-            logging.info(f"Layer 1\n Max Val of Output: {np.max(t1):.4f} Min Val: {np.min(t1):.4f}")
             t1, ps1 = self.min_max_scale(t1.T, "0_1")
 
             # Second layer RELM
             h2 = np.hstack([t1.T, np.ones((t1.T.shape[0], 1)) * 0.1])
             del t1
-            a2 = h2 @ self.random_weights_2
+            a2 = h2 @ random_weights_2
             a2, _ = self.min_max_scale(a2, "-1_1")
             beta2 = self.sparse_elm_autoencoder(a=a2, b=h2, lam=1e-3, itrs=50)
             del a2
             t2 = h2 @ beta2.T
             del h2
-            logging.info(f"Layer 2\n Max Val of Output: {np.max(t2):.4f} Min Val: {np.min(t2):.4f}")
             t2, ps2 = self.min_max_scale(t2.T, "0_1")
 
             # Original ELM
@@ -203,16 +203,14 @@ class HELM:
             del h3
             l3 = np.amax(np.amax(t3))
             l3 = self.scaling_factor / l3
-            logging.info(f"Layer 3\n Max Val of Output: {np.max(t3):.4f} Min Val: {np.min(t3):.4f}")
 
             t3 = np.tanh(t3 * l3)
             # Finsh Training
             beta = np.linalg.solve(t3.T.dot(t3) + np.eye(t3.shape[1]) * self.C_penalty, t3.T.dot(train_labels))
-            logging.info("Training has been finished!")
 
             return t3, beta, beta1, beta2, l3, ps1, ps2
 
-    def training_accuracy(self, t3: np.ndarray, beta: np.ndarray) -> None:
+    def training_accuracy(self, t3: np.ndarray, beta: np.ndarray) -> list:
         """
         Calculate and log the training accuracy.
 
@@ -224,8 +222,19 @@ class HELM:
             y_predicted = t3 @ beta
             y_predicted_argmax = np.argmax(np.asarray(y_predicted), axis=-1)
             y_true_argmax = np.argmax(np.asarray(train_labels), axis=-1)
-            training_accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
-            logging.info(f"Training Accuracy is: {training_accuracy * 100:.4f}%")
+            accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
+            precision = precision_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
+            recall = recall_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
+            f1sore = f1_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
+            training_time = self.train.execution_time
+
+            logging.info(f"Training Accuracy is: {accuracy:.4f}%")
+            logging.info(f"Training precision is: {precision:.4f}%")
+            logging.info(f"Training recall is: {recall:.4f}%")
+            logging.info(f"Training f1sore is: {f1sore:.4f}%")
+            logging.info(f"Training time is: {training_time:.4f}%")
+
+            return [accuracy, precision, recall, f1sore, training_time]
 
     def testing_accuracy(self,
                          beta: np.ndarray,
@@ -233,7 +242,7 @@ class HELM:
                          beta2: np.ndarray,
                          l3: float,
                          ps1: list,
-                         ps2: list) -> None:
+                         ps2: list):
         """
         Calculate and log the testing accuracy.
 
@@ -267,19 +276,34 @@ class HELM:
 
             y_predicted_argmax = np.argmax(np.asarray(y_predicted), axis=-1)
             y_true_argmax = np.argmax(np.asarray(test_labels), axis=-1)
-            testing_accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
 
-            logging.info("Testing has been finished!")
-            logging.info(f"Testing Accuracy is: {testing_accuracy * 100:.4f}%")
+            accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
+            precision = precision_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
+            recall = recall_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
+            f1sore = f1_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
+
+            logging.info(f"Testing Accuracy is: {accuracy:.4f}%")
+            logging.info(f"Testing precision is: {precision:.4f}%")
+            logging.info(f"Testing recall is: {recall:.4f}%")
+            logging.info(f"Testing f1sore is: {f1sore:.4f}%")
+
+            return [accuracy, precision, recall, f1sore]
 
     def main(self) -> None:
         """
          Execute the main logic of the program.
          """
 
-        t3, beta, beta1, beta2, l3, ps1, ps2 = self.train()
-        self.training_accuracy(t3, beta)
-        self.testing_accuracy(beta, beta1, beta2, l3, ps1, ps2)
+        for idx in tqdm(range(self.cfg.get("num_tests")), desc="Evaluation"):
+            t3, beta, beta1, beta2, l3, ps1, ps2 = self.train()
+            training_metrics = self.training_accuracy(t3, beta)
+            testing_metrics = self.testing_accuracy(beta, beta1, beta2, l3, ps1, ps2)
+
+            metrics = reorder_metrics_lists(train_metrics=training_metrics,
+                                            test_metrics=testing_metrics)
+            insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), idx + 2, metrics, "helm")
+
+        average_columns_in_excel(self.filename)
 
 
 if __name__ == "__main__":

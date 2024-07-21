@@ -1,9 +1,9 @@
 {
-  "dataset_name": "mnist",
+  "dataset_name": "connect4",
   "activation": "LeakyReLU",
   "number_of_tests": 10,
   "seed": true,
-  "method": "EXP_ORT_C",
+  "method": "BASE",
   "mu": 0,
   "sigma": 0.1,
   "eq_neurons": {
@@ -40,7 +40,7 @@
     "connect4": 5,
     "isolete": 5,
     "letter": 11,
-    "mnist": 2,
+    "mnist": 14,
     "mnist_fashion": 1,
     "musk2": 0.8,
     "optdigits": 8,

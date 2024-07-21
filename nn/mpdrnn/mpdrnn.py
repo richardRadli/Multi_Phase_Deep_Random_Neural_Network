@@ -32,7 +32,8 @@ class MPDRNN:
         self.filename = (
             os.path.join(
                 drnn_config.get("mpdrnn").get("path_to_results"),
-                f"{timestamp}_{dataset_name}_dataset_{self.cfg.get('method')}_method_{self.cfg.get('penalty').get(self.cfg.get('dataset_name'))}_penalty.xlsx")
+                f"{timestamp}_{dataset_name}_dataset_{self.cfg.get('method')}_method_"
+                f"{self.cfg.get('penalty').get(self.cfg.get('dataset_name'))}_penalty.xlsx")
         )
 
         if self.cfg.get("method") not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:

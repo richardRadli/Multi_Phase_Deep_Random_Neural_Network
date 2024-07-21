@@ -42,6 +42,141 @@
     "sigma": {
       "type": "number",
       "default": "The standard deviation of a uniform distribution is a measure of the spread of the distribution."
+    },
+    "eq_neurons": {
+      "type": "object",
+      "description": "Number of equal neurons.",
+      "properties": {
+        "connect4": {
+          "type": "array"
+        },
+        "isolete": {
+          "type": "array"
+        },
+        "letter": {
+          "type": "array"
+        },
+        "mnist": {
+          "type": "array"
+        },
+        "mnist_fashion": {
+          "type": "array"
+        },
+        "musk2": {
+          "type": "array"
+        },
+        "optdigits": {
+          "type": "array"
+        },
+        "page_blocks": {
+          "type": "array"
+        },
+        "satimages": {
+          "type": "array"
+        },
+        "segment": {
+          "type": "array"
+        },
+        "shuttle": {
+          "type": "array"
+        },
+        "spambase": {
+          "type": "array"
+        },
+        "usps": {
+          "type": "array"
+        }
+      }
+    },
+    "exp_neurons": {
+      "type": "object",
+      "description": "Number of equal neurons.",
+      "properties": {
+        "connect4": {
+          "type": "array"
+        },
+        "isolete": {
+          "type": "array"
+        },
+        "letter": {
+          "type": "array"
+        },
+        "mnist": {
+          "type": "array"
+        },
+        "mnist_fashion": {
+          "type": "array"
+        },
+        "musk2": {
+          "type": "array"
+        },
+        "optdigits": {
+          "type": "array"
+        },
+        "page_blocks": {
+          "type": "array"
+        },
+        "satimages": {
+          "type": "array"
+        },
+        "segment": {
+          "type": "array"
+        },
+        "shuttle": {
+          "type": "array"
+        },
+        "spambase": {
+          "type": "array"
+        },
+        "usps": {
+          "type": "array"
+        }
+      }
+    },
+    "penalty": {
+      "type": "object",
+      "description": "Value of the L2 penalty term.",
+      "properties": {
+        "connect4": {
+          "type": "number"
+        },
+        "isolete": {
+          "type": "number"
+        },
+        "letter": {
+          "type": "number"
+        },
+        "mnist": {
+          "type": "number"
+        },
+        "mnist_fashion": {
+          "type": "number"
+        },
+        "musk2": {
+          "type": "number"
+        },
+        "optdigits": {
+          "type": "number"
+        },
+        "page_blocks": {
+          "type": "number"
+        },
+        "satimages": {
+          "type": "number"
+        },
+        "segment": {
+          "type": "number"
+        },
+        "shuttle": {
+          "type": "number"
+        },
+        "spambase": {
+          "type": "number"
+        },
+        "usps": {
+          "type": "number"
+        }
+      }
     }
   },
   "required": ["dataset_name", "activation", "number_of_tests", "seed", "subset_percentage", "pruning_method", "method"]
