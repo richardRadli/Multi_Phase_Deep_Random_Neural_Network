@@ -9,8 +9,7 @@ from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, drnn_paths_config
-from nn.models.mpdrnn_model import (MultiPhaseDeepRandomizedNeuralNetworkBase,
-                                    MultiPhaseDeepRandomizedNeuralNetworkSubsequent)
+from nn.models.mpdrnn_model import MultiPhaseDeepRandomizedNeuralNetworkBase
 from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel, setup_logger,
                          load_config_json)
 
@@ -30,14 +29,19 @@ class Experiment:
             load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_ipmdrnn"),
                              json_filename=JSON_FILES_PATHS.get_data_path("config_ipmdrnn"))
         )
-        dataset_name = self.cfg.get("dataset_name")
+
+        self.dataset_name = self.cfg.get("dataset_name")
+
         self.gen_ds_cfg = general_dataset_configs(self.cfg.get("dataset_name"))
         drnn_config = drnn_paths_config(self.cfg.get("dataset_name"))
 
         self.filename = (
             os.path.join(
                 drnn_config.get("ipmpdrnn").get("path_to_results"),
-                f"{timestamp}_sp_{self.cfg.get('subset_percentage')}_pm_{self.cfg.get('pruning_method')}.xlsx")
+                f"{timestamp}"
+                f"_sp_{self.cfg.get('subset_percentage').get(self.dataset_name)}"
+                f"_pm_{self.cfg.get('pruning_method')}"
+                f"_rcond_{self.cfg.get('rcond').get(self.dataset_name)}.xlsx")
         )
 
         if self.cfg.get("method") not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
@@ -49,7 +53,7 @@ class Experiment:
         # Load neurons
         self.first_layer_num_data = self.gen_ds_cfg.get("num_train_data")
         self.first_layer_input_nodes = self.gen_ds_cfg.get("num_features")
-        self.first_layer_hidden_nodes = self.get_num_of_neurons(self.cfg.get("method"), dataset_name)
+        self.first_layer_hidden_nodes = self.get_num_of_neurons(self.cfg.get("method"), self.dataset_name)
         self.first_layer_output_nodes = self.gen_ds_cfg.get("num_classes")
 
         file_path = general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
@@ -105,7 +109,7 @@ class Experiment:
 
     def prune_initial_model(self, initial_model, set_weights_to_zero: bool):
         _, least_important_prune_indices = (
-            initial_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
+            initial_model.pruning(pruning_percentage=self.cfg.get("subset_percentage").get(self.dataset_name),
                                   pruning_method=self.cfg.get("pruning_method"))
         )
 
@@ -123,13 +127,14 @@ class Experiment:
                 hidden_nodes=self.first_layer_hidden_nodes,
                 output_nodes=self.first_layer_output_nodes,
                 activation_function=self.cfg.get('activation'),
-                method=self.cfg.get('method')
+                method=self.cfg.get('method'),
+                rcond=self.cfg.get('rcond').get(self.dataset_name),
             )
         )
 
         aux_model.train_layer(self.train_loader)
         most_important_prune_indices, _ = (
-            aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
+            aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage").get(self.dataset_name),
                               pruning_method=self.cfg.get("pruning_method"))
         )
 
@@ -146,12 +151,17 @@ class Experiment:
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
             # Create model
-            initial_model = MultiPhaseDeepRandomizedNeuralNetworkBase(num_data=self.first_layer_num_data,
-                                                                      num_features=self.first_layer_input_nodes,
-                                                                      hidden_nodes=self.first_layer_hidden_nodes,
-                                                                      output_nodes=self.first_layer_output_nodes,
-                                                                      activation_function=self.cfg.get('activation'),
-                                                                      method=self.cfg.get('method'))
+            initial_model = (
+                MultiPhaseDeepRandomizedNeuralNetworkBase(
+                    num_data=self.first_layer_num_data,
+                    num_features=self.first_layer_input_nodes,
+                    hidden_nodes=self.first_layer_hidden_nodes,
+                    output_nodes=self.first_layer_output_nodes,
+                    activation_function=self.cfg.get('activation'),
+                    method=self.cfg.get('method'),
+                    rcond=self.cfg.get('rcond').get(self.dataset_name),
+                )
+            )
 
             # Train and evaluate the model
             initial_model, initial_model_training_acc, initial_model_testing_acc = (
@@ -159,13 +169,8 @@ class Experiment:
             )
 
             # Pruning
-            initial_model, least_important_prune_indices = (
-                self.prune_initial_model(initial_model, set_weights_to_zero=True)
-            )
-
-            # Train and evaluate network again with pruned weights
-            initial_model, initial_model_pruned_training_acc, initial_model_pruned_testing_acc = (
-                self.initial_model_training_and_eval(initial_model)
+            least_important_prune_indices = (
+                self.prune_initial_model(initial_model, set_weights_to_zero=False)
             )
 
             # Create aux model 1
@@ -178,27 +183,19 @@ class Experiment:
                 self.initial_model_training_and_eval(initial_model=initial_model)
             )
 
-            # Create aux model 2
-            initial_model = self.create_train_prune_aux_model(initial_model)
-            initial_model, initial_model_subs_weights_training_acc_2, initial_model_subs_weights_testing_acc_2 = (
-                self.initial_model_training_and_eval(initial_model)
-            )
-
             # Excel
-            # accuracies.append((initial_model_training_acc, initial_model_testing_acc,
-            #                    initial_model_pruned_training_acc, initial_model_pruned_testing_acc,
-            #                    initial_model_subs_weights_training_acc, initial_model_subs_weights_testing_acc,
-            #                    initial_model_subs_weights_training_acc_2, initial_model_subs_weights_testing_acc_2))
-            #
-            # insert_data_to_excel(filename=self.filename,
-            #                      dataset_name=self.cfg.get("dataset_name"),
-            #                      row=i + 2,
-            #                      data=accuracies,
-            #                      network="ipmpdrnn")
+            accuracies.append((initial_model_training_acc[0], initial_model_testing_acc[0],
+                               initial_model_subs_weights_training_acc[0], initial_model_subs_weights_testing_acc[0]))
+
+            insert_data_to_excel(filename=self.filename,
+                                 dataset_name=self.cfg.get("dataset_name"),
+                                 row=i + 2,
+                                 data=accuracies,
+                                 network="ipmpdrnn")
 
             accuracies.clear()
 
-        # average_columns_in_excel(self.filename)
+        average_columns_in_excel(self.filename)
 
 
 if __name__ == "__main__":

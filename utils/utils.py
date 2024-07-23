@@ -17,6 +17,7 @@ from datetime import datetime
 from functools import wraps
 from jsonschema import validate
 from openpyxl.styles import PatternFill
+from pprint import pformat
 from typing import Any, Callable
 
 
@@ -283,9 +284,7 @@ def insert_data_to_excel(filename, dataset_name, row, data, network):
 
     if network == "ipmpdrnn":
         values = ["train acc initial model", "test acc initial model",
-                  "train acc initial model after pruning", "test acc initial model after pruning",
-                  "train acc initial model after substitute 1", "test acc initial model after substitute 1",
-                  "train acc initial model after substitute 2", "test acc initial model after substitute 2"]
+                  "train acc initial model after substitute 1", "test acc initial model after substitute 1"]
     elif network in ["fcnn", "mpdrnn", "helm"]:
         values = ["train acc", "test acc", "train precision", "test precision", "train recall", "test recall",
                   "train f1", "test f1", "training time"]
@@ -340,9 +339,29 @@ def load_config_json(json_schema_filename: str, json_filename: str):
     try:
         validate(config, schema)
         logging.info("JSON data is valid.")
-        df = pd.DataFrame.from_dict(config, orient='index')
-        logging.info(df)
-        return config
+
+        # Adjust Pandas display settings
+        pd.set_option('display.max_colwidth', None)
+        pd.set_option('display.max_rows', None)
+
+        # Split config into simple and nested dictionaries
+        simple_config = {k: v for k, v in config.items() if not isinstance(v, dict)}
+        nested_config = {k: v for k, v in config.items() if isinstance(v, dict)}
+
+        # Create DataFrame for simple config
+        df = pd.DataFrame.from_dict(simple_config, orient='index')
+
+        # Pretty print the DataFrame
+        logging.info("Simple Config DataFrame:\n" + df.to_string())
+
+        # Pretty print nested structures separately
+        for key, value in nested_config.items():
+            logging.info(f"{key}:\n{pformat(value)}")
+
+        # Merge simple and nested configs back for returning
+        full_config = {**simple_config, **nested_config}
+
+        return full_config
     except jsonschema.exceptions.ValidationError as err:
         logging.error(f"JSON data is invalid: {err}")
 

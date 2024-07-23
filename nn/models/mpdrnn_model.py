@@ -11,7 +11,7 @@ from utils.utils import measure_execution_time
 
 class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
     def __init__(self, num_data: int, num_features: int, hidden_nodes: list[int], output_nodes: int,
-                 activation_function: str, method: str, penalty_term: float = None):
+                 activation_function: str, method: str, rcond: float, penalty_term: float = None):
         """
        Initialize the MultiPhaseDeepRandomizedNeuralNetworkBase class.
 
@@ -43,14 +43,16 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
         self.method = method
         self.hidden_nodes = hidden_nodes
 
-        if self.method == "EXP_ORT_C" and penalty_term is not None:
+        self.rcond = rcond
+
+        if self.method == "EXP_ORT_C":
             self.penalty_term = penalty_term
 
         colorama.init()
 
     @measure_execution_time
-    def train_ith_layer(self, train_loader, hi: torch.Tensor, weights1: torch.Tensor, weights2: torch.Tensor,
-                        method: str, hi_prev: torch.Tensor = None):
+    def train_ith_layer(self, train_loader, hi: torch.Tensor, weights1: nn.Parameter,
+                        weights2: nn.Parameter, method: str, hi_prev: torch.Tensor = None) -> None:
         """
         Train the i-th layer of the network.
 
@@ -61,31 +63,44 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
             weights2 (nn.Parameter): Weights for the next layer.
             method (str): Method to be used for training the network.
             hi_prev (torch.Tensor, optional): Previous hidden layer tensor. Defaults to None.
-
         Returns:
             None
         """
 
+        identity_matrix = torch.eye(hi.shape[1], device=hi.device)
+
         for train_x, train_y in tqdm(train_loader, total=len(train_loader), desc=colorama.Fore.MAGENTA + "Training"):
             if hi_prev is None:
-                hi.data = self.activation_function(train_x.matmul(weights1))
+                hi.data = self.activation_function(train_x @ weights1)
             else:
-                hi.data = self.activation_function(hi_prev.matmul(weights1))
+                hi.data = self.activation_function(hi_prev @ weights1)
 
             if method in ['BASE', 'EXP_ORT']:
-                weights2.data = torch.linalg.pinv(hi, rcond=1e-15).matmul(train_y)
-            else:
-                identity_matrix = torch.eye(hi.shape[1])
-                if hi.shape[0] > hi.shape[1]:
-                    weights2.data = (
-                        torch.linalg.pinv(hi.T.matmul(hi) + identity_matrix / self.penalty_term, rcond=1e-15).matmul(hi.T.matmul(train_y))
-                    )
+                if self.rcond is not None:
+                    weights2.data = torch.linalg.pinv(hi, rcond=self.rcond) @ train_y
                 else:
-                    weights2.data = (
-                        hi.T.matmul(
-                            torch.linalg.pinv(hi.matmul(hi.T) + identity_matrix / self.penalty_term, rcond=1e-15).matmul(train_y)
+                    weights2.data = torch.linalg.pinv(hi) @ train_y
+            else:
+                if hi.shape[0] > hi.shape[1]:
+                    if self.rcond is not None:
+                        weights2.data = (
+                                torch.linalg.pinv(hi.T @ hi + identity_matrix / self.penalty_term, rcond=self.rcond) @ (
+                                hi.T @ train_y)
                         )
-                    )
+                    else:
+                        weights2.data = (
+                                torch.linalg.pinv(hi.T @ hi + identity_matrix / self.penalty_term) @ (hi.T @ train_y)
+                        )
+                else:
+                    if self.rcond is not None:
+                        weights2.data = (
+                                hi.T @ torch.linalg.pinv(hi @ hi.T + identity_matrix / self.penalty_term,
+                                                         rcond=self.rcond) @ train_y
+                        )
+                    else:
+                        weights2.data = (
+                                hi.T @ torch.linalg.pinv(hi @ hi.T + identity_matrix / self.penalty_term) @ train_y
+                        )
 
     def train_layer(self, train_loader):
         """
@@ -98,7 +113,13 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
             None
         """
 
-        return self.train_ith_layer(train_loader, self.h1, self.alpha_weights, self.beta_weights, self.method)
+        return self.train_ith_layer(
+            train_loader=train_loader,
+            hi=self.h1,
+            weights1=self.alpha_weights,
+            weights2=self.beta_weights,
+            method=self.method
+        )
 
     @staticmethod
     def prune_weights(weights: torch.Tensor, pruning_percentage: float, pruning_method: str) \
@@ -256,6 +277,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             output_nodes=base_instance.beta_weights.size(1),
             activation_function=base_instance.activation_function.__class__.__name__,
             method=base_instance.method,
+            rcond=base_instance.rcond
             # penalty_term=base_instance.penalty_term
         )
 
@@ -265,6 +287,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
 
         self.mu = mu
         self.sigma = sigma
+        self.rcond = base_instance.rcond
         self.n_hidden_nodes = base_instance.hidden_nodes
         self.method = base_instance.method
 
@@ -334,11 +357,12 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             weights1=self.extended_beta_weights,
             weights2=self.gamma_weights,
             method=self.method,
-            hi_prev=self.h1
+            hi_prev=self.h1,
+            rcond=self.rcond
         )
 
     def predict_and_evaluate(
-            self, dataloader, operation: str, layer_weights  = None,
+            self, dataloader, operation: str, layer_weights=None,
             num_hidden_layers: int = None, verbose: bool = True):
         """
         Predict and evaluate the performance of the subsequent network layers.
@@ -400,6 +424,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralN
 
         self.mu = mu
         self.sigma = sigma
+        self.rcond = subsequent_instance.rcond
 
         self.n_hidden_nodes = subsequent_instance.hidden_nodes
         self.method = subsequent_instance.method
@@ -436,7 +461,8 @@ class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralN
             weights1=self.extended_gamma_weights,
             weights2=self.delta_weights,
             method=self.method,
-            hi_prev=self.h2
+            hi_prev=self.h2,
+            rcond=self.rcond
         )
 
     def predict_and_evaluate(

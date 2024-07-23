@@ -1,9 +1,8 @@
 {
-  "dataset_name": "connect4",
+  "dataset_name": "usps",
   "activation": "LeakyReLU",
-  "number_of_tests": 1,
+  "number_of_tests": 20,
   "seed": true,
-  "subset_percentage": 0.1,
   "pruning_method": "max_rank",
   "method": "BASE",
   "mu": 0,
@@ -37,6 +36,36 @@
     "shuttle": [400, 200, 50],
     "spambase": [800, 400, 300],
     "usps": [1600, 1000, 400]
+  },
+  "subset_percentage": {
+    "connect4": 0.5,
+    "isolete": 0.55,
+    "letter": 0.1,
+    "mnist": 0.3,
+    "mnist_fashion": 0.3,
+    "musk2": 0.6,
+    "optdigits": 0.4,
+    "page_blocks": 0.6,
+    "satimages": 0.5,
+    "segment": 0.4,
+    "shuttle": 0.45,
+    "spambase": 0.65,
+    "usps": 0.4
+  },
+  "rcond": {
+    "connect4": 1e-15,
+    "isolete": null,
+    "letter": 1e-5,
+    "mnist": 1e-15,
+    "mnist_fashion": 1e-15,
+    "musk2": null,
+    "optdigits": 1e-5,
+    "page_blocks": 1e-5,
+    "satimages": null,
+    "segment": null,
+    "shuttle": 1e-5,
+    "spambase": 1e-15,
+    "usps": null
   },
   "penalty": {
     "connect4": 5,

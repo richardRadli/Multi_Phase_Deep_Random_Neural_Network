@@ -36,6 +36,10 @@
       "default": 0.15,
       "description": "The standard deviation of a uniform distribution is a measure of the spread of the distribution."
     },
+    "rcond": {
+      "type": "number",
+      "default": "The rcond value for the Moore-Penrose pseudo inverse solver."
+    },
     "eq_neurons": {
       "type": "object",
       "description": "Number of equal neurons.",

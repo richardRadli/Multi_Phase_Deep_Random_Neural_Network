@@ -6,6 +6,7 @@
   "method": "BASE",
   "mu": 0,
   "sigma": 0.1,
+  "rcond": 1e-15,
   "eq_neurons": {
     "connect4": [866, 866, 866],
     "isolete": [1300, 1300, 1300],

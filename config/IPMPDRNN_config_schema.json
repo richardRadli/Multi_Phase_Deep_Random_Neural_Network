@@ -21,10 +21,6 @@
       "type": "boolean",
       "description": "Controls the way to generate random values. If set to True, the same values will be generated in every execution."
     },
-    "subset_percentage": {
-      "type": "number",
-      "description": "Percentage size of the subset of the full dataset."
-    },
     "pruning_method": {
       "type": "string",
       "enum": ["max_rank", "sum_weight"],
@@ -133,48 +129,255 @@
         }
       }
     },
+    "subset_percentage": {
+      "type": "object",
+      "description": "Percentage of how much of the weights should be substituted.",
+      "properties": {
+        "connect4": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "isolete": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "letter": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist_fashion": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "musk2": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "optdigits": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "page_blocks": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "satimages": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "segment": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "shuttle": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "spambase": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "usps": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "rcond": {
+      "type": "object",
+      "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
+      "properties": {
+        "connect4": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "isolete": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "letter": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist_fashion": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "musk2": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "optdigits": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "page_blocks": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "satimages": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "segment": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "shuttle": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "spambase": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "usps": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
     "penalty": {
       "type": "object",
       "description": "Value of the L2 penalty term.",
       "properties": {
         "connect4": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "isolete": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "letter": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "mnist": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "mnist_fashion": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "musk2": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "optdigits": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "page_blocks": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "satimages": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "segment": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "shuttle": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "spambase": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "usps": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         }
       }
     }
