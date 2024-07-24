@@ -271,7 +271,7 @@ def device_selector(preferred_device) -> torch.device:
         return torch.device("cpu")
 
 
-def insert_data_to_excel(filename, dataset_name, row, data, network):
+def insert_data_to_excel(filename, dataset_name, row, data):
     try:
         workbook = openpyxl.load_workbook(filename)
     except FileNotFoundError:
@@ -282,14 +282,8 @@ def insert_data_to_excel(filename, dataset_name, row, data, network):
 
     sheet = workbook[dataset_name]
 
-    if network == "ipmpdrnn":
-        values = ["train acc initial model", "test acc initial model",
-                  "train acc initial model after substitute 1", "test acc initial model after substitute 1"]
-    elif network in ["fcnn", "mpdrnn", "helm"]:
-        values = ["train acc", "test acc", "train precision", "test precision", "train recall", "test recall",
-                  "train f1", "test f1", "training time"]
-    else:
-        raise ValueError(f"Wrong network: {network}")
+    values = ["train acc", "test acc", "train precision", "test precision", "train recall", "test recall", "train f1",
+              "test f1", "training time"]
 
     for col, value in enumerate(values, start=1):
         sheet.cell(row=1, column=col, value=value)
@@ -428,3 +422,8 @@ def reorder_metrics_lists(train_metrics, test_metrics, training_time_list=None):
     ]
 
     return [tuple(combined_metrics)]
+
+
+def find_best_testing_accuracy(accuracies):
+    best_metrics = max(accuracies, key=lambda x: x[1][0])
+    return best_metrics

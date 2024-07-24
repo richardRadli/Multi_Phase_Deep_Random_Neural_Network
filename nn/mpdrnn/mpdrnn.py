@@ -157,9 +157,7 @@ class MPDRNN:
             training_time.append(final_model.train_ith_layer.execution_time)
 
             metrics = reorder_metrics_lists(train_metrics=final_model_training_metrics,
-                                            test_metrics=final_model_testing_metrics if final_model_testing_metrics[1] >
-                                                                                        subsequent_model_testing_metrics[
-                                                                                            1] else subsequent_model_testing_metrics,
+                                            test_metrics=final_model_testing_metrics,
                                             training_time_list=training_time)
             insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), i + 2, metrics, "mpdrnn")
             training_time.clear()

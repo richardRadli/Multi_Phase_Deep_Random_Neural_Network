@@ -1,10 +1,10 @@
 {
-  "dataset_name": "usps",
+  "dataset_name": "mnist",
   "activation": "LeakyReLU",
-  "number_of_tests": 20,
-  "seed": false,
+  "number_of_tests": 10,
+  "seed": true,
   "pruning_method": "max_rank",
-  "method": "EXP_ORT_C",
+  "method": "BASE",
   "mu": 0,
   "sigma": 0.15,
   "eq_neurons": {
@@ -42,11 +42,11 @@
     "isolete": 0.55,
     "letter": 0.1,
     "mnist": 0.3,
-    "mnist_fashion": 0.3,
+    "mnist_fashion": 0.05,
     "musk2": 0.6,
     "optdigits": 0.4,
     "page_blocks": 0.6,
-    "satimages": 0.5,
+    "satimages": 0.3,
     "segment": 0.4,
     "shuttle": 0.45,
     "spambase": 0.65,
@@ -71,7 +71,7 @@
     "mnist": {
       "BASE": 1e-15,
       "EXP_ORT": 1e-15,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 1e-30
     },
     "mnist_fashion": {
       "BASE": 1e-15,
@@ -96,7 +96,7 @@
     "satimages": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 1e-20
     },
     "segment": {
       "BASE": null,
