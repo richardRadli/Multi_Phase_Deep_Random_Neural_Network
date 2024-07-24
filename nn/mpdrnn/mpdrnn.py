@@ -108,6 +108,7 @@ class MPDRNN:
                     output_nodes=self.first_layer_output_nodes,
                     activation_function=self.cfg.get('activation'),
                     method=self.cfg.get("method"),
+                    rcond=self.cfg.get("rcond").get(self.cfg.get("dataset_name")),
                     penalty_term=self.cfg.get("penalty").get(self.cfg.get("dataset_name"))
                 )
             )

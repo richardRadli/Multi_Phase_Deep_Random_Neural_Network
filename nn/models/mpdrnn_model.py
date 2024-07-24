@@ -45,8 +45,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
 
         self.rcond = rcond
 
-        if self.method == "EXP_ORT_C":
-            self.penalty_term = penalty_term
+        self.penalty_term = penalty_term
 
         colorama.init()
 
@@ -67,8 +66,6 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
             None
         """
 
-        identity_matrix = torch.eye(hi.shape[1], device=hi.device)
-
         for train_x, train_y in tqdm(train_loader, total=len(train_loader), desc=colorama.Fore.MAGENTA + "Training"):
             if hi_prev is None:
                 hi.data = self.activation_function(train_x @ weights1)
@@ -81,6 +78,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
                 else:
                     weights2.data = torch.linalg.pinv(hi) @ train_y
             else:
+                identity_matrix = torch.eye(hi.shape[1], device=hi.device)
                 if hi.shape[0] > hi.shape[1]:
                     if self.rcond is not None:
                         weights2.data = (
@@ -277,8 +275,8 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             output_nodes=base_instance.beta_weights.size(1),
             activation_function=base_instance.activation_function.__class__.__name__,
             method=base_instance.method,
-            rcond=base_instance.rcond
-            # penalty_term=base_instance.penalty_term
+            rcond=base_instance.rcond,
+            penalty_term=base_instance.penalty_term
         )
 
         self.alpha_weights.data = base_instance.alpha_weights.data.clone()
@@ -357,8 +355,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             weights1=self.extended_beta_weights,
             weights2=self.gamma_weights,
             method=self.method,
-            hi_prev=self.h1,
-            rcond=self.rcond
+            hi_prev=self.h1
         )
 
     def predict_and_evaluate(
@@ -461,8 +458,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralN
             weights1=self.extended_gamma_weights,
             weights2=self.delta_weights,
             method=self.method,
-            hi_prev=self.h2,
-            rcond=self.rcond
+            hi_prev=self.h2
         )
 
     def predict_and_evaluate(
@@ -485,3 +481,17 @@ class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralN
         return super(MultiPhaseDeepRandomizedNeuralNetworkSubsequent, self).predict_and_evaluate(
             dataloader, operation, layer_weights, num_hidden_layers, verbose
         )
+
+    def pruning(self, pruning_percentage: float, pruning_method: str) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+        Prune the gamma weights of the network.
+
+        Args:
+            pruning_percentage (float): Percentage of weights to be pruned.
+            pruning_method (str): Method to be used for pruning ('max_rank' or 'sum_weight').
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor]: Indices of most important and least important weights.
+        """
+
+        return self.prune_weights(self.delta_weights, pruning_percentage, pruning_method)

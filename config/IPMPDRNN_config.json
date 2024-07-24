@@ -2,9 +2,9 @@
   "dataset_name": "usps",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
-  "seed": true,
+  "seed": false,
   "pruning_method": "max_rank",
-  "method": "BASE",
+  "method": "EXP_ORT_C",
   "mu": 0,
   "sigma": 0.15,
   "eq_neurons": {
@@ -53,19 +53,71 @@
     "usps": 0.4
   },
   "rcond": {
-    "connect4": 1e-15,
-    "isolete": null,
-    "letter": 1e-5,
-    "mnist": 1e-15,
-    "mnist_fashion": 1e-15,
-    "musk2": null,
-    "optdigits": 1e-5,
-    "page_blocks": 1e-5,
-    "satimages": null,
-    "segment": null,
-    "shuttle": 1e-5,
-    "spambase": 1e-15,
-    "usps": null
+    "connect4": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "isolete": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "letter": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "mnist": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "mnist_fashion": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "musk2": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "optdigits": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-5
+    },
+    "page_blocks": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "satimages": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "segment": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "shuttle": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "spambase": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "usps": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    }
   },
   "penalty": {
     "connect4": 5,

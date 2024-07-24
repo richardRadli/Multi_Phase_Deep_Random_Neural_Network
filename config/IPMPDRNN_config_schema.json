@@ -218,82 +218,290 @@
       "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
       "properties": {
         "connect4": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "isolete": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "letter": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "mnist": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "mnist_fashion": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "musk2": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "optdigits": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "page_blocks": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "satimages": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "segment": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "shuttle": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "spambase": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         },
         "usps": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         }
       }
     },
