@@ -2,17 +2,13 @@ import colorama
 import os
 import torch
 
-from nn.dataloaders.npz_dataloader import NpzDataset
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, drnn_paths_config
-from nn.models.mpdrnn_model import (MultiPhaseDeepRandomizedNeuralNetworkBase,
-                                    MultiPhaseDeepRandomizedNeuralNetworkSubsequent,
-                                    MultiPhaseDeepRandomizedNeuralNetworkFinal)
-from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel,
-                         load_config_json, reorder_metrics_lists)
+from nn.models.model_selector import ModelFactory
+from utils.utils import (average_columns_in_excel, create_timestamp, create_train_valid_test_datasets,
+                         insert_data_to_excel, load_config_json, reorder_metrics_lists, get_num_of_neurons)
 
 
 class MPDRNN:
@@ -25,15 +21,24 @@ class MPDRNN:
             load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_mpdrnn"),
                              json_filename=JSON_FILES_PATHS.get_data_path("config_mpdrnn"))
         )
-        dataset_name = self.cfg.get("dataset_name")
-        gen_ds_cfg = general_dataset_configs(dataset_name)
-        drnn_config = drnn_paths_config(dataset_name)
+
+        # Boilerplate
+        self.dataset_name = self.cfg.get("dataset_name")
+        self.method = self.cfg.get('method')
+        self.penalty_term = self.cfg.get('penalty')
+        self.rcond = self.cfg.get("rcond").get(self.cfg.get("method"))
+        self.activation = self.cfg.get('activation')
+        self.gen_ds_cfg = general_dataset_configs(self.cfg.get("dataset_name"))
+        drnn_config = drnn_paths_config(self.dataset_name)
+
+        self.initial_model = None
+        self.subsequent_model = None
 
         self.filename = (
             os.path.join(
                 drnn_config.get("mpdrnn").get("path_to_results"),
-                f"{timestamp}_{dataset_name}_dataset_{self.cfg.get('method')}_method_"
-                f"{self.cfg.get('penalty').get(self.cfg.get('dataset_name'))}_penalty.xlsx")
+                f"{timestamp}_{self.dataset_name}_dataset_{self.method}_method_{self.penalty_term}_penalty.xlsx"
+            )
         )
 
         if self.cfg.get("method") not in ["BASE", "EXP_ORT", "EXP_ORT_C"]:
@@ -42,38 +47,36 @@ class MPDRNN:
         if self.cfg.get("seed"):
             torch.manual_seed(1234)
 
-        # Load neurons
-        self.first_layer_num_data = gen_ds_cfg.get("num_train_data")
-        self.first_layer_input_nodes = gen_ds_cfg.get("num_features")
-        self.first_layer_hidden_nodes = self.get_num_of_neurons(self.cfg.get("method"), dataset_name)
-        self.first_layer_output_nodes = gen_ds_cfg.get("num_classes")
-
-        file_path = general_dataset_configs(dataset_name).get("cached_dataset_file")
-        self.train_loader, _, self.test_loader = (
-            self.create_train_valid_test_datasets(file_path)
-        )
+        file_path = general_dataset_configs(self.dataset_name).get("cached_dataset_file")
+        self.train_loader, _, self.test_loader = create_train_valid_test_datasets(file_path)
 
         colorama.init()
 
-    def get_num_of_neurons(self, method, dataset_name):
-        num_neurons = {
-            "BASE": self.cfg.get("eq_neurons").get(dataset_name),
-            "EXP_ORT": self.cfg.get("exp_neurons").get(dataset_name),
-            "EXP_ORT_C": self.cfg.get("exp_neurons").get(dataset_name),
+    def get_network_config(self, network_type):
+        net_cfg = {
+            "MultiPhaseDeepRandomizedNeuralNetworkBase": {
+                "first_layer_num_data": self.gen_ds_cfg.get("num_train_data"),
+                "first_layer_num_features": self.gen_ds_cfg.get("num_features"),
+                "first_layer_num_hidden": get_num_of_neurons(self.cfg, self.method),
+                "first_layer_output_nodes": self.gen_ds_cfg.get("num_classes"),
+                "activation": self.activation,
+                "method": self.method,
+                "rcond": self.rcond,
+                "penalty_term": self.penalty_term,
+            },
+            "MultiPhaseDeepRandomizedNeuralNetworkSubsequent": {
+                "initial_model": self.initial_model,
+                "sigma": self.cfg.get('sigma'),
+                "mu": self.cfg.get('mu')
+            },
+            "MultiPhaseDeepRandomizedNeuralNetworkFinal": {
+                "subsequent_model": self.subsequent_model,
+                "sigma": self.cfg.get('sigma'),
+                "mu": self.cfg.get('mu')
+            }
         }
-        return num_neurons[method]
 
-    @staticmethod
-    def create_train_valid_test_datasets(file_path):
-        train_dataset = NpzDataset(file_path, operation="train")
-        valid_dataset = NpzDataset(file_path, operation="valid")
-        test_dataset = NpzDataset(file_path, operation="test")
-
-        train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
-        valid_loader = DataLoader(dataset=valid_dataset, batch_size=len(valid_dataset), shuffle=False)
-        test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
-
-        return train_loader, valid_loader, test_loader
+        return net_cfg[network_type]
 
     def model_training_and_evaluation(self, model, weights, num_hidden_layers, verbose):
         model.train_layer(self.train_loader)
@@ -100,50 +103,34 @@ class MPDRNN:
         training_time = []
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
-            initial_model = (
-                MultiPhaseDeepRandomizedNeuralNetworkBase(
-                    num_data=self.first_layer_num_data,
-                    num_features=self.first_layer_input_nodes,
-                    hidden_nodes=self.first_layer_hidden_nodes,
-                    output_nodes=self.first_layer_output_nodes,
-                    activation_function=self.cfg.get('activation'),
-                    method=self.cfg.get("method"),
-                    rcond=self.cfg.get("rcond").get(self.cfg.get("dataset_name")),
-                    penalty_term=self.cfg.get("penalty").get(self.cfg.get("dataset_name"))
-                )
-            )
+            net_cfg = self.get_network_config("MultiPhaseDeepRandomizedNeuralNetworkBase")
+            self.initial_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkBase", net_cfg)
 
-            initial_model, initial_model_training_metrics, initial_model_testing_metrics = (
-                self.model_training_and_evaluation(model=initial_model,
-                                                   weights=initial_model.beta_weights,
+            self.initial_model, initial_model_training_metrics, initial_model_testing_metrics = (
+                self.model_training_and_evaluation(model=self.initial_model,
+                                                   weights=self.initial_model.beta_weights,
                                                    num_hidden_layers=1,
                                                    verbose=True)
             )
 
-            training_time.append(initial_model.train_ith_layer.execution_time)
+            training_time.append(self.initial_model.train_ith_layer.execution_time)
 
             # Subsequent Model
-            subsequent_model = (
-                MultiPhaseDeepRandomizedNeuralNetworkSubsequent(base_instance=initial_model,
-                                                                mu=self.cfg.get("mu"),
-                                                                sigma=self.cfg.get("sigma"))
-            )
+            net_cfg = self.get_network_config("MultiPhaseDeepRandomizedNeuralNetworkSubsequent")
+            self.subsequent_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkSubsequent", net_cfg)
 
-            subsequent_model, subsequent_model_training_metrics, subsequent_model_testing_metrics = (
-                self.model_training_and_evaluation(model=subsequent_model,
-                                                   weights=[subsequent_model.extended_beta_weights,
-                                                            subsequent_model.gamma_weights],
+            self.subsequent_model, subsequent_model_training_metrics, subsequent_model_testing_metrics = (
+                self.model_training_and_evaluation(model=self.subsequent_model,
+                                                   weights=[self.subsequent_model.extended_beta_weights,
+                                                            self.subsequent_model.gamma_weights],
                                                    num_hidden_layers=2,
                                                    verbose=True)
             )
 
-            training_time.append(subsequent_model.train_ith_layer.execution_time)
+            training_time.append(self.subsequent_model.train_ith_layer.execution_time)
 
-            final_model = (
-                MultiPhaseDeepRandomizedNeuralNetworkFinal(subsequent_instance=subsequent_model,
-                                                           mu=self.cfg.get("mu"),
-                                                           sigma=self.cfg.get("sigma"))
-            )
+            net_cfg = self.get_network_config(network_type="MultiPhaseDeepRandomizedNeuralNetworkFinal")
+            final_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkFinal", net_cfg)
 
             final_model, final_model_training_metrics, final_model_testing_metrics = (
                 self.model_training_and_evaluation(model=final_model,
@@ -159,7 +146,7 @@ class MPDRNN:
             metrics = reorder_metrics_lists(train_metrics=final_model_training_metrics,
                                             test_metrics=final_model_testing_metrics,
                                             training_time_list=training_time)
-            insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), i + 2, metrics, "mpdrnn")
+            insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), i + 2, metrics)
             training_time.clear()
 
         average_columns_in_excel(self.filename)

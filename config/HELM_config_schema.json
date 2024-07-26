@@ -58,17 +58,173 @@
       }
     },
     "penalty": {
-      "type": "number",
-      "description": ""
+      "type": "object",
+      "description": "Number of hidden nodes in the hidden layers for different datasets.",
+      "properties": {
+        "connect4": {
+          "type": "number"
+        },
+        "isolete": {
+          "type": "number"
+        },
+        "letter": {
+          "type": "number"
+        },
+        "mnist": {
+          "type": "number"
+        },
+        "mnist_fashion": {
+          "type": "number"
+        },
+        "musk2": {
+          "type": "number"
+        },
+        "optdigits": {
+          "type": "number"
+        },
+        "page_blocks": {
+          "type": "number"
+        },
+        "satimages": {
+          "type": "number"
+        },
+        "segment": {
+          "type": "number"
+        },
+        "shuttle": {
+          "type": "number"
+        },
+        "spambase": {
+          "type": "number"
+        },
+        "usps": {
+          "type": "number"
+        }
+      }
     },
     "scaling_factor": {
-      "type": "number",
-      "description": ""
+      "type": "object",
+      "description": "Number of hidden nodes in the hidden layers for different datasets.",
+      "properties": {
+        "connect4": {
+          "type": "number"
+        },
+        "isolete": {
+          "type": "number"
+        },
+        "letter": {
+          "type": "number"
+        },
+        "mnist": {
+          "type": "number"
+        },
+        "mnist_fashion": {
+          "type": "number"
+        },
+        "musk2": {
+          "type": "number"
+        },
+        "optdigits": {
+          "type": "number"
+        },
+        "page_blocks": {
+          "type": "number"
+        },
+        "satimages": {
+          "type": "number"
+        },
+        "segment": {
+          "type": "number"
+        },
+        "shuttle": {
+          "type": "number"
+        },
+        "spambase": {
+          "type": "number"
+        },
+        "usps": {
+          "type": "number"
+        }
+      }
     },
     "num_tests": {
       "type": "integer",
       "description": "How many times a test should be repeated."
     }
   },
+  "hyperparamtuning": {
+      "type": "object",
+      "description": "Hyperparameter tuning configuration.",
+      "properties": {
+        "metric": {
+          "type": "string",
+          "description": "Metric to optimize during hyperparameter tuning."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["min", "max"],
+          "description": "Mode of the metric: 'min' to minimize, 'max' to maximize."
+        },
+        "max_t": {
+          "type": "integer",
+          "description": "Maximum number of training iterations per trial."
+        },
+        "grace_period": {
+          "type": "integer",
+          "description": "Minimum number of iterations a trial must complete before it can be stopped early."
+        },
+        "reduction_factor": {
+          "type": "number",
+          "description": "Factor by which to reduce the number of trials at each decision point."
+        },
+        "num_samples": {
+          "type": "integer",
+          "description": "Number of different configurations to sample from the search space."
+        },
+        "num_resources": {
+          "type": "object",
+          "properties": {
+            "cpu": {
+              "type": "integer",
+              "description": "Number of CPU resources allocated per trial."
+            },
+            "gpu": {
+              "type": "integer",
+              "description": "Number of GPU resources allocated per trial."
+            }
+          },
+          "required": ["cpu", "gpu"]
+        },
+        "C_penalty": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "number",
+              "description": "Starting range for the C_penalty hyperparameter."
+            },
+            "to": {
+              "type": "number",
+              "description": "Ending range for the C_penalty hyperparameter."
+            }
+          },
+          "required": ["from", "to"]
+        },
+        "scaling_factor": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "number",
+              "description": "Starting range for the scaling_factor hyperparameter."
+            },
+            "to": {
+              "type": "number",
+              "description": "Ending range for the scaling_factor hyperparameter."
+            }
+          },
+          "required": ["from", "to"]
+        }
+      },
+      "required": ["metric", "mode", "max_t", "grace_period", "reduction_factor", "num_samples", "num_resources", "C_penalty", "scaling_factor"]
+    },
   "required": ["dataset_name", "seed", "penalty", "hidden_neurons", "scaling_factor", "num_tests"]
 }

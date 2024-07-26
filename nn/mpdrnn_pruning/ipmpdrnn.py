@@ -3,15 +3,13 @@ import os
 import logging
 import torch
 
-from nn.dataloaders.npz_dataloader import NpzDataset
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel, setup_logger,
-                         load_config_json, reorder_metrics_lists)
+                         load_config_json, reorder_metrics_lists, create_train_valid_test_datasets, get_num_of_neurons)
 
 
 class Experiment:
@@ -35,16 +33,17 @@ class Experiment:
         # Boilerplate
         self.dataset_name = self.cfg.get("dataset_name")
         self.method = self.cfg.get('method')
-        self.penalty_term = self.cfg.get('penalty').get(self.dataset_name)
-        self.rcond = self.cfg.get("rcond").get(self.dataset_name).get(self.cfg.get("method"))
+
+        self.penalty_term = self.cfg.get('penalty')
+        self.rcond = self.cfg.get("rcond").get(self.method)
         self.activation = self.cfg.get('activation')
         self.gen_ds_cfg = general_dataset_configs(self.cfg.get("dataset_name"))
 
         self.initial_model = None
         self.subsequent_model = None
 
-        drnn_config = drnn_paths_config(self.cfg.get("dataset_name"))
-        sp = self.cfg.get('subset_percentage').get(self.dataset_name)
+        drnn_config = drnn_paths_config(self.dataset_name)
+        sp = self.cfg.get('subset_percentage')
         pm = self.cfg.get('pruning_method')
 
         # Save path
@@ -60,24 +59,14 @@ class Experiment:
 
         # Load dataset
         file_path = general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
-        self.train_loader, self.valid_loader, self.test_loader = (
-            self.create_train_valid_test_datasets(file_path)
-        )
-
-    def get_num_of_neurons(self, method, dataset_name):
-        num_neurons = {
-            "BASE": self.cfg.get("eq_neurons").get(dataset_name),
-            "EXP_ORT": self.cfg.get("exp_neurons").get(dataset_name),
-            "EXP_ORT_C": self.cfg.get("exp_neurons").get(dataset_name),
-        }
-        return num_neurons[method]
+        self.train_loader, self.valid_loader, self.test_loader = create_train_valid_test_datasets(file_path)
 
     def get_network_config(self, network_type):
         net_cfg = {
             "MultiPhaseDeepRandomizedNeuralNetworkBase": {
                 "first_layer_num_data": self.gen_ds_cfg.get("num_train_data"),
                 "first_layer_num_features": self.gen_ds_cfg.get("num_features"),
-                "first_layer_num_hidden": self.get_num_of_neurons(self.cfg.get("method"), self.dataset_name),
+                "first_layer_num_hidden": get_num_of_neurons(self.cfg, self.method),
                 "first_layer_output_nodes": self.gen_ds_cfg.get("num_classes"),
                 "activation": self.activation,
                 "method": self.method,
@@ -97,18 +86,6 @@ class Experiment:
         }
 
         return net_cfg[network_type]
-
-    @staticmethod
-    def create_train_valid_test_datasets(file_path):
-        train_dataset = NpzDataset(file_path, operation="train")
-        valid_dataset = NpzDataset(file_path, operation="valid")
-        test_dataset = NpzDataset(file_path, operation="test")
-
-        train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
-        valid_loader = DataLoader(dataset=valid_dataset, batch_size=len(valid_dataset), shuffle=False)
-        test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
-
-        return train_loader, valid_loader, test_loader
 
     def model_training_and_evaluation(self, model, weights, num_hidden_layers: int, verbose: bool):
         model.train_layer(self.train_loader)
@@ -136,7 +113,7 @@ class Experiment:
 
     def pruning_model(self, model, weight_attr: str, set_weights_to_zero: bool):
         _, least_important_prune_indices = (
-            model.pruning(pruning_percentage=self.cfg.get("subset_percentage").get(self.dataset_name),
+            model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
                           pruning_method=self.cfg.get("pruning_method"))
         )
 
@@ -162,7 +139,7 @@ class Experiment:
 
         aux_model.train_layer(self.train_loader)
         most_important_prune_indices, _ = (
-            aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage").get(self.dataset_name),
+            aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
                               pruning_method=self.cfg.get("pruning_method"))
         )
 
@@ -193,7 +170,7 @@ class Experiment:
                                                  model_type,
                                                  weight_attr="extended_gamma_weights",
                                                  least_important_prune_indices=least_important_prune_indices)
-    
+
     def main(self):
         # Load data
         accuracies = []
@@ -245,7 +222,7 @@ class Experiment:
             net_cfg = self.get_network_config("MultiPhaseDeepRandomizedNeuralNetworkSubsequent")
             self.subsequent_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkSubsequent", net_cfg)
 
-            (self.subsequent_model, 
+            (self.subsequent_model,
              subsequent_model_subs_weights_training_metrics,
              subsequent_model_subs_weights_testing_metrics) = (
                 self.model_training_and_evaluation(
@@ -345,12 +322,16 @@ class Experiment:
                                final_model_model_subs_weights_testing_metrics
                                ))
 
-            best = final_model_subs_weights_testing_metrics if final_model_subs_weights_testing_metrics[0] > final_model_model_subs_weights_testing_metrics[0] else final_model_model_subs_weights_testing_metrics
+            best = (
+                final_model_subs_weights_testing_metrics) if (final_model_subs_weights_testing_metrics[0] >
+                                                              final_model_model_subs_weights_testing_metrics[0]) else (
+                final_model_model_subs_weights_testing_metrics
+            )
 
             metrics = reorder_metrics_lists(train_metrics=final_model_model_subs_weights_training_metrics,
                                             test_metrics=best,
                                             training_time_list=training_time)
-            insert_data_to_excel(self.save_filename, self.cfg.get("dataset_name"), i + 2, metrics, "ipmpdrnn")
+            insert_data_to_excel(self.save_filename, self.cfg.get("dataset_name"), i + 2, metrics)
 
             accuracies.clear()
             training_time.clear()

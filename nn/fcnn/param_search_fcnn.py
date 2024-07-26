@@ -118,7 +118,8 @@ class HyperparameterSearch:
         )
 
         save_log_to_txt(output_file=self.save_log_file,
-                        result=result)
+                        result=result,
+                        operation="loss")
 
 
 if __name__ == '__main__':

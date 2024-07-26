@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
 from nn.models.mpdrnn_model import (MultiPhaseDeepRandomizedNeuralNetworkBase,
-                          MultiPhaseDeepRandomizedNeuralNetworkSubsequent,
-                          MultiPhaseDeepRandomizedNeuralNetworkFinal)
+                                    MultiPhaseDeepRandomizedNeuralNetworkSubsequent,
+                                    MultiPhaseDeepRandomizedNeuralNetworkFinal)
 
 
 class ModelSelector(ABC):
@@ -18,15 +18,15 @@ class ModelSelector(ABC):
 class BaseModelWrapper(ModelSelector):
     def __init__(self, network_cfg):
         self.model = MultiPhaseDeepRandomizedNeuralNetworkBase(
-                num_data=network_cfg.get("first_layer_num_data"),
-                num_features=network_cfg.get("first_layer_num_features"),
-                hidden_nodes=network_cfg.get("first_layer_num_hidden"),
-                output_nodes=network_cfg.get("first_layer_output_nodes"),
-                activation_function=network_cfg.get("activation"),
-                method=network_cfg.get("method"),
-                rcond=network_cfg.get("rcond"),
-                penalty_term=network_cfg.get("penalty_term"),
-            )
+            num_data=network_cfg.get("first_layer_num_data"),
+            num_features=network_cfg.get("first_layer_num_features"),
+            hidden_nodes=network_cfg.get("first_layer_num_hidden"),
+            output_nodes=network_cfg.get("first_layer_output_nodes"),
+            activation_function=network_cfg.get("activation"),
+            method=network_cfg.get("method"),
+            rcond=network_cfg.get("rcond"),
+            penalty_term=network_cfg.get("penalty_term"),
+        )
 
     def forward(self, x):
         return self.model(x)

@@ -16,8 +16,10 @@ import sys
 from datetime import datetime
 from functools import wraps
 from jsonschema import validate
+from nn.dataloaders.npz_dataloader import NpzDataset
 from openpyxl.styles import PatternFill
 from pprint import pformat
+from torch.utils.data import DataLoader
 from typing import Any, Callable
 
 
@@ -334,26 +336,27 @@ def load_config_json(json_schema_filename: str, json_filename: str):
         validate(config, schema)
         logging.info("JSON data is valid.")
 
-        # Adjust Pandas display settings
         pd.set_option('display.max_colwidth', None)
         pd.set_option('display.max_rows', None)
 
-        # Split config into simple and nested dictionaries
+        flattened_config = {}
+
         simple_config = {k: v for k, v in config.items() if not isinstance(v, dict)}
         nested_config = {k: v for k, v in config.items() if isinstance(v, dict)}
 
-        # Create DataFrame for simple config
-        df = pd.DataFrame.from_dict(simple_config, orient='index')
+        dataset_name = simple_config['dataset_name']
 
-        # Pretty print the DataFrame
-        logging.info("Simple Config DataFrame:\n" + df.to_string())
+        if 'hyperparamtuning' in nested_config:
+            flattened_config['hyperparamtuning'] = nested_config['hyperparamtuning']
 
-        # Pretty print nested structures separately
         for key, value in nested_config.items():
-            logging.info(f"{key}:\n{pformat(value)}")
+            if key != 'hyperparamtuning' and dataset_name in value:
+                flattened_config[key] = value[dataset_name]
 
-        # Merge simple and nested configs back for returning
-        full_config = {**simple_config, **nested_config}
+        full_config = {**simple_config, **flattened_config}
+        df = pd.DataFrame.from_dict(full_config, orient='index', columns=['Value'])
+
+        logging.info("Config DataFrame:\n" + df.to_string())
 
         return full_config
     except jsonschema.exceptions.ValidationError as err:
@@ -381,16 +384,23 @@ def find_latest_file_in_latest_directory(path: str) -> str:
     return latest_file
 
 
-def save_log_to_txt(output_file, result):
+def save_log_to_txt(output_file, result, operation):
     original_stdout = sys.stdout
 
     with open(output_file, "w") as log_file:
         sys.stdout = log_file
 
-        best_trial = result.get_best_trial("loss", "min", "last")
-        print("Best trial config: {}".format(best_trial.config))
-        print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
-        print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+        if operation == "loss":
+            best_trial = result.get_best_trial("loss", "min", "last")
+            print("Best trial config: {}".format(best_trial.config))
+            print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
+            print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+        elif operation == "accuracy":
+            best_trial = result.get_best_trial("accuracy", "max", "last")
+            print("Best trial config: {}".format(best_trial.config))
+            print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+        else:
+            raise ValueError(f"Invalid operation: {operation}")
 
     sys.stdout = original_stdout
 
@@ -427,3 +437,24 @@ def reorder_metrics_lists(train_metrics, test_metrics, training_time_list=None):
 def find_best_testing_accuracy(accuracies):
     best_metrics = max(accuracies, key=lambda x: x[1][0])
     return best_metrics
+
+
+def create_train_valid_test_datasets(file_path):
+    train_dataset = NpzDataset(file_path, operation="train")
+    valid_dataset = NpzDataset(file_path, operation="valid")
+    test_dataset = NpzDataset(file_path, operation="test")
+
+    train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
+    valid_loader = DataLoader(dataset=valid_dataset, batch_size=len(valid_dataset), shuffle=False)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
+
+    return train_loader, valid_loader, test_loader
+
+
+def get_num_of_neurons(cfg, method):
+    num_neurons = {
+        "BASE": cfg.get("eq_neurons"),
+        "EXP_ORT": cfg.get("exp_neurons"),
+        "EXP_ORT_C": cfg.get("exp_neurons"),
+    }
+    return num_neurons[method]

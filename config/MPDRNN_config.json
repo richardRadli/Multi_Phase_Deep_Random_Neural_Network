@@ -1,26 +1,11 @@
 {
-  "dataset_name": "musk2",
+  "dataset_name": "mnist_fashion",
   "activation": "LeakyReLU",
-  "number_of_tests": 10,
+  "number_of_tests": 20,
   "seed": true,
   "method": "EXP_ORT_C",
   "mu": 0,
   "sigma": 0.1,
-  "rcond": {
-    "connect4": 1e-15,
-    "isolete": null,
-    "letter": 1e-5,
-    "mnist": 1e-15,
-    "mnist_fashion": 1e-15,
-    "musk2": null,
-    "optdigits": 1e-5,
-    "page_blocks": 1e-5,
-    "satimages": null,
-    "segment": null,
-    "shuttle": 1e-5,
-    "spambase": 1e-15,
-    "usps": null
-  },
   "eq_neurons": {
     "connect4": [866, 866, 866],
     "isolete": [1300, 1300, 1300],
@@ -55,7 +40,7 @@
     "connect4": 5,
     "isolete": 5,
     "letter": 11,
-    "mnist": 14,
+    "mnist": 5,
     "mnist_fashion": 1,
     "musk2": 0.8,
     "optdigits": 8,
@@ -65,5 +50,72 @@
     "shuttle": 8,
     "spambase": 0.15,
     "usps": 0.15
+  },
+  "rcond": {
+    "connect4": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "isolete": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "letter": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "mnist": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "mnist_fashion": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "musk2": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "optdigits": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-5
+    },
+    "page_blocks": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "satimages": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-20
+    },
+    "segment": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "shuttle": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "spambase": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "usps": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    }
   }
 }

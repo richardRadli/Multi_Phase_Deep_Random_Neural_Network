@@ -1,7 +1,7 @@
 {
-  "dataset_name": "mnist",
+  "dataset_name": "musk2",
   "activation": "LeakyReLU",
-  "number_of_tests": 10,
+  "number_of_tests": 20,
   "seed": true,
   "pruning_method": "max_rank",
   "method": "BASE",
@@ -41,8 +41,8 @@
     "connect4": 0.5,
     "isolete": 0.55,
     "letter": 0.1,
-    "mnist": 0.3,
-    "mnist_fashion": 0.05,
+    "mnist": 0.5,
+    "mnist_fashion": 0.55,
     "musk2": 0.6,
     "optdigits": 0.4,
     "page_blocks": 0.6,
@@ -54,7 +54,7 @@
   },
   "rcond": {
     "connect4": {
-      "BASE": 1e-15,
+      "BASE": 1e-5,
       "EXP_ORT": 1e-15,
       "EXP_ORT_C": 1e-15
     },
@@ -69,12 +69,12 @@
       "EXP_ORT_C": 1e-15
     },
     "mnist": {
-      "BASE": 1e-15,
-      "EXP_ORT": 1e-15,
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
       "EXP_ORT_C": 1e-30
     },
     "mnist_fashion": {
-      "BASE": 1e-15,
+      "BASE": 1e-5,
       "EXP_ORT": 1e-15,
       "EXP_ORT_C": 1e-15
     },
@@ -122,8 +122,8 @@
   "penalty": {
     "connect4": 5,
     "isolete": 5,
-    "letter": 11,
-    "mnist": 14,
+    "letter": 0.15,
+    "mnist": 0.15,
     "mnist_fashion": 1,
     "musk2": 0.8,
     "optdigits": 8,

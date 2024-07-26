@@ -656,93 +656,105 @@ def helm_paths_config(dataset_type) -> Dict:
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_connect4"),
             "path_to_results":
-                HELM_PATHS.get_data_path("results_connect4")
-
+                HELM_PATHS.get_data_path("results_connect4"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_connect4")
         },
         "isolete": {
-
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_isolete"),
             "path_to_results":
                 HELM_PATHS.get_data_path("results_isolete"),
-
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_isolete")
         },
         "letter": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_letter"),
             "path_to_results":
                 HELM_PATHS.get_data_path("results_letter"),
-
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_letter")
         },
         "mnist": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_mnist"),
             "path_to_results":
                 HELM_PATHS.get_data_path("results_mnist"),
-
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_mnist")
         },
         "mnist_fashion": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_mnist_fashion"),
             "path_to_results":
-                HELM_PATHS.get_data_path("results_mnist_fashion")
-
+                HELM_PATHS.get_data_path("results_mnist_fashion"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_mnist_fashion")
         },
         "musk2": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_musk2"),
             "path_to_results":
-                HELM_PATHS.get_data_path("results_musk2")
-
+                HELM_PATHS.get_data_path("results_musk2"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_musk2")
         },
         "optdigits": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_optdigits"),
             "path_to_results":
                 HELM_PATHS.get_data_path("results_optdigits"),
-
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_optdigits")
         },
         "page_blocks": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_page_blocks"),
             "path_to_results":
-                HELM_PATHS.get_data_path("results_page_blocks")
-
+                HELM_PATHS.get_data_path("results_page_blocks"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_page_blocks")
         },
         "satimages": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_satimages"),
             "path_to_results":
-                HELM_PATHS.get_data_path("results_satimages")
-
+                HELM_PATHS.get_data_path("results_satimages"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_satimages")
         },
         "segment": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_segment"),
             "path_to_results":
-                HELM_PATHS.get_data_path("results_segment")
-
+                HELM_PATHS.get_data_path("results_segment"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_segment")
         },
         "shuttle": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_shuttle"),
             "path_to_results":
                 HELM_PATHS.get_data_path("results_shuttle"),
-
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_shuttle")
         },
         "spambase": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_spambase"),
             "path_to_results":
-                HELM_PATHS.get_data_path("results_spambase")
-
+                HELM_PATHS.get_data_path("results_spambase"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_spambase")
         },
         "usps": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_usps"),
             "path_to_results":
-                HELM_PATHS.get_data_path("results_usps")
-
+                HELM_PATHS.get_data_path("results_usps"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_usps")
         }
     }
 

@@ -36,90 +36,6 @@
       "default": 0.15,
       "description": "The standard deviation of a uniform distribution is a measure of the spread of the distribution."
     },
-    "rcond": {
-      "type": "object",
-      "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
-      "properties": {
-        "connect4": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "isolete": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "letter": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "mnist": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "mnist_fashion": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "musk2": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "optdigits": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "page_blocks": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "satimages": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "segment": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "shuttle": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "spambase": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        },
-        "usps": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
-        }
-      }
-    },
     "eq_neurons": {
       "type": "object",
       "description": "Number of equal neurons.",
@@ -210,48 +126,379 @@
         }
       }
     },
+    "rcond": {
+      "type": "object",
+      "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
+      "properties": {
+        "connect4": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "isolete": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "letter": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "mnist": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "mnist_fashion": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "musk2": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "optdigits": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "page_blocks": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "satimages": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "segment": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "shuttle": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "spambase": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "usps": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        }
+      }
+    },
     "penalty": {
       "type": "object",
       "description": "Value of the L2 penalty term.",
       "properties": {
         "connect4": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "isolete": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "letter": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "mnist": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "mnist_fashion": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "musk2": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "optdigits": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "page_blocks": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "satimages": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "segment": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "shuttle": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "spambase": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "usps": {
-          "type": "number"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         }
       }
     }

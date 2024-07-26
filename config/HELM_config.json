@@ -1,9 +1,37 @@
 {
-  "dataset_name": "optdigits",
+  "dataset_name": "connect4",
   "seed": false,
-  "penalty": 0.00001,
-  "scaling_factor": 0.8,
   "num_tests": 10,
+  "penalty": {
+    "connect4": 5,
+    "isolete": 5,
+    "letter": 0.15,
+    "mnist": 0.15,
+    "mnist_fashion": 1,
+    "musk2": 0.8,
+    "optdigits": 8,
+    "page_blocks": 23,
+    "satimages": 8,
+    "segment": 9,
+    "shuttle": 8,
+    "spambase": 0.15,
+    "usps": 0.15
+  },
+  "scaling_factor": {
+    "connect4": 5,
+    "isolete": 5,
+    "letter": 0.15,
+    "mnist": 0.15,
+    "mnist_fashion": 1,
+    "musk2": 0.8,
+    "optdigits": 8,
+    "page_blocks": 23,
+    "satimages": 8,
+    "segment": 9,
+    "shuttle": 8,
+    "spambase": 0.15,
+    "usps": 0.15
+  },
   "hidden_neurons": {
     "connect4": [400, 200, 2000],
     "isolete": [800, 400, 3000],
@@ -18,5 +46,25 @@
     "shuttle": [100, 50, 500],
     "spambase": [900, 300, 400],
     "usps": [800, 200, 2000]
+  },
+  "hyperparamtuning": {
+    "metric": "accuracy",
+    "mode": "max",
+    "max_t": 30,
+    "grace_period": 4,
+    "reduction_factor": 2,
+    "num_samples": 30,
+    "num_resources": {
+      "cpu": 4,
+      "gpu": 1
+    },
+    "C_penalty": {
+      "from": 1e-30,
+      "to": 1e-10
+    },
+    "scaling_factor": {
+      "from": 0.0,
+      "to": 1.0
+    }
   }
 }
