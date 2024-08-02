@@ -62,6 +62,15 @@ class Experiment:
         self.train_loader, self.valid_loader, self.test_loader = create_train_valid_test_datasets(file_path)
 
     def get_network_config(self, network_type):
+        """
+
+        Args:
+            network_type:
+
+        Returns:
+
+        """
+
         net_cfg = {
             "MultiPhaseDeepRandomizedNeuralNetworkBase": {
                 "first_layer_num_data": self.gen_ds_cfg.get("num_train_data"),
@@ -88,6 +97,18 @@ class Experiment:
         return net_cfg[network_type]
 
     def model_training_and_evaluation(self, model, weights, num_hidden_layers: int, verbose: bool):
+        """
+
+        Args:
+            model:
+            weights:
+            num_hidden_layers:
+            verbose:
+
+        Returns:
+
+        """
+
         model.train_layer(self.train_loader)
 
         train_metrics = (
@@ -112,6 +133,17 @@ class Experiment:
         return model, train_metrics, test_metrics
 
     def pruning_model(self, model, weight_attr: str, set_weights_to_zero: bool):
+        """
+
+        Args:
+            model:
+            weight_attr:
+            set_weights_to_zero:
+
+        Returns:
+
+        """
+
         _, least_important_prune_indices = (
             model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
                           pruning_method=self.cfg.get("pruning_method"))
@@ -125,15 +157,57 @@ class Experiment:
             return least_important_prune_indices
 
     def prune_initial_model(self, model, set_weights_to_zero: bool):
+        """
+
+        Args:
+            model:
+            set_weights_to_zero:
+
+        Returns:
+
+        """
+
         return self.pruning_model(model, weight_attr="alpha_weights", set_weights_to_zero=set_weights_to_zero)
 
     def prune_subsequent_model(self, model, set_weights_to_zero: bool):
+        """
+
+        Args:
+            model:
+            set_weights_to_zero:
+
+        Returns:
+
+        """
+
         return self.pruning_model(model, weight_attr="extended_beta_weights", set_weights_to_zero=set_weights_to_zero)
 
     def prune_final_model(self, model, set_weights_to_zero: bool):
+        """
+
+        Args:
+            model:
+            set_weights_to_zero:
+
+        Returns:
+
+        """
+
         return self.pruning_model(model, weight_attr="extended_gamma_weights", set_weights_to_zero=set_weights_to_zero)
 
     def create_train_prune_aux_model(self, model, model_type, weight_attr: str, least_important_prune_indices=None):
+        """
+
+        Args:
+            model:
+            model_type:
+            weight_attr:
+            least_important_prune_indices:
+
+        Returns:
+
+        """
+
         net_cfg = self.get_network_config(model_type)
         aux_model = ModelFactory.create(model_type, net_cfg)
 
@@ -154,24 +228,63 @@ class Experiment:
         return model
 
     def create_train_prune_initial_aux_model(self, model, model_type, least_important_prune_indices):
+        """
+
+        Args:
+            model:
+            model_type:
+            least_important_prune_indices:
+
+        Returns:
+
+        """
+
         return self.create_train_prune_aux_model(model,
                                                  model_type,
                                                  weight_attr="alpha_weights",
                                                  least_important_prune_indices=least_important_prune_indices)
 
     def create_train_prune_subsequent_aux_model(self, model, model_type, least_important_prune_indices):
+        """
+
+        Args:
+            model:
+            model_type:
+            least_important_prune_indices:
+
+        Returns:
+
+        """
+
         return self.create_train_prune_aux_model(model,
                                                  model_type,
                                                  weight_attr="extended_beta_weights",
                                                  least_important_prune_indices=least_important_prune_indices)
 
     def create_train_prune_final_aux_model(self, model, model_type, least_important_prune_indices):
+        """
+
+        Args:
+            model:
+            model_type:
+            least_important_prune_indices:
+
+        Returns:
+
+        """
+
         return self.create_train_prune_aux_model(model,
                                                  model_type,
                                                  weight_attr="extended_gamma_weights",
                                                  least_important_prune_indices=least_important_prune_indices)
 
     def main(self):
+        """
+
+        Returns:
+
+        """
+
         # Load data
         accuracies = []
         training_time = []

@@ -3,15 +3,14 @@ import logging
 import torch
 
 from sklearn.metrics import accuracy_score, recall_score, precision_score, confusion_matrix, f1_score
-from torchinfo import summary
 from torch.utils.data import DataLoader
+from torchinfo import summary
 from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
-from nn.models.fcnn_model import FCNN
-from nn.dataloaders.npz_dataloader import NpzDataset
-from utils.utils import (setup_logger, device_selector, load_config_json,
+from nn.models.fcnn_model import FullyConnectedNeuralNetwork
+from utils.utils import (setup_logger, device_selector, create_train_valid_test_datasets, load_config_json,
                          find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
 
 
@@ -40,8 +39,10 @@ class EvalFCNN:
         file_path = (
             general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
         )
-        self.train_loader, self.test_loader = (
-            self.create_train_test_datasets(file_path)
+        self.train_loader, _, self.test_loader = (
+            create_train_valid_test_datasets(
+                file_path
+            )
         )
 
         # Setup device
@@ -51,9 +52,9 @@ class EvalFCNN:
 
         # Load the model
         self.model = (
-            FCNN(input_size=gen_ds_cfg.get("num_features"),
-                 hidden_size=self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name")),
-                 output_size=gen_ds_cfg.get("num_classes")).to(self.device)
+            FullyConnectedNeuralNetwork(input_size=gen_ds_cfg.get("num_features"),
+                                        hidden_size=self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name")),
+                                        output_size=gen_ds_cfg.get("num_classes")).to(self.device)
         )
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
 
@@ -70,25 +71,18 @@ class EvalFCNN:
         self.train_f1sore = None
         self.test_f1sore = None
 
-    def create_train_test_datasets(self, file_path):
-        train_dataset = NpzDataset(file_path, operation="train")
-        test_dataset = NpzDataset(file_path, operation="test")
+    def evaluate_model(self, dataloader: DataLoader, operation: str) -> None:
+        """
+        Evaluates the model on a given dataset and logs the performance metrics.
 
-        train_loader = (
-            DataLoader(dataset=train_dataset,
-                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
-                       shuffle=False)
-        )
+        Args:
+            dataloader (torch.utils.data.DataLoader): The DataLoader for the dataset to evaluate.
+            operation (str): A string indicating the type of evaluation ('train', 'valid', 'test').
 
-        test_loader = (
-            DataLoader(dataset=test_dataset,
-                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
-                       shuffle=False)
-        )
+        Returns:
+            None: The function does not return any value but logs the evaluation metrics and plots the confusion matrix.
+        """
 
-        return train_loader, test_loader
-
-    def evaluate_model(self, dataloader, operation):
         self.model.eval()
 
         total_samples = 0
@@ -129,7 +123,14 @@ class EvalFCNN:
         logging.info(f"{operation} recall: {recall:.4f}")
         logging.info(f"{operation} F1-score: {f1sore:.4f}")
 
-    def main(self):
+    def main(self) -> None:
+        """
+        Evaluates the model on a given dataset and logs the performance metrics.
+
+        Returns:
+            None
+        """
+
         self.evaluate_model(self.train_loader, "train")
         self.evaluate_model(self.test_loader, "test")
 

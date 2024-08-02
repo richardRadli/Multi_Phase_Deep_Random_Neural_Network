@@ -10,7 +10,14 @@ from train_fcnn import TrainFCNN
 from utils.utils import create_timestamp, insert_data_to_excel, load_config_json, average_columns_in_excel
 
 
-def main():
+def main() -> None:
+    """
+    Main function to load configuration, run training and evaluation cycles, and save results to an Excel file.
+
+    Returns:
+        None: The function does not return any value but performs training, evaluation, and data logging.
+    """
+
     timestamp = create_timestamp()
     colorama.init()
 
@@ -46,8 +53,7 @@ def main():
         insert_data_to_excel(filename=filename,
                              dataset_name=dataset_name,
                              row=i + 2,
-                             data=collected_data,
-                             network="fcnn")
+                             data=collected_data)
 
         collected_data.clear()
 

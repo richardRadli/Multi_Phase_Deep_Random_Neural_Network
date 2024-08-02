@@ -8,10 +8,11 @@ from ray import tune
 from ray.tune.schedulers import ASHAScheduler
 from ray.air import session
 from torch.utils.data import DataLoader
+from typing import Any, Dict
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
-from nn.models.fcnn_model import FCNN
+from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from nn.dataloaders.npz_dataloader import NpzDataset
 from utils.utils import device_selector, load_config_json, save_log_to_txt
 
@@ -42,10 +43,24 @@ class HyperparameterSearch:
             "batch_size": tune.choice([32, 64, 128])
         }
 
-    def fit(self, config):
-        model = FCNN(input_size=self.gen_ds_cfg.get("num_features"),
-                     hidden_size=config["hidden_size"],
-                     output_size=self.gen_ds_cfg.get("num_classes")).to(self.device)
+    def fit(self, config: Dict[str, Any]) -> None:
+        """
+         Trains the FCNN model and evaluates it on the validation set.
+
+         Args:
+             config (Dict[str, Any]): Configuration dictionary containing hyperparameters for training.
+                 Expected keys include:
+                 - "hidden_size": Number of hidden units in the model.
+                 - "lr": Learning rate for the optimizer.
+                 - "batch_size": Size of the training and validation batches.
+
+         Returns:
+             None: The function performs training, evaluation, and logs the results but does not return any value.
+         """
+
+        model = FullyConnectedNeuralNetwork(input_size=self.gen_ds_cfg.get("num_features"),
+                                            hidden_size=config["hidden_size"],
+                                            output_size=self.gen_ds_cfg.get("num_classes")).to(self.device)
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=config["lr"])
@@ -94,6 +109,16 @@ class HyperparameterSearch:
             session.report({"loss": val_loss, "accuracy": val_accuracy})
     
     def tune_params(self):
+        """
+        Tunes hyperparameters using Ray Tune and saves the results to a text file.
+
+        This method performs hyperparameter optimization by running multiple trials with different configurations.
+        It uses the ASHAScheduler for early stopping and CLIReporter to track progress.
+
+        Returns:
+            None: The function does not return any value but performs hyperparameter tuning and logs the results.
+        """
+
         scheduler = ASHAScheduler(
             metric="loss",
             mode="min",

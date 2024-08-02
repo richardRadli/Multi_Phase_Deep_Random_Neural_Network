@@ -2,30 +2,55 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset
+from typing import Tuple
 
 
 class NpzDataset(Dataset):
-    def __init__(self, file_path, operation, transform=None):
+    def __init__(self, file_path: str, operation: str):
+        """
+        Initializes the dataset by loading data from a .npz file based on the specified operation.
+
+        Args:
+            file_path (str): Path to the .npz file containing the dataset.
+            operation (str): The operation type which determines which subset of data to load. Should be one of
+                ["train", "valid", "test"].
+
+        Raises:
+            ValueError: If the provided operation is not one of ["train", "valid", "test"].
+        """
+
         data = np.load(file_path, allow_pickle=True)
-        self.transform = transform
 
-        if operation == "train":
-            self.x = torch.from_numpy(data.get("train_x")).float()
-            self.y = torch.from_numpy(data.get("train_y")).float()
-        elif operation == "valid":
-            self.x = torch.from_numpy(data.get("valid_x")).float()
-            self.y = torch.from_numpy(data.get("valid_y")).float()
-        elif operation == "test":
-            self.x = torch.from_numpy(data.get("test_x")).float()
-            self.y = torch.from_numpy(data.get("test_y")).float()
-        else:
-            raise Exception("Operation must be train or test")
+        data_keys = {
+            "train": ("train_x", "train_y"),
+            "valid": ("valid_x", "valid_y"),
+            "test": ("test_x", "test_y")
+        }
 
-    def __len__(self):
+        if operation not in data_keys:
+            raise ValueError("operation must be one of {}".format(data_keys.keys()))
+
+        x_key, y_key = data_keys[operation]
+
+        self.x = torch.from_numpy(data.get(x_key)).float()
+        self.y = torch.from_numpy(data.get(y_key)).float()
+
+    def __len__(self) -> int:
+        """
+        Returns the length of the dataset.
+        """
+
         return len(self.x)
 
-    def __getitem__(self, idx):
-        if self.transform is not None:
-            self.x = self.transform(self.x[idx])
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Retrieves a sample from the dataset at the specified index.
+
+        Args:
+            idx: The index of the sample to retrieve.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: The sample and its label.
+        """
 
         return self.x[idx], self.y[idx]

@@ -36,13 +36,15 @@ class HELMBase:
     def sparse_elm_autoencoder(a: np.ndarray, b: np.ndarray, lam: float, itrs: int) -> np.ndarray:
         """
 
-        param a: a matrix with size (d, n), where d is the dimension of the input fcnn_data and n is the number of
-        training samples.
-        param b: a matrix with size (d, m), where m is the number of hidden neurons in the autoencoder.
-        param lam: a scalar that controls the sparsity of the learned representation.
-        param itrs: the number of iterations for training the autoencoder.
-        :return: The function returns a matrix "x" with size (m, n), which is the learned representation of the input
-                 fcnn_data.
+        Args:
+            a: a matrix with size (d, n), where d is the dimension of the input fcnn_data and n is the number of
+            training samples.
+            b: a matrix with size (d, m), where m is the number of hidden neurons in the autoencoder.
+            lam: a scalar that controls the sparsity of the learned representation.
+            itrs: the number of iterations for training the autoencoder.
+
+        Returns:
+            The function returns a matrix "x" with size (m, n), which is the learned representation of the input data.
         """
 
         # These lines calculate the Lipschitz constant of the input matrix "a", which is used to set the step size of
@@ -93,10 +95,12 @@ class HELMBase:
         the parameter "scale". The function returns the scaled fcnn_data along with a list that contains the minimum
         values, maximum values, and ranges for each row.
 
-        :param matrix: Input matrix to be scaled.
-        :param scale: String specifying the scaling range ("-1_1" or "0_1").
-        :return: Tuple containing the scaled matrix and a list with minimum values, maximum values, and ranges for each
-        row.
+        Args:
+            matrix: Input matrix to be scaled.
+            scale: String specifying the scaling range ("-1_1" or "0_1").
+
+        Returns:
+            Tuple containing the scaled matrix and a list with minimum values, maximum values, and ranges for each row.
         """
 
         min_vals = np.min(matrix, axis=1).reshape(-1, 1)
@@ -112,21 +116,24 @@ class HELMBase:
             raise ValueError("Wrong value!")
 
     @staticmethod
-    def apply_normalization(data, min_values, range_values):
+    def apply_normalization(data: np.ndarray, min_values: np.ndarray, range_values: np.ndarray) -> np.ndarray:
         """
         The purpose of this function is to normalize the input fcnn_data based on the given minimum values and range
         values.
 
-        :param data: Input data to be normalized.
-        :param min_values: Minimum values used for normalization.
-        :param range_values: Range values used for normalization.
-        :return: Normalized data.
+        Args:
+            data: Input data to be normalized.
+            min_values: Minimum values used for normalization.
+            range_values: Range values used for normalization.
+
+        Returns:
+            Normalized data.
         """
 
         return (data - min_values) / range_values
 
     @measure_execution_time
-    def train(self, config):
+    def train(self, config: dict) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, list, list]:
         """
         Train the model.
 
@@ -194,7 +201,7 @@ class HELMBase:
             beta: Weight matrix.
 
         Returns:
-
+            List of evaluation metrics.
         """
 
         for _, train_labels in self.train_loader:

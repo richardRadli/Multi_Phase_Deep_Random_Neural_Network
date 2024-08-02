@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import torch
+
 from nn.models.mpdrnn_model import (MultiPhaseDeepRandomizedNeuralNetworkBase,
                                     MultiPhaseDeepRandomizedNeuralNetworkSubsequent,
                                     MultiPhaseDeepRandomizedNeuralNetworkFinal)
@@ -11,7 +13,7 @@ class ModelSelector(ABC):
         pass
 
     @abstractmethod
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
         pass
 
 
@@ -28,7 +30,7 @@ class BaseModelWrapper(ModelSelector):
             penalty_term=network_cfg.get("penalty_term"),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
 
 
@@ -40,31 +42,35 @@ class SequentModelWrapper(ModelSelector):
             sigma=network_cfg.get('sigma')
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
 
 
 class FinalModelWrapper(ModelSelector):
-    def __init__(self, network_cfg):
+    def __init__(self, network_cfg: dict):
         self.model = MultiPhaseDeepRandomizedNeuralNetworkFinal(
             subsequent_instance=network_cfg.get('subsequent_model'),
             mu=network_cfg.get("mu"),
             sigma=network_cfg.get("sigma"))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
 
 
 class ModelFactory:
+    _model_map = {
+        "MultiPhaseDeepRandomizedNeuralNetworkBase": BaseModelWrapper,
+        "MultiPhaseDeepRandomizedNeuralNetworkSubsequent": BaseModelWrapper,
+        "MultiPhaseDeepRandomizedNeuralNetworkFinal": BaseModelWrapper,
+    }
+
     @staticmethod
-    def create(network_type, network_cfg):
-        if network_type == "MultiPhaseDeepRandomizedNeuralNetworkBase":
-            model = BaseModelWrapper(network_cfg).model
-        elif network_type == "MultiPhaseDeepRandomizedNeuralNetworkSubsequent":
-            model = SequentModelWrapper(network_cfg).model
-        elif network_type == "MultiPhaseDeepRandomizedNeuralNetworkFinal":
-            model = FinalModelWrapper(network_cfg).model
-        else:
-            raise ValueError(f"Network type {network_type} not supported")
+    def create(network_type: str, network_cfg: dict):
+        if network_type not in ModelFactory._model_map:
+            raise ValueError(f"Invalid model type: {network_type}")
+
+        model_wrapper_class = ModelFactory._model_map[network_type]
+
+        model = model_wrapper_class(network_cfg).model
 
         return model

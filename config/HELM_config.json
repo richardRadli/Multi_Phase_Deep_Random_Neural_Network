@@ -1,36 +1,36 @@
 {
-  "dataset_name": "connect4",
+  "dataset_name": "usps",
   "seed": false,
   "num_tests": 10,
   "penalty": {
-    "connect4": 5,
-    "isolete": 5,
-    "letter": 0.15,
+    "connect4": 3.665702124518219e-17,
+    "isolete": 8.948176813872704e-12,
+    "letter": 1.3214583874123556e-12,
     "mnist": 0.15,
     "mnist_fashion": 1,
-    "musk2": 0.8,
-    "optdigits": 8,
-    "page_blocks": 23,
-    "satimages": 8,
-    "segment": 9,
-    "shuttle": 8,
-    "spambase": 0.15,
-    "usps": 0.15
+    "musk2": 5.631016600467622e-12,
+    "optdigits": 8.521582444235834e-26,
+    "page_blocks": 8.617895815709892e-12,
+    "satimages": 1.105588807168286e-11,
+    "segment": 2.5634299766240685e-11,
+    "shuttle": 4.9501035759603156e-29,
+    "spambase": 4.0238638857332915e-13,
+    "usps": 1.0410413967617076e-12
   },
   "scaling_factor": {
-    "connect4": 5,
-    "isolete": 5,
-    "letter": 0.15,
+    "connect4": 0.6296642684522955,
+    "isolete": 0.7130442990114634,
+    "letter": 0.1722563334511953,
     "mnist": 0.15,
     "mnist_fashion": 1,
-    "musk2": 0.8,
-    "optdigits": 8,
-    "page_blocks": 23,
-    "satimages": 8,
-    "segment": 9,
-    "shuttle": 8,
-    "spambase": 0.15,
-    "usps": 0.15
+    "musk2": 0.9794829297771911,
+    "optdigits": 0.9133631742213043,
+    "page_blocks": 0.7939194861772053,
+    "satimages": 0.7447215103038944,
+    "segment": 0.9525663426397086,
+    "shuttle": 0.8145734922136045,
+    "spambase": 0.12218852497271493,
+    "usps": 0.9806451612903225
   },
   "hidden_neurons": {
     "connect4": [400, 200, 2000],
@@ -50,17 +50,17 @@
   "hyperparamtuning": {
     "metric": "accuracy",
     "mode": "max",
-    "max_t": 30,
+    "max_t": 10,
     "grace_period": 4,
     "reduction_factor": 2,
-    "num_samples": 30,
+    "num_samples": 10,
     "num_resources": {
-      "cpu": 4,
+      "cpu": 2,
       "gpu": 1
     },
     "C_penalty": {
       "from": 1e-30,
-      "to": 1e-10
+      "to": 1e-5
     },
     "scaling_factor": {
       "from": 0.0,

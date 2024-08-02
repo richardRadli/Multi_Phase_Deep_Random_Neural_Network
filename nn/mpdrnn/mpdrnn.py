@@ -3,6 +3,7 @@ import os
 import torch
 
 from tqdm import tqdm
+from typing import Any, Dict, Tuple
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, drnn_paths_config
@@ -78,7 +79,27 @@ class MPDRNN:
 
         return net_cfg[network_type]
 
-    def model_training_and_evaluation(self, model, weights, num_hidden_layers, verbose):
+    def model_training_and_evaluation(self, model, weights, num_hidden_layers, verbose) -> (
+            Tuple)[Any, Dict[str, float], Dict[str, float]]:
+        """
+        Trains and evaluates a given model on the training and testing datasets.
+
+        Args:
+            model: The model to be trained and evaluated. It should have methods
+                   `train_layer` and `predict_and_evaluate`.
+            weights: The weights to be used in the model's evaluation. This may
+                     be used to initialize or modify the model.
+            num_hidden_layers: The number of hidden layers in the model. This
+                               parameter may affect the evaluation process.
+            verbose: A boolean flag indicating whether to print detailed logs.
+
+        Returns:
+            A tuple containing:
+                - The trained model.
+                - A dictionary of training metrics.
+                - A dictionary of testing metrics.
+        """
+
         model.train_layer(self.train_loader)
 
         training_metrics = model.predict_and_evaluate(
@@ -99,7 +120,21 @@ class MPDRNN:
 
         return model, training_metrics, testing_metrics
 
-    def main(self):
+    def main(self) -> None:
+        """
+        Executes the main process of training and evaluating models for a specified number of tests.
+
+        This method performs the following steps for each test iteration:
+        1. Creates and trains an initial model.
+        2. Creates and trains a subsequent model.
+        3. Creates and trains a final model.
+        4. Collects and logs metrics from all models.
+        5. Saves the metrics to an Excel file.
+
+        Returns:
+            None
+        """
+
         training_time = []
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):

@@ -423,31 +423,31 @@ class HELMPaths(_Const):
             "helm/data/results/satimages",
 
         "hyperparam_tuning_connect4":
-            "helm/hyperparam_tuning/connect4",
+            "helm/data/hyperparam_tuning/connect4",
         "hyperparam_tuning_isolete":
-            "helm/hyperparam_tuning/isolete",
+            "helm/data/hyperparam_tuning/isolete",
         "hyperparam_tuning_letter":
-            "helm/hyperparam_tuning/letter",
+            "helm/data/hyperparam_tuning/letter",
         "hyperparam_tuning_mnist":
-            "helm/hyperparam_tuning/mnist",
+            "helm/data/hyperparam_tuning/mnist",
         "hyperparam_tuning_mnist_fashion":
-            "helm/hyperparam_tuning/mnist_fashion",
+            "helm/data/hyperparam_tuning/mnist_fashion",
         "hyperparam_tuning_musk2":
-            "helm/hyperparam_tuning/musk2",
+            "helm/data/hyperparam_tuning/musk2",
         "hyperparam_tuning_optdigits":
-            "helm/hyperparam_tuning/optdigits",
+            "helm/data/hyperparam_tuning/optdigits",
         "hyperparam_tuning_page_blocks":
-            "helm/hyperparam_tuning/page_blocks",
+            "helm/data/hyperparam_tuning/page_blocks",
         "hyperparam_tuning_segment":
-            "helm/hyperparam_tuning/segment",
+            "helm/data/hyperparam_tuning/segment",
         "hyperparam_tuning_satimages":
-            "helm/hyperparam_tuning/satimages",
+            "helm/data/hyperparam_tuning/satimages",
         "hyperparam_tuning_shuttle":
-            "helm/hyperparam_tuning/shuttle",
+            "helm/data/hyperparam_tuning/shuttle",
         "hyperparam_tuning_spambase":
-            "helm/hyperparam_tuning/spambase",
+            "helm/data/hyperparam_tuning/spambase",
         "hyperparam_tuning_usps":
-            "helm/hyperparam_tuning/usps"
+            "helm/data/hyperparam_tuning/usps"
     }
 
     # ------------------------------------------------------------------------------------------------------------------

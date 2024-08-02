@@ -18,288 +18,22 @@ from functools import wraps
 from jsonschema import validate
 from nn.dataloaders.npz_dataloader import NpzDataset
 from openpyxl.styles import PatternFill
-from pprint import pformat
 from torch.utils.data import DataLoader
-from typing import Any, Callable
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 
-def setup_logger():
+def average_columns_in_excel(filename: str) -> None:
     """
-    Set up a colorized logger with the following log levels and colors:
-
-    - DEBUG: Cyan
-    - INFO: Green
-    - WARNING: Yellow
-    - ERROR: Red
-    - CRITICAL: Red on a white background
-
-    Returns:
-        The configured logger instance.
-    """
-
-    # Check if logger has already been set up
-    logger = logging.getLogger()
-    if logger.hasHandlers():
-        return logger
-
-    # Set up logging
-    logger.setLevel(logging.INFO)
-
-    # Create a colorized formatter
-    formatter = colorlog.ColoredFormatter(
-        "%(log_color)s%(levelname)-8s%(reset)s %(white)s%(message)s",
-        log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red',
-            'CRITICAL': 'red,bg_white',
-        })
-
-    # Create a console handler and add the formatter to it
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-
-    return logger
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# ------------------------------------------- C R E A T E   T I M E S T A M P ------------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def create_timestamp() -> str:
-    """
-    Creates a timestamp in the format of '%Y-%m-%d_%H-%M-%S', representing the current date and time.
-
-    :return: The timestamp string.
-    """
-
-    return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-
-
-def create_dir(root_dir: str, method: str):
-    timestamp = create_timestamp()
-    output_dir = os.path.join(root_dir, f"{timestamp}_{method}")
-    os.makedirs(output_dir, exist_ok=True)
-    return output_dir
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# --------------------------------------- P R E T T Y   P R I N T   R E S U L T S --------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def pretty_print_results(acc, precision, recall, fscore, loss, root_dir: str, operation: str, name: str,
-                         exe_time=None) -> None:
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', None)
-    pd.set_option('display.max_colwidth', None)
-
-    columns = [
-        f"{operation} loss",
-        f"{operation} acc",
-        f"{operation} precision",
-        f"{operation} recall",
-        f"{operation} fscore",
-    ]
-
-    data = [
-        np.round(loss, 4),
-        np.round(acc, 4),
-        np.round(precision, 4),
-        np.round(recall, 4),
-        np.round(fscore, 4)
-    ]
-
-    if exe_time is not None:
-        columns.append(f"{operation} exe time")
-        data.append(np.round(exe_time, 4))
-
-    df = pd.DataFrame([data],
-                      index=pd.Index(['Score']),
-                      columns=pd.MultiIndex.from_product([columns]))
-
-    path_to_save = os.path.join(root_dir, f"{operation}.txt")
-    try:
-        with open(path_to_save, 'a'):
-            pass
-    except FileNotFoundError:
-        df.to_csv(path_to_save, sep='\t', index=True)
-    else:
-        df.to_csv(path_to_save, sep='\t', index=True, mode='a', header=True)
-
-    upper_separator = "-" * 34  # Customize the separator as needed
-    lower_separator = "-" * 83
-
-    logging.info("\n%s %s %s %s \n%s\n%s", upper_separator, name, operation, upper_separator, df, lower_separator)
-
-
-def measure_execution_time(func: Callable) -> Callable:
-    """
-    Decorator to measure the execution time of a function.
+    Calculates the average of each numeric column for each sheet in an Excel file and appends these averages to the end
+    of each sheet.
 
     Args:
-        func (Callable): The function to be decorated.
+        filename (str): The path to the Excel file.
 
     Returns:
-        Callable: The decorated function.
+        None: The function modifies the Excel file in-place.
     """
 
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
-        """
-        Wrapper function to measure execution time.
-
-        Args:
-            *args: Positional arguments passed to the function.
-            **kwargs: Keyword arguments passed to the function.
-
-        Returns:
-            Any: The result of the function.
-        """
-
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        wrapper.execution_time = end_time - start_time
-        logging.info(f"Execution time of {func.__name__}: {wrapper.execution_time:.4f} seconds")
-        return result
-
-    wrapper.execution_time = None
-    return wrapper
-
-
-def calc_exp_neurons(total_neurons: int, n_layers: int):
-    # Calculate the geometric mean of the number of neurons based on the number of layers
-    geom_mean = total_neurons ** (1 / n_layers)
-
-    # Calculate the number of neurons for each layer using the geometric mean
-    neurons_per_layer = [int(geom_mean ** i) for i in range(n_layers)]
-
-    # Adjust the first layer to match the total number of neurons
-    neurons_per_layer[0] += total_neurons - sum(neurons_per_layer)
-
-    # Make sure the last layer has more than 1 neuron
-    if neurons_per_layer[-1] <= 1:
-        neurons_per_layer[-2] += neurons_per_layer[-1] - 1
-        neurons_per_layer.pop()
-
-    return sorted(neurons_per_layer, reverse=True)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------- P L O T   C O N F   M T X ---------------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def plot_confusion_matrix_mpdrnn(cm, path_to_plot, name_of_dataset: str, operation: str, method: str, labels=None) -> None:
-    fig, axis = plt.subplots(1, 3, figsize=(15, 5))
-
-    for i, cm in enumerate(cm):
-        ax = axis[i]
-        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=ax)
-        ax.set_title('%s, %s, %s, %s' % (f"Phase {i + 1}", name_of_dataset, method, operation))
-        ax.set_xlabel('Predicted')
-        ax.set_ylabel('Actual')
-
-    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
-    gc.collect()
-
-
-def plot_confusion_matrix_fcnn(cm, operation, class_labels, dataset_name):
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt=".0f", cmap="Blues",
-                xticklabels=class_labels, yticklabels=class_labels)
-    plt.xlabel("Predicted labels")
-    plt.ylabel("Actual labels")
-    plt.title(f"Confusion matrix of {dataset_name} on the {operation} set.")
-    plt.tight_layout()
-    plt.show()
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# --------------------------------- P L O T   T R A I N   A N D   V A L I D   D A T A ----------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-def plot_metrics(train, test, metric_type: str, path_to_plot: str, name_of_dataset: str, method: str) \
-        -> None:
-    sns.set_style("whitegrid")
-    plt.figure(figsize=(10, 6))
-
-    x_values = np.arange(1, len(train) + 1)
-
-    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{metric_type}.png")
-
-    plt.plot(x_values, train, marker='o', label='Train')
-    plt.plot(x_values, test, marker='o', label='Test')
-    plt.xlabel('Phases')
-    plt.ylabel(metric_type)
-    plt.title('%s, %s, %s' % (name_of_dataset, method, metric_type))
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
-    gc.collect()
-
-
-def device_selector(preferred_device) -> torch.device:
-    """
-    Provides information about the currently available GPUs and returns a torch device for training and inference.
-
-    :return: A torch device for either "cuda" or "cpu".
-    """
-    if preferred_device not in ["cuda", "cpu"]:
-        logging.warning("Preferred device is not valid. Using CPU instead.")
-        return torch.device("cpu")
-
-    if preferred_device == "cuda" and torch.cuda.is_available():
-        cuda_info = {
-            'CUDA Available': [torch.cuda.is_available()],
-            'CUDA Device Count': [torch.cuda.device_count()],
-            'Current CUDA Device': [torch.cuda.current_device()],
-            'CUDA Device Name': [torch.cuda.get_device_name(0)]
-        }
-
-        df = pd.DataFrame(cuda_info)
-        logging.info(df)
-        return torch.device("cuda")
-
-    if preferred_device in ["cuda"] and not torch.cuda.is_available():
-        logging.info("Only CPU is available!")
-        return torch.device("cpu")
-
-    if preferred_device == "cpu":
-        logging.info("Selected CPU device")
-        return torch.device("cpu")
-
-
-def insert_data_to_excel(filename, dataset_name, row, data):
-    try:
-        workbook = openpyxl.load_workbook(filename)
-    except FileNotFoundError:
-        workbook = openpyxl.Workbook()
-
-    if dataset_name not in workbook.sheetnames:
-        workbook.create_sheet(dataset_name)
-
-    sheet = workbook[dataset_name]
-
-    values = ["train acc", "test acc", "train precision", "test precision", "train recall", "test recall", "train f1",
-              "test f1", "training time"]
-
-    for col, value in enumerate(values, start=1):
-        sheet.cell(row=1, column=col, value=value)
-
-    for col, value in enumerate(data[0], start=1):
-        sheet.cell(row=row, column=col, value=str(value))
-
-    if "Sheet" in workbook.sheetnames:
-        del workbook['Sheet']
-
-    workbook.save(filename)
-
-
-def average_columns_in_excel(filename: str):
     excel_file = pd.ExcelFile(filename)
 
     results = {}
@@ -325,7 +59,244 @@ def average_columns_in_excel(filename: str):
     workbook.save(filename)
 
 
+def calc_exp_neurons(total_neurons: int, n_layers: int) -> List[int]:
+    """
+    Distributes a total number of neurons across a specified number of layers
+    using an exponential growth distribution.
+
+    Args:
+        total_neurons (int): The total number of neurons to distribute.
+        n_layers (int): The number of layers across which to distribute the neurons.
+
+    Returns:
+        List[int]: A list of integers representing the number of neurons in each layer,
+                   sorted in descending order.
+    """
+
+    geom_mean = total_neurons ** (1 / n_layers)
+    neurons_per_layer = [int(geom_mean ** i) for i in range(n_layers)]
+    neurons_per_layer[0] += total_neurons - sum(neurons_per_layer)
+
+    if neurons_per_layer[-1] <= 1:
+        neurons_per_layer[-2] += neurons_per_layer[-1] - 1
+        neurons_per_layer.pop()
+
+    return sorted(neurons_per_layer, reverse=True)
+
+
+def create_dir(root_dir: str, method: str) -> str:
+    """
+    Creates a new directory with a timestamp and a specified method as its name
+    within a given root directory.
+
+    Args:
+        root_dir (str): The path to the root directory where the new directory will be created.
+        method (str): The method name or identifier to include in the new directory's name.
+
+    Returns:
+        str: The path to the newly created directory.
+    """
+
+    timestamp = create_timestamp()
+    output_dir = os.path.join(root_dir, f"{timestamp}_{method}")
+    os.makedirs(output_dir, exist_ok=True)
+
+    return output_dir
+
+
+def create_timestamp() -> str:
+    """
+    Creates a timestamp in the format of '%Y-%m-%d_%H-%M-%S', representing the current date and time.
+
+    Returns:
+        Timestamp string in the format of '%Y-%m-%d_%H-%M-%S'.
+    """
+
+    return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+
+def create_train_valid_test_datasets(file_path) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    """
+    Creates DataLoader instances for training, validation, and testing datasets from a given file path.
+
+    Args:
+        file_path (str): The path to the file from which the datasets will be created.
+
+    Returns:
+        tuple: A tuple containing three DataLoader instances:
+            - `train_loader`: DataLoader for the training dataset.
+            - `valid_loader`: DataLoader for the validation dataset.
+            - `test_loader`: DataLoader for the testing dataset.
+    """
+
+    train_dataset = NpzDataset(file_path, operation="train")
+    valid_dataset = NpzDataset(file_path, operation="valid")
+    test_dataset = NpzDataset(file_path, operation="test")
+
+    train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
+    valid_loader = DataLoader(dataset=valid_dataset, batch_size=len(valid_dataset), shuffle=False)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
+
+    return train_loader, valid_loader, test_loader
+
+
+def device_selector(preferred_device: str) -> torch.device:
+    """
+    Provides information about the currently available GPUs and returns a torch device for training and inference.
+
+    Args:
+        preferred_device: A torch device for either "cuda" or "cpu".
+
+    Returns:
+        torch.device: A torch.device object representing the selected device for training and inference.
+    """
+
+    if preferred_device not in ["cuda", "cpu"]:
+        logging.warning("Preferred device is not valid. Using CPU instead.")
+        return torch.device("cpu")
+
+    if preferred_device == "cuda" and torch.cuda.is_available():
+        cuda_info = {
+            'CUDA Available': [torch.cuda.is_available()],
+            'CUDA Device Count': [torch.cuda.device_count()],
+            'Current CUDA Device': [torch.cuda.current_device()],
+            'CUDA Device Name': [torch.cuda.get_device_name(0)]
+        }
+
+        df = pd.DataFrame(cuda_info)
+        logging.info(df)
+        return torch.device("cuda")
+
+    if preferred_device in ["cuda"] and not torch.cuda.is_available():
+        logging.info("Only CPU is available!")
+        return torch.device("cpu")
+
+    if preferred_device == "cpu":
+        logging.info("Selected CPU device")
+        return torch.device("cpu")
+
+
+def find_latest_file_in_latest_directory(path: str) -> str:
+    """
+    Finds and returns the path of the latest file in the most recently modified directory within a given path.
+
+    Args:
+        path (str): The path to the parent directory containing subdirectories with files.
+
+    Returns:
+        str: The path to the latest file in the most recently modified directory.
+
+    Raises:
+        ValueError: If no directories are found within the given path or if no files are found in the latest directory.
+    """
+
+    dirs = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+
+    if not dirs:
+        raise ValueError(f"No directories found in {path}")
+
+    dirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    latest_dir = dirs[0]
+    files = [os.path.join(latest_dir, f) for f in os.listdir(latest_dir) if
+             os.path.isfile(os.path.join(latest_dir, f))]
+
+    if not files:
+        raise ValueError(f"No files found in {latest_dir}")
+
+    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    latest_file = files[0]
+    logging.info(f"Latest file found: {latest_file}")
+
+    return latest_file
+
+
+def get_num_of_neurons(cfg: dict, method: str) -> int:
+    """
+    Retrieves the number of neurons for a given method from a configuration dictionary.
+
+    Args:
+        cfg (dict): A dictionary containing configuration settings, including neuron counts for different methods.
+        method (str): The method for which the number of neurons is requested (e.g., "BASE", "EXP_ORT").
+
+    Returns:
+        int: The number of neurons associated with the specified method.
+
+    Raises:
+        KeyError: If the provided method is not found in the configuration.
+    """
+
+    num_neurons = {
+        "BASE": cfg.get("eq_neurons"),
+        "EXP_ORT": cfg.get("exp_neurons"),
+        "EXP_ORT_C": cfg.get("exp_neurons"),
+    }
+    return num_neurons[method]
+
+
+def insert_data_to_excel(filename: str, dataset_name: str, row: int, data: list) -> None:
+    """
+    Inserts a row of data into a specific sheet of an Excel workbook, creating the sheet if it doesn't exist.
+
+    Args:
+        filename (str): The path to the Excel file where data will be inserted.
+        dataset_name (str): The name of the sheet in which to insert the data.
+        row (int): The row number in the sheet where the data should be inserted.
+        data (List[List[Union[str, int, float]]]): A list containing rows of data to be inserted into the specified row.
+            Each row is a list of values, which can be strings, integers, or floats.
+
+    Returns:
+        None: The function modifies the Excel file in-place.
+    """
+
+    try:
+        workbook = openpyxl.load_workbook(filename)
+    except FileNotFoundError:
+        workbook = openpyxl.Workbook()
+
+    if dataset_name not in workbook.sheetnames:
+        workbook.create_sheet(dataset_name)
+
+    sheet = workbook[dataset_name]
+
+    values = ["train acc",
+              "test acc",
+              "train precision",
+              "test precision",
+              "train recall",
+              "test recall",
+              "train f1",
+              "test f1",
+              "training time"]
+
+    for col, value in enumerate(values, start=1):
+        sheet.cell(row=1, column=col, value=value)
+
+    for col, value in enumerate(data[0], start=1):
+        sheet.cell(row=row, column=col, value=str(value))
+
+    if "Sheet" in workbook.sheetnames:
+        del workbook['Sheet']
+
+    workbook.save(filename)
+
+
 def load_config_json(json_schema_filename: str, json_filename: str):
+    """
+    Loads and validates a JSON configuration file against a JSON schema, flattens and processes the configuration,
+    and returns the processed configuration as a dictionary.
+
+    Args:
+        json_schema_filename (str): The path to the JSON schema file used for validation.
+        json_filename (str): The path to the JSON configuration file to be validated and processed.
+
+    Returns:
+        Dict[str, Any]: A dictionary containing the processed configuration. Keys are configuration parameters,
+                        and values are their corresponding values.
+
+    Raises:
+        jsonschema.exceptions.ValidationError: If the JSON data does not conform to the schema.
+    """
+
     with open(json_schema_filename, "r") as schema_file:
         schema = json.load(schema_file)
 
@@ -363,51 +334,124 @@ def load_config_json(json_schema_filename: str, json_filename: str):
         logging.error(f"JSON data is invalid: {err}")
 
 
-def find_latest_file_in_latest_directory(path: str) -> str:
-    dirs = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+def measure_execution_time(func: Callable) -> Callable:
+    """
+    Decorator to measure the execution time of a function.
 
-    if not dirs:
-        raise ValueError(f"No directories found in {path}")
+    Args:
+        func (Callable): The function to be decorated.
 
-    dirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    latest_dir = dirs[0]
-    files = [os.path.join(latest_dir, f) for f in os.listdir(latest_dir) if
-             os.path.isfile(os.path.join(latest_dir, f))]
+    Returns:
+        Callable: The decorated function.
+    """
 
-    if not files:
-        raise ValueError(f"No files found in {latest_dir}")
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        """
+        Wrapper function to measure execution time.
 
-    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    latest_file = files[0]
-    logging.info(f"Latest file found: {latest_file}")
+        Args:
+            *args: Positional arguments passed to the function.
+            **kwargs: Keyword arguments passed to the function.
 
-    return latest_file
+        Returns:
+            Any: The result of the function.
+        """
 
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        wrapper.execution_time = end_time - start_time
+        logging.info(f"Execution time of {func.__name__}: {wrapper.execution_time:.4f} seconds")
+        return result
 
-def save_log_to_txt(output_file, result, operation):
-    original_stdout = sys.stdout
-
-    with open(output_file, "w") as log_file:
-        sys.stdout = log_file
-
-        if operation == "loss":
-            best_trial = result.get_best_trial("loss", "min", "last")
-            print("Best trial config: {}".format(best_trial.config))
-            print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
-            print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
-        elif operation == "accuracy":
-            best_trial = result.get_best_trial("accuracy", "max", "last")
-            print("Best trial config: {}".format(best_trial.config))
-            print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
-        else:
-            raise ValueError(f"Invalid operation: {operation}")
-
-    sys.stdout = original_stdout
-
-    logging.info(f"Saving log to {output_file}")
+    wrapper.execution_time = None
+    return wrapper
 
 
-def reorder_metrics_lists(train_metrics, test_metrics, training_time_list=None):
+def plot_confusion_matrix_fcnn(cm: np.ndarray, operation: str, class_labels: List[str], dataset_name: str) -> None:
+    """
+    Plots a confusion matrix as a heatmap for a given dataset and operation.
+
+    Args:
+        cm (np.ndarray): A 2D NumPy array representing the confusion matrix.
+        operation (str): A string indicating the operation or task (e.g., "training", "validation", "testing").
+        class_labels (List[str]): A list of class labels for the confusion matrix axes.
+        dataset_name (str): The name of the dataset for which the confusion matrix is plotted.
+
+    Returns:
+        None: The function displays the plot and does not return any value.
+    """
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt=".0f", cmap="Blues",
+                xticklabels=class_labels, yticklabels=class_labels)
+    plt.xlabel("Predicted labels")
+    plt.ylabel("Actual labels")
+    plt.title(f"Confusion matrix of {dataset_name} on the {operation} set.")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_dataset: str, operation: str, method: str,
+                                 labels=None) -> None:
+    """
+    Plots multiple confusion matrices side by side and saves the plot as a PNG file.
+
+    Args:
+        cm (List[np.ndarray]): A list of 2D NumPy arrays representing confusion matrices to be plotted.
+        path_to_plot (str): The directory path where the plot image will be saved.
+        name_of_dataset (str): The name of the dataset for which the confusion matrices are plotted.
+        operation (str): A string indicating the operation or task (e.g., "training", "validation", "testing").
+        method (str): A string indicating the method or model used.
+        labels (Optional[List[str]]): A list of class labels for the confusion matrix axes. If None, labels will not be
+        set.
+
+    Returns:
+        None: The function saves the plot to the specified path and does not return any value.
+    """
+
+    fig, axis = plt.subplots(1, 3, figsize=(15, 5))
+
+    for i, cm in enumerate(cm):
+        ax = axis[i]
+        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=ax)
+        ax.set_title('%s, %s, %s, %s' % (f"Phase {i + 1}", name_of_dataset, method, operation))
+        ax.set_xlabel('Predicted')
+        ax.set_ylabel('Actual')
+
+    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300)
+    plt.close()
+    gc.collect()
+
+
+def reorder_metrics_lists(train_metrics: dict[str, float], test_metrics: dict[str, float],
+                          training_time_list: Optional = None)\
+        -> List:
+    """
+    Reorders and combines training and testing metrics into a single list of metrics.
+
+    Args:
+        train_metrics (List[Union[int, float]]):
+            A list of training metrics.
+            Expected order: [train_acc, train_precision, train_recall, train_f1] or
+            [train_acc, train_precision, train_recall, train_f1, training_time] if training_time_list is not provided.
+        test_metrics (List[Union[int, float]]):
+            A list of testing metrics.
+            Expected order: [test_acc, test_precision, test_recall, test_f1].
+        training_time_list (Optional[List[Union[int, float]]]):
+            An optional list of training times. If provided, its sum is used as the total training time.
+
+    Returns:
+        List: A list containing a single tuple with the reordered and combined metrics.
+
+    Notes:
+        - If `training_time_list` is provided, the function sums it and appends it to the combined metrics.
+        - If `training_time_list` is not provided, the training time is taken from the `train_metrics` list.
+    """
+
     if training_time_list is not None:
         training_time = sum(training_time_list)
 
@@ -434,27 +478,78 @@ def reorder_metrics_lists(train_metrics, test_metrics, training_time_list=None):
     return [tuple(combined_metrics)]
 
 
-def find_best_testing_accuracy(accuracies):
-    best_metrics = max(accuracies, key=lambda x: x[1][0])
-    return best_metrics
+def save_log_to_txt(output_file: str, result: Any, operation: str) -> None:
+    """
+    Saves the best trial configuration and results to a text file based on the specified operation.
+
+    Args:
+        output_file (str): The path to the output text file where the log will be saved.
+        result (Any): An object containing the results of the trials. This should have a `get_best_trial` method to
+            retrieve the best trial based on the given criteria.
+        operation (str): A string specifying the type of operation to log. Should be either "loss" or "accuracy".
+
+    Returns:
+        None: The function writes the log to the specified file and does not return any value.
+
+    Raises:
+        ValueError: If the provided operation is not "loss" or "accuracy".
+    """
+
+    original_stdout = sys.stdout
+
+    with open(output_file, "w") as log_file:
+        sys.stdout = log_file
+
+        if operation == "loss":
+            best_trial = result.get_best_trial("loss", "min", "last")
+            print("Best trial config: {}".format(best_trial.config))
+            print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
+            print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+        elif operation == "accuracy":
+            best_trial = result.get_best_trial("accuracy", "max", "last")
+            print("Best trial config: {}".format(best_trial.config))
+            print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+        else:
+            raise ValueError(f"Invalid operation: {operation}")
+
+    sys.stdout = original_stdout
+
+    logging.info(f"Saving log to {output_file}")
 
 
-def create_train_valid_test_datasets(file_path):
-    train_dataset = NpzDataset(file_path, operation="train")
-    valid_dataset = NpzDataset(file_path, operation="valid")
-    test_dataset = NpzDataset(file_path, operation="test")
+def setup_logger() -> logging.Logger:
+    """
+    Set up a colorized logger with the following log levels and colors:
 
-    train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
-    valid_loader = DataLoader(dataset=valid_dataset, batch_size=len(valid_dataset), shuffle=False)
-    test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
+    - DEBUG: Cyan
+    - INFO: Green
+    - WARNING: Yellow
+    - ERROR: Red
+    - CRITICAL: Red on a white background
 
-    return train_loader, valid_loader, test_loader
+    Returns:
+        The configured logger instance.
+    """
 
+    logger = logging.getLogger()
+    if logger.hasHandlers():
+        return logger
 
-def get_num_of_neurons(cfg, method):
-    num_neurons = {
-        "BASE": cfg.get("eq_neurons"),
-        "EXP_ORT": cfg.get("exp_neurons"),
-        "EXP_ORT_C": cfg.get("exp_neurons"),
-    }
-    return num_neurons[method]
+    logger.setLevel(logging.INFO)
+
+    formatter = colorlog.ColoredFormatter(
+        "%(log_color)s%(levelname)-8s%(reset)s %(white)s%(message)s",
+        log_colors={
+            'DEBUG': 'cyan',
+            'INFO': 'green',
+            'WARNING': 'yellow',
+            'ERROR': 'red',
+            'CRITICAL': 'red,bg_white',
+        })
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    return logger

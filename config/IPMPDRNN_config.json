@@ -1,10 +1,10 @@
 {
-  "dataset_name": "musk2",
+  "dataset_name": "mnist_fashion",
   "activation": "LeakyReLU",
-  "number_of_tests": 20,
+  "number_of_tests": 10,
   "seed": true,
   "pruning_method": "max_rank",
-  "method": "BASE",
+  "method": "EXP_ORT_C",
   "mu": 0,
   "sigma": 0.15,
   "eq_neurons": {
@@ -41,8 +41,8 @@
     "connect4": 0.5,
     "isolete": 0.55,
     "letter": 0.1,
-    "mnist": 0.5,
-    "mnist_fashion": 0.55,
+    "mnist": 0.05,
+    "mnist_fashion": 0.05,
     "musk2": 0.6,
     "optdigits": 0.4,
     "page_blocks": 0.6,
@@ -75,8 +75,8 @@
     },
     "mnist_fashion": {
       "BASE": 1e-5,
-      "EXP_ORT": 1e-15,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-30
     },
     "musk2": {
       "BASE": null,
@@ -124,7 +124,7 @@
     "isolete": 5,
     "letter": 0.15,
     "mnist": 0.15,
-    "mnist_fashion": 1,
+    "mnist_fashion": 0.15,
     "musk2": 0.8,
     "optdigits": 8,
     "page_blocks": 23,

@@ -11,6 +11,13 @@ from utils.utils import save_log_to_txt
 
 class HyperparameterSearchHELM(HELMBase):
     def __init__(self):
+        """
+        Initializes the HyperparameterSearchHELM class with hyperparameter tuning configuration and paths.
+
+        Returns:
+            None
+        """
+
         super().__init__()
 
         self.hyperparam_config = {
@@ -23,14 +30,31 @@ class HyperparameterSearchHELM(HELMBase):
         self.save_path = helm_paths_config(self.cfg.get("dataset_name")).get("hyperparam_tuning")
         self.save_log_file = os.path.join(self.save_path, "hyperparam_search_best_results.txt")
 
-    def fit(self, config):
+    def fit(self, config: dict) -> None:
+        """
+        Trains the model using the given hyperparameter configuration and evaluates it on the validation set.
+
+        Args:
+            config: A dictionary of hyperparameters for the training process.
+
+        Returns:
+            None
+        """
+
         t3, beta, beta1, beta2, l3, ps1, ps2 = self.train(config)
         valid_metrics = self.evaluation(beta, beta1, beta2, l3, ps1, ps2, self.valid_loader)
         valid_acc = valid_metrics[0]
 
         session.report({"accuracy": valid_acc})
 
-    def tune_params(self):
+    def tune_params(self) -> None:
+        """
+        Performs hyperparameter tuning using Ray Tune with the specified configuration.
+
+        Returns:
+            None
+        """
+
         scheduler = ASHAScheduler(
             metric=self.cfg.get('hyperparamtuning').get("metric"),
             mode=self.cfg.get('hyperparamtuning').get("mode"),

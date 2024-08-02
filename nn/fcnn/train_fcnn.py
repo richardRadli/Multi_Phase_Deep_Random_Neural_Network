@@ -7,15 +7,15 @@ import torch.nn as nn
 import torch.optim as optim
 
 from tqdm import tqdm
-from torch.utils.data import DataLoader
 from torchinfo import summary
 from torch.utils.tensorboard import SummaryWriter
+from typing import List
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
-from nn.models.fcnn_model import FCNN
-from nn.dataloaders.npz_dataloader import NpzDataset
-from utils.utils import create_timestamp, setup_logger, device_selector, load_config_json, measure_execution_time
+from nn.models.fcnn_model import FullyConnectedNeuralNetwork
+from utils.utils import (create_timestamp, setup_logger, device_selector, load_config_json, measure_execution_time,
+                         create_train_valid_test_datasets)
 
 
 class TrainFCNN:
@@ -48,9 +48,9 @@ class TrainFCNN:
 
         # Load the model
         self.model = (
-            FCNN(input_size=gen_ds_cfg.get("num_features"),
-                 hidden_size=self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name")),
-                 output_size=gen_ds_cfg.get("num_classes"))
+            FullyConnectedNeuralNetwork(input_size=gen_ds_cfg.get("num_features"),
+                                        hidden_size=self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name")),
+                                        output_size=gen_ds_cfg.get("num_classes"))
         ).to(self.device)
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
 
@@ -59,7 +59,7 @@ class TrainFCNN:
             general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
         )
         self.train_loader, self.valid_loader, self.test_loader = (
-            self.create_train_valid_test_datasets(file_path)
+            create_train_valid_test_datasets(file_path)
         )
 
         # Define loss function
@@ -84,30 +84,19 @@ class TrainFCNN:
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
-    def create_train_valid_test_datasets(self, file_path):
-        train_dataset = NpzDataset(file_path, operation="train")
-        valid_dataset = NpzDataset(file_path, operation="valid")
-        test_dataset = NpzDataset(file_path, operation="test")
+    def train_loop(self, batch_data: torch.Tensor, batch_labels: torch.Tensor, train_losses: List[float]):
+        """
+        Performs a single training iteration for the given batch of data.
 
-        train_loader = (
-            DataLoader(dataset=train_dataset,
-                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
-                       shuffle=False)
-        )
-        valid_loader = (
-            DataLoader(dataset=valid_dataset,
-                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
-                       shuffle=False)
-        )
-        test_loader = (
-            DataLoader(dataset=test_dataset,
-                       batch_size=self.cfg.get("batch_size").get(self.cfg.get("dataset_name")),
-                       shuffle=False)
-        )
+        Args:
+            batch_data: Tensor containing the input data for the batch.
+            batch_labels: Tensor containing the ground truth labels for the batch.
+            train_losses: List to accumulate the training losses.
 
-        return train_loader, valid_loader, test_loader
+        Returns:
+            None: The function updates the model weights and appends the loss to the list.
+        """
 
-    def train_loop(self, batch_data, batch_labels, train_losses):
         batch_data, batch_labels = batch_data.to(self.device), batch_labels.to(self.device)
         self.optimizer.zero_grad()
         output = self.model(batch_data)
@@ -118,7 +107,19 @@ class TrainFCNN:
 
         train_losses.append(loss.item())
 
-    def valid_loop(self, batch_data, batch_labels, valid_losses):
+    def valid_loop(self, batch_data: torch.Tensor, batch_labels: torch.Tensor, valid_losses: List[float]):
+        """
+        Performs a single validation iteration for the given batch of data.
+
+        Args:
+            batch_data: Tensor containing the input data for the batch.
+            batch_labels: Tensor containing the ground truth labels for the batch.
+            valid_losses: List to accumulate the validation losses.
+
+        Returns:
+            None: The function calculates the loss and appends it to the list.
+        """
+
         batch_data = batch_data.to(self.device)
         batch_labels = batch_labels.to(self.device)
 
@@ -128,7 +129,21 @@ class TrainFCNN:
         valid_losses.append(t_loss.item())
 
     @measure_execution_time
-    def fit(self):
+    def fit(self) -> None:
+        """
+        Trains the model over multiple epochs, performs validation, and handles early stopping.
+
+        This method includes:
+        - Training the model for each epoch.
+        - Evaluating the model on the validation set.
+        - Logging training and validation losses.
+        - Saving the best model based on validation loss.
+        - Implementing early stopping if no improvement in validation loss.
+
+        Returns:
+            None: The function performs training, validation, and model saving but does not return any value.
+        """
+
         best_valid_loss = float("inf")
         best_model_path = None
         epoch_without_improvement = 0

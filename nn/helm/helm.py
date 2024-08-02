@@ -9,6 +9,12 @@ from utils.utils import average_columns_in_excel, create_timestamp, insert_data_
 
 class HELM(HELMBase):
     def __init__(self):
+        """
+        Initializes the HELM class and sets up file paths and hyperparameter configurations.
+
+        Returns:
+            None
+        """
         super().__init__()
 
         timestamp = create_timestamp()
@@ -24,6 +30,16 @@ class HELM(HELMBase):
         }
 
     def main(self) -> None:
+        """
+        Runs the main evaluation loop for the HELM.
+
+        Iterates through the number of test cycles, performs training and evaluation,
+        and saves the results to an Excel file.
+
+        Returns:
+            None
+        """
+
         for idx in tqdm(range(self.cfg.get("num_tests")), desc="Evaluation"):
             t3, beta, beta1, beta2, l3, ps1, ps2 = self.train(config=self.hyperparam_config)
             training_metrics = self.training_accuracy(t3, beta)
