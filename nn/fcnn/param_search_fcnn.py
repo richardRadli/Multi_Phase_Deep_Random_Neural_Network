@@ -33,13 +33,23 @@ class HyperparameterSearch:
         )
 
         self.save_path = fcnn_paths_configs(self.cfg.get("dataset_name")).get("hyperparam_tuning")
-        self.save_log_file = os.path.join(self.save_path, "hyperparam_search_best_results.txt")
+        self.save_log_file = os.path.join(self.save_path, "SGD_hyperparam_search_best_results.txt")
 
         self.device = device_selector(preferred_device="cuda")
 
+        dataset_name = self.cfg.get("dataset_name")
+        self.optimizer = self.cfg.get("optimizer")
+        optimization = self.cfg.get("optimization")
+        self.learning_rate = optimization.get(self.optimizer).get("learning_rate").get(dataset_name)
+        self.momentum = optimization.get(self.optimizer).get("momentum").get(dataset_name) \
+            if self.optimizer == "sgd" else None
+
+        self.criterion = nn.CrossEntropyLoss()
+
         self.hyperparam_config = {
             "lr": tune.loguniform(4e-4, 1e-1),
-            "hidden_size": tune.grid_search([216, 500, 866, 1000]),
+            "momentum": tune.uniform(0.5, 0.99),
+            "hidden_neurons": tune.grid_search([216, 500, 866, 1000]),
             "batch_size": tune.choice([32, 64, 128])
         }
 
@@ -59,17 +69,29 @@ class HyperparameterSearch:
          """
 
         model = FullyConnectedNeuralNetwork(input_size=self.gen_ds_cfg.get("num_features"),
-                                            hidden_size=config["hidden_size"],
+                                            hidden_size=config["hidden_neurons"],
                                             output_size=self.gen_ds_cfg.get("num_classes")).to(self.device)
 
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(model.parameters(), lr=config["lr"])
+        # Define optimizer
+        if self.optimizer not in ["sgd", "adam"]:
+            raise ValueError(f"Unsupported optimizer: {self.optimizer}")
+
+        if self.optimizer == "sgd":
+            optimizer = optim.SGD(
+                model.parameters(),
+                lr=config["lr"],
+                momentum=config["momentum"],
+            )
+        else:
+            optimizer = optim.Adam(
+                model.parameters(),
+                lr=config["lr"],
+            )
 
         train_dataset = NpzDataset(self.file_path, operation="train")
         val_dataset = NpzDataset(self.file_path, operation="valid")
-
-        train_loader = DataLoader(train_dataset, batch_size=int(config["batch_size"]), shuffle=False)
-        val_loader = DataLoader(val_dataset, batch_size=int(config["batch_size"]), shuffle=False)
+        train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=False)
+        val_loader = DataLoader(val_dataset, batch_size=config["batch_size"], shuffle=False)
 
         for epoch in range(self.cfg.get("epochs")):
             # Training
@@ -79,7 +101,7 @@ class HyperparameterSearch:
                 data, target = data.to(self.device), target.to(self.device)
                 optimizer.zero_grad()
                 output = model(data)
-                loss = criterion(output, target)
+                loss = self.criterion(output, target)
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
@@ -97,7 +119,7 @@ class HyperparameterSearch:
                 for data, target in val_loader:
                     data, target = data.to(self.device), target.to(self.device)
                     output = model(data)
-                    loss = criterion(output, target)
+                    loss = self.criterion(output, target)
                     val_loss += loss.item()
                     predicted_labels = torch.argmax(output, 1)
                     correct_predictions += (predicted_labels == torch.argmax(target, dim=1)).sum().item()
@@ -120,21 +142,21 @@ class HyperparameterSearch:
         """
 
         scheduler = ASHAScheduler(
-            metric="loss",
-            mode="min",
+            metric="accuracy",
+            mode="max",
             max_t=self.cfg.get("epochs"),
             grace_period=10,
             reduction_factor=2
         )
 
         reporter = tune.CLIReporter(
-            parameter_columns=["lr", "batch_size", "hidden_size"],
+            parameter_columns=["lr", "momentum", "hidden_neurons", "batch_size"],
             metric_columns=["loss", "accuracy", "training_iteration"]
         )
 
         result = tune.run(
             self.fit,
-            resources_per_trial={"cpu": 4, "gpu": 1},
+            resources_per_trial={"cpu": 6, "gpu": 1},
             config=self.hyperparam_config,
             num_samples=25,
             scheduler=scheduler,
@@ -144,7 +166,7 @@ class HyperparameterSearch:
 
         save_log_to_txt(output_file=self.save_log_file,
                         result=result,
-                        operation="loss")
+                        operation="accuracy")
 
 
 if __name__ == '__main__':

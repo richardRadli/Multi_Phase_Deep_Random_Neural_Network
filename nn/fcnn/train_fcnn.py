@@ -41,6 +41,8 @@ class TrainFCNN:
         batch_size = self.cfg.get("batch_size")
         optimizer = self.cfg.get("optimizer")
         optimization = self.cfg.get("optimization")
+        learning_rate = optimization.get(optimizer).get("learning_rate").get(dataset_name)
+        momentum = optimization.get(optimizer).get("momentum").get(dataset_name) if optimizer == "sgd" else None
 
         gen_ds_cfg = (
             general_dataset_configs(
@@ -88,13 +90,20 @@ class TrainFCNN:
         )
 
         # Define optimizer
-        self.optimizer = (
-            optim.SGD(
+        if optimizer not in ["sgd", "adam"]:
+            raise ValueError(f"Unsupported optimizer: {optimizer}")
+
+        if optimizer == "sgd":
+            self.optimizer = optim.SGD(
                 self.model.parameters(),
-                lr=optimization.get(optimizer).get("learning_rate").get(dataset_name),
-                momentum=optimization.get(optimizer).get("momentum").get(dataset_name),
+                lr=learning_rate,
+                momentum=momentum,
             )
-        )
+        else:
+            self.optimizer = optim.Adam(
+                self.model.parameters(),
+                lr=learning_rate,
+            )
 
         # Tensorboard
         tensorboard_log_dir = os.path.join(fcnn_ds_cfg.get("logs"), timestamp)
