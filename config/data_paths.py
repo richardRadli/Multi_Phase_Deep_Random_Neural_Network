@@ -61,24 +61,24 @@ class _Const(object):
 class ConfigFilePaths(_Const):
     dirs_config_paths = {
         "config_mpdrnn":
-            "config/MPDRNN_config.json",
+            "config/json_files/MPDRNN_config.json",
         "config_schema_mpdrnn":
-            "config/MPDRNN_config_schema.json",
+            "config/json_files/MPDRNN_config_schema.json",
 
         "config_ipmdrnn":
-            "config/IPMPDRNN_config.json",
+            "config/json_files/IPMPDRNN_config.json",
         "config_schema_ipmdrnn":
-            "config/IPMPDRNN_config_schema.json",
+            "config/json_files/IPMPDRNN_config_schema.json",
 
         "config_fcnn":
-            "config/FCNN_config.json",
+            "config/json_files/FCNN_config.json",
         "config_schema_fcnn":
-            "config/FCNN_config_schema.json",
+            "config/json_files/FCNN_config_schema.json",
 
         "config_helm":
-            "config/HELM_config.json",
+            "config/json_files/HELM_config.json",
         "config_schema_helm":
-            "config/HELM_config_schema.json"
+            "config/json_files/HELM_config_schema.json"
     }
 
     # ------------------------------------------------------------------------------------------------------------------

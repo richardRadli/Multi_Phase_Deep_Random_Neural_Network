@@ -41,7 +41,8 @@ class EvalFCNN:
         )
         self.train_loader, _, self.test_loader = (
             create_train_valid_test_datasets(
-                file_path
+                file_path,
+                batch_size=64
             )
         )
 
@@ -53,7 +54,7 @@ class EvalFCNN:
         # Load the model
         self.model = (
             FullyConnectedNeuralNetwork(input_size=gen_ds_cfg.get("num_features"),
-                                        hidden_size=self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name")),
+                                        hidden_size=self.cfg.get("hidden_neurons"),
                                         output_size=gen_ds_cfg.get("num_classes")).to(self.device)
         )
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)

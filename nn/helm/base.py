@@ -30,6 +30,11 @@ class HELMBase:
 
         self.num_features = general_dataset_configs(self.cfg.get("dataset_name")).get("num_features")
 
+        self.random_weights_3 = (
+            (2 * np.random.rand(self.cfg.get("hidden_neurons")[1] + 1,
+                                self.cfg.get("hidden_neurons")[2]) - 1).T
+        )
+
         colorama.init()
 
     @staticmethod
@@ -150,10 +155,6 @@ class HELMBase:
                                    self.cfg.get("hidden_neurons")[1]) - 1
         )
 
-        self.random_weights_3 = (
-            (2 * np.random.rand(self.cfg.get("hidden_neurons")[1] + 1,
-                                self.cfg.get("hidden_neurons")[2]) - 1).T
-        )
         self.random_weights_3 = linalg.orth(self.random_weights_3).T
 
         for train_data, train_labels in self.train_loader:
@@ -223,7 +224,7 @@ class HELMBase:
             return [accuracy, precision, recall, f1sore, training_time]
 
     def evaluation(self, beta: np.ndarray, beta1: np.ndarray, beta2: np.ndarray, l3: float, ps1: list, ps2: list,
-                   dataloader):
+                   dataloader) -> list:
         """
         Calculate and log the validation/testing accuracy.
 

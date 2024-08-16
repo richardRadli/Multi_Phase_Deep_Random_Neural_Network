@@ -25,14 +25,21 @@ def main() -> None:
         load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
                          json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
     )
+
     dataset_name = cfg.get("dataset_name")
+    batch_size = cfg.get("batch_size")
+    hidden_neurons = cfg.get("hidden_neurons")
+    device = cfg.get("device")
+    optimizer = cfg.get("optimizer")
+    optimization = cfg.get("optimization")
+    lr = optimization.get(optimizer).get("learning_rate").get(dataset_name)
+
     fcnn_config = fcnn_paths_configs(dataset_name)
 
     filename = (
         os.path.join(
             fcnn_config.get("saved_results"),
-            f"{timestamp}_bs_{cfg.get('batch_size').get(dataset_name)}_hn_{cfg.get('hidden_neurons').get(dataset_name)}"
-            f"_lr_{cfg.get('learning_rate').get(dataset_name)}_device_{cfg.get('device')}.xlsx")
+            f"{timestamp}_bs_{batch_size}_opt_{optimizer}_hn_{hidden_neurons}_lr_{lr}_device_{device}.xlsx")
     )
 
     collected_data = []

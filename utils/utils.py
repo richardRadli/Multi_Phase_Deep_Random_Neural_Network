@@ -115,12 +115,13 @@ def create_timestamp() -> str:
     return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 
-def create_train_valid_test_datasets(file_path) -> Tuple[DataLoader, DataLoader, DataLoader]:
+def create_train_valid_test_datasets(file_path, batch_size=None) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Creates DataLoader instances for training, validation, and testing datasets from a given file path.
 
     Args:
         file_path (str): The path to the file from which the datasets will be created.
+        batch_size (int): The batch size to use for training. If None, the default whole dataset will be used.
 
     Returns:
         tuple: A tuple containing three DataLoader instances:
@@ -133,9 +134,21 @@ def create_train_valid_test_datasets(file_path) -> Tuple[DataLoader, DataLoader,
     valid_dataset = NpzDataset(file_path, operation="valid")
     test_dataset = NpzDataset(file_path, operation="test")
 
-    train_loader = DataLoader(dataset=train_dataset, batch_size=len(train_dataset), shuffle=False)
-    valid_loader = DataLoader(dataset=valid_dataset, batch_size=len(valid_dataset), shuffle=False)
-    test_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
+    train_loader = (
+        DataLoader(
+            dataset=train_dataset, batch_size=len(train_dataset) if batch_size is None else batch_size, shuffle=False
+        )
+    )
+    valid_loader = (
+        DataLoader(
+            dataset=valid_dataset, batch_size=len(valid_dataset) if batch_size is None else batch_size, shuffle=False
+        )
+    )
+    test_loader = (
+        DataLoader(
+            dataset=test_dataset, batch_size=len(test_dataset) if batch_size is None else batch_size, shuffle=False
+        )
+    )
 
     return train_loader, valid_loader, test_loader
 
@@ -320,6 +333,9 @@ def load_config_json(json_schema_filename: str, json_filename: str):
         if 'hyperparamtuning' in nested_config:
             flattened_config['hyperparamtuning'] = nested_config['hyperparamtuning']
 
+        if 'optimization' in nested_config:
+            flattened_config['optimization'] = nested_config['optimization']
+
         for key, value in nested_config.items():
             if key != 'hyperparamtuning' and dataset_name in value:
                 flattened_config[key] = value[dataset_name]
@@ -427,7 +443,7 @@ def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_data
     gc.collect()
 
 
-def reorder_metrics_lists(train_metrics: dict[str, float], test_metrics: dict[str, float],
+def reorder_metrics_lists(train_metrics: list, test_metrics: list,
                           training_time_list: Optional = None)\
         -> List:
     """

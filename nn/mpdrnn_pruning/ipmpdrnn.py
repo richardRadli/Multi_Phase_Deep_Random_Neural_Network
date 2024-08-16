@@ -4,6 +4,7 @@ import logging
 import torch
 
 from tqdm import tqdm
+from typing import Any
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, drnn_paths_config
@@ -61,14 +62,20 @@ class Experiment:
         file_path = general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
         self.train_loader, self.valid_loader, self.test_loader = create_train_valid_test_datasets(file_path)
 
-    def get_network_config(self, network_type):
+    def get_network_config(self, network_type: str) -> dict:
         """
+        Retrieves the configuration for a specified network type.
 
         Args:
-            network_type:
+            network_type (str): The type of network for which to retrieve the configuration.
+                                It should be one of the following:
+                                - "MultiPhaseDeepRandomizedNeuralNetworkBase"
+                                - "MultiPhaseDeepRandomizedNeuralNetworkSubsequent"
+                                - "MultiPhaseDeepRandomizedNeuralNetworkFinal"
 
         Returns:
-
+            Dict[str, Any]: A dictionary containing the configuration parameters for the specified network type.
+                            The structure of the dictionary depends on the `network_type` value.
         """
 
         net_cfg = {
@@ -98,15 +105,22 @@ class Experiment:
 
     def model_training_and_evaluation(self, model, weights, num_hidden_layers: int, verbose: bool):
         """
+        Trains and evaluates a given model on the training and testing datasets.
 
         Args:
-            model:
-            weights:
-            num_hidden_layers:
-            verbose:
+            model: The model to be trained and evaluated. It should have methods
+                   `train_layer` and `predict_and_evaluate`.
+            weights: The weights to be used in the model's evaluation. This may
+                     be used to initialize or modify the model.
+            num_hidden_layers: The number of hidden layers in the model. This
+                               parameter may affect the evaluation process.
+            verbose: A boolean flag indicating whether to print detailed logs.
 
         Returns:
-
+            A tuple containing:
+                - The trained model.
+                - A dictionary of training metrics.
+                - A dictionary of testing metrics.
         """
 
         model.train_layer(self.train_loader)
@@ -132,16 +146,24 @@ class Experiment:
 
         return model, train_metrics, test_metrics
 
-    def pruning_model(self, model, weight_attr: str, set_weights_to_zero: bool):
+    def pruning_model(self, model: Any, weight_attr: str, set_weights_to_zero: bool):
         """
+        Applies pruning to a model's weights based on the specified pruning method and subset percentage.
 
         Args:
-            model:
-            weight_attr:
-            set_weights_to_zero:
+            model: The model to be pruned. The model must have a `pruning` method and attributes corresponding
+                   to weight matrices.
+            weight_attr: The name of the attribute in the model that contains the weights to be pruned.
+                         This should be a string representing the weight attribute's name.
+            set_weights_to_zero: A boolean flag indicating whether to set the pruned weights to zero.
 
         Returns:
-
+            If `set_weights_to_zero` is True:
+                A tuple containing:
+                    - The updated model with pruned weights set to zero.
+                    - A list of indices of the pruned weights.
+            If `set_weights_to_zero` is False:
+                A list of indices of the pruned weights.
         """
 
         _, least_important_prune_indices = (
@@ -156,56 +178,76 @@ class Experiment:
         else:
             return least_important_prune_indices
 
-    def prune_initial_model(self, model, set_weights_to_zero: bool):
+    def prune_initial_model(self, model: Any, set_weights_to_zero: bool):
         """
+        Prunes the initial model's alpha weights based on the specified parameters.
 
         Args:
-            model:
-            set_weights_to_zero:
+            model: The initial model to be pruned. It should have an attribute 'alpha_weights' and a
+                   `pruning_model` method that can perform pruning.
+            set_weights_to_zero: If True, pruned weights will be set to zero; otherwise, only the indices
+                                 of pruned weights will be returned.
 
         Returns:
-
+            A tuple containing:
+                - The pruned model with weights set to zero (if `set_weights_to_zero` is True) or
+                - A list of indices of the pruned weights (if `set_weights_to_zero` is False).
         """
 
         return self.pruning_model(model, weight_attr="alpha_weights", set_weights_to_zero=set_weights_to_zero)
 
     def prune_subsequent_model(self, model, set_weights_to_zero: bool):
         """
+        Prunes the subsequent model's extended beta weights based on the specified parameters.
 
         Args:
-            model:
-            set_weights_to_zero:
+            model: The subsequent model to be pruned. It should have an attribute 'extended_beta_weights' and a
+                   `pruning_model` method that can perform pruning.
+            set_weights_to_zero: If True, pruned weights will be set to zero; otherwise, only the indices
+                                 of pruned weights will be returned.
 
         Returns:
-
+            A tuple containing:
+                - The pruned model with weights set to zero (if `set_weights_to_zero` is True) or
+                - A list of indices of the pruned weights (if `set_weights_to_zero` is False).
         """
 
         return self.pruning_model(model, weight_attr="extended_beta_weights", set_weights_to_zero=set_weights_to_zero)
 
     def prune_final_model(self, model, set_weights_to_zero: bool):
         """
+        Prunes the final model's extended gamma weights based on the specified parameters.
 
         Args:
-            model:
-            set_weights_to_zero:
+            model: The subsequent model to be pruned. It should have an attribute 'extended_gamma_weights' and a
+                   `pruning_model` method that can perform pruning.
+            set_weights_to_zero: If True, pruned weights will be set to zero; otherwise, only the indices
+                                 of pruned weights will be returned.
 
         Returns:
-
+            A tuple containing:
+                - The pruned model with weights set to zero (if `set_weights_to_zero` is True) or
+                - A list of indices of the pruned weights (if `set_weights_to_zero` is False).
         """
 
         return self.pruning_model(model, weight_attr="extended_gamma_weights", set_weights_to_zero=set_weights_to_zero)
 
-    def create_train_prune_aux_model(self, model, model_type, weight_attr: str, least_important_prune_indices=None):
+    def create_train_prune_aux_model(self, model: Any, model_type: str, weight_attr: str,
+                                     least_important_prune_indices: list = None):
         """
+        Creates and trains an auxiliary model, prunes it, and uses the weights from the pruned auxiliary model
+        to update the weights of the original model.
 
         Args:
-            model:
-            model_type:
-            weight_attr:
-            least_important_prune_indices:
+            model: The original model to be updated. It should have an attribute specified by `weight_attr`
+                   and a `pruning` method.
+            model_type: A string indicating the type of the auxiliary model to be created.
+            weight_attr: The attribute name of the model that holds the weights to be updated.
+            least_important_prune_indices: Optional list of indices of the least important weights to be pruned.
+                                            If not provided, the indices are computed by pruning the original model.
 
         Returns:
-
+            The updated original model with weights set based on the pruned auxiliary model.
         """
 
         net_cfg = self.get_network_config(model_type)
@@ -227,16 +269,20 @@ class Experiment:
 
         return model
 
-    def create_train_prune_initial_aux_model(self, model, model_type, least_important_prune_indices):
+    def create_train_prune_initial_aux_model(self, model: Any, model_type: str, least_important_prune_indices: list):
         """
+        Creates and trains an auxiliary model, prunes it, and updates the weights of the original model
+        using the pruned weights from the auxiliary model. Specifically handles the 'alpha_weights' attribute
+        of the model.
 
         Args:
-            model:
-            model_type:
-            least_important_prune_indices:
+            model: The original model to be updated. It should have an attribute named 'alpha_weights'
+                   and a `pruning` method.
+            model_type: A string indicating the type of the auxiliary model to be created.
+            least_important_prune_indices: A list of indices of the least important weights to be pruned.
 
         Returns:
-
+            The updated original model with weights set based on the pruned auxiliary model.
         """
 
         return self.create_train_prune_aux_model(model,
@@ -244,16 +290,20 @@ class Experiment:
                                                  weight_attr="alpha_weights",
                                                  least_important_prune_indices=least_important_prune_indices)
 
-    def create_train_prune_subsequent_aux_model(self, model, model_type, least_important_prune_indices):
+    def create_train_prune_subsequent_aux_model(self, model: Any, model_type: str, least_important_prune_indices: list):
         """
+        Creates and trains an auxiliary model, prunes it, and updates the weights of the original model
+        using the pruned weights from the auxiliary model. Specifically handles the 'extended_beta_weights' attribute
+        of the model.
 
         Args:
-            model:
-            model_type:
-            least_important_prune_indices:
+            model: The original model to be updated. It should have an attribute named 'extended_beta_weights'
+                   and a `pruning` method.
+            model_type: A string indicating the type of the auxiliary model to be created.
+            least_important_prune_indices: A list of indices of the least important weights to be pruned.
 
         Returns:
-
+            The updated original model with weights set based on the pruned auxiliary model.
         """
 
         return self.create_train_prune_aux_model(model,
@@ -261,16 +311,20 @@ class Experiment:
                                                  weight_attr="extended_beta_weights",
                                                  least_important_prune_indices=least_important_prune_indices)
 
-    def create_train_prune_final_aux_model(self, model, model_type, least_important_prune_indices):
+    def create_train_prune_final_aux_model(self, model: Any, model_type: str, least_important_prune_indices: list):
         """
+        Creates and trains an auxiliary model, prunes it, and updates the weights of the original model
+        using the pruned weights from the auxiliary model. Specifically handles the 'extended_gamma_weights' attribute
+        of the model.
 
         Args:
-            model:
-            model_type:
-            least_important_prune_indices:
+            model: The original model to be updated. It should have an attribute named 'extended_gamma_weights'
+                   and a `pruning` method.
+            model_type: A string indicating the type of the auxiliary model to be created.
+            least_important_prune_indices: A list of indices of the least important weights to be pruned.
 
         Returns:
-
+            The updated original model with weights set based on the pruned auxiliary model.
         """
 
         return self.create_train_prune_aux_model(model,
@@ -332,6 +386,7 @@ class Experiment:
             training_time.append(self.initial_model.train_ith_layer.execution_time)
 
             # Subsequent Model
+
             net_cfg = self.get_network_config("MultiPhaseDeepRandomizedNeuralNetworkSubsequent")
             self.subsequent_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkSubsequent", net_cfg)
 
@@ -374,6 +429,8 @@ class Experiment:
                 )
             )
             training_time.append(self.subsequent_model.train_ith_layer.execution_time)
+
+            # Final Model
 
             net_cfg = self.get_network_config(network_type="MultiPhaseDeepRandomizedNeuralNetworkFinal")
             final_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkFinal", net_cfg)

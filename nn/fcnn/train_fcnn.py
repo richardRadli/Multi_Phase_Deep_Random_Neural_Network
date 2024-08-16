@@ -26,40 +26,60 @@ class TrainFCNN:
         setup_logger()
 
         self.cfg = (
-            load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
-                             json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
+            load_config_json(
+                json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
+                json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn")
+            )
         )
 
         if self.cfg.get("seed"):
             torch.manual_seed(1234)
 
+        dataset_name = self.cfg.get("dataset_name")
+        device = self.cfg.get("device")
+        hidden_neurons = self.cfg.get("hidden_neurons")
+        batch_size = self.cfg.get("batch_size")
+        optimizer = self.cfg.get("optimizer")
+        optimization = self.cfg.get("optimization")
+
         gen_ds_cfg = (
-            general_dataset_configs(self.cfg.get("dataset_name"))
+            general_dataset_configs(
+                dataset_type=dataset_name
+            )
         )
 
         fcnn_ds_cfg = (
-            fcnn_paths_configs(self.cfg.get("dataset_name"))
+            fcnn_paths_configs(
+                dataset_type=dataset_name
+            )
         )
 
         # Setup device
         self.device = (
-            device_selector(preferred_device=self.cfg.get("device"))
+            device_selector(
+                preferred_device=device
+            )
         )
 
         # Load the model
         self.model = (
-            FullyConnectedNeuralNetwork(input_size=gen_ds_cfg.get("num_features"),
-                                        hidden_size=self.cfg.get("hidden_neurons").get(self.cfg.get("dataset_name")),
-                                        output_size=gen_ds_cfg.get("num_classes"))
+            FullyConnectedNeuralNetwork(
+                input_size=gen_ds_cfg.get("num_features"),
+                hidden_size=hidden_neurons,
+                output_size=gen_ds_cfg.get("num_classes")
+            )
         ).to(self.device)
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
 
         # Load the dataset
         file_path = (
-            general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
+            general_dataset_configs(dataset_name).get("cached_dataset_file")
         )
         self.train_loader, self.valid_loader, self.test_loader = (
-            create_train_valid_test_datasets(file_path)
+            create_train_valid_test_datasets(
+                file_path=file_path,
+                batch_size=batch_size
+            )
         )
 
         # Define loss function
@@ -69,8 +89,11 @@ class TrainFCNN:
 
         # Define optimizer
         self.optimizer = (
-            optim.Adam(self.model.parameters(),
-                       lr=self.cfg.get("learning_rate").get(self.cfg.get("dataset_name")))
+            optim.SGD(
+                self.model.parameters(),
+                lr=optimization.get(optimizer).get("learning_rate").get(dataset_name),
+                momentum=optimization.get(optimizer).get("momentum").get(dataset_name),
+            )
         )
 
         # Tensorboard
@@ -184,6 +207,7 @@ class TrainFCNN:
                                 f"current valid loss is {valid_loss:.5f}")
                 epoch_without_improvement += 1
                 if epoch_without_improvement >= self.cfg.get("patience"):
+                    logging.warning(f"Early stopping counter: {epoch_without_improvement}")
                     logging.info(f"Early stopping at epoch {epoch}")
                     break
 

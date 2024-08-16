@@ -53,7 +53,22 @@ class MPDRNN:
 
         colorama.init()
 
-    def get_network_config(self, network_type):
+    def get_network_config(self, network_type: str) -> dict:
+        """
+        Retrieves the configuration for a specified network type.
+
+        Args:
+            network_type (str): The type of network for which to retrieve the configuration.
+                                It should be one of the following:
+                                - "MultiPhaseDeepRandomizedNeuralNetworkBase"
+                                - "MultiPhaseDeepRandomizedNeuralNetworkSubsequent"
+                                - "MultiPhaseDeepRandomizedNeuralNetworkFinal"
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the configuration parameters for the specified network type.
+                            The structure of the dictionary depends on the `network_type` value.
+        """
+
         net_cfg = {
             "MultiPhaseDeepRandomizedNeuralNetworkBase": {
                 "first_layer_num_data": self.gen_ds_cfg.get("num_train_data"),
@@ -138,6 +153,7 @@ class MPDRNN:
         training_time = []
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
+            # Initial Model
             net_cfg = self.get_network_config("MultiPhaseDeepRandomizedNeuralNetworkBase")
             self.initial_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkBase", net_cfg)
 
@@ -164,6 +180,7 @@ class MPDRNN:
 
             training_time.append(self.subsequent_model.train_ith_layer.execution_time)
 
+            # Final Model
             net_cfg = self.get_network_config(network_type="MultiPhaseDeepRandomizedNeuralNetworkFinal")
             final_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkFinal", net_cfg)
 
