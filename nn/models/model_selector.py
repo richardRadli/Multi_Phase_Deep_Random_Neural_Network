@@ -60,8 +60,8 @@ class FinalModelWrapper(ModelSelector):
 class ModelFactory:
     _model_map = {
         "MultiPhaseDeepRandomizedNeuralNetworkBase": BaseModelWrapper,
-        "MultiPhaseDeepRandomizedNeuralNetworkSubsequent": BaseModelWrapper,
-        "MultiPhaseDeepRandomizedNeuralNetworkFinal": BaseModelWrapper,
+        "MultiPhaseDeepRandomizedNeuralNetworkSubsequent": SequentModelWrapper,
+        "MultiPhaseDeepRandomizedNeuralNetworkFinal": FinalModelWrapper,
     }
 
     @staticmethod
