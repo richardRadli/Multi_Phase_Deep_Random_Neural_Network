@@ -223,7 +223,7 @@ def find_latest_file_in_latest_directory(path: str) -> str:
     return latest_file
 
 
-def get_num_of_neurons(cfg: dict, method: str) -> int:
+def get_num_of_neurons(cfg: dict, method: str) -> list:
     """
     Retrieves the number of neurons for a given method from a configuration dictionary.
 
@@ -443,18 +443,16 @@ def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_data
     gc.collect()
 
 
-def reorder_metrics_lists(train_metrics: list, test_metrics: list,
-                          training_time_list: Optional = None)\
-        -> List:
+def reorder_metrics_lists(train_metrics, test_metrics, training_time_list: Optional = None) -> List:
     """
     Reorders and combines training and testing metrics into a single list of metrics.
 
     Args:
-        train_metrics (List[Union[int, float]]):
+        train_metrics:
             A list of training metrics.
             Expected order: [train_acc, train_precision, train_recall, train_f1] or
             [train_acc, train_precision, train_recall, train_f1, training_time] if training_time_list is not provided.
-        test_metrics (List[Union[int, float]]):
+        test_metrics:
             A list of testing metrics.
             Expected order: [test_acc, test_precision, test_recall, test_f1].
         training_time_list (Optional[List[Union[int, float]]]):

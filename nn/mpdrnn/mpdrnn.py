@@ -5,7 +5,7 @@ import torch
 from tqdm import tqdm
 from typing import Any, Dict, Tuple
 
-from config.data_paths import JSON_FILES_PATHS
+from config.json_config import json_config_selector
 from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, create_train_valid_test_datasets,
@@ -19,8 +19,10 @@ class MPDRNN:
 
         # Initialize paths and settings
         self.cfg = (
-            load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_mpdrnn"),
-                             json_filename=JSON_FILES_PATHS.get_data_path("config_mpdrnn"))
+            load_config_json(
+                json_schema_filename=json_config_selector("mpdrnn").get("schema"),
+                json_filename=json_config_selector("mpdrnn").get("config"),
+            )
         )
 
         # Boilerplate
@@ -73,7 +75,7 @@ class MPDRNN:
             "MultiPhaseDeepRandomizedNeuralNetworkBase": {
                 "first_layer_num_data": self.gen_ds_cfg.get("num_train_data"),
                 "first_layer_num_features": self.gen_ds_cfg.get("num_features"),
-                "first_layer_num_hidden": get_num_of_neurons(self.cfg, self.method),
+                "list_of_hidden_neurons": get_num_of_neurons(self.cfg, self.method),
                 "first_layer_output_nodes": self.gen_ds_cfg.get("num_classes"),
                 "activation": self.activation,
                 "method": self.method,

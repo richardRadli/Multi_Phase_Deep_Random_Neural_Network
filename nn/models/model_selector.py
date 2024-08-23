@@ -22,7 +22,7 @@ class BaseModelWrapper(ModelSelector):
         self.model = MultiPhaseDeepRandomizedNeuralNetworkBase(
             num_data=network_cfg.get("first_layer_num_data"),
             num_features=network_cfg.get("first_layer_num_features"),
-            hidden_nodes=network_cfg.get("first_layer_num_hidden"),
+            hidden_nodes=network_cfg.get("list_of_hidden_neurons"),
             output_nodes=network_cfg.get("first_layer_output_nodes"),
             activation_function=network_cfg.get("activation"),
             method=network_cfg.get("method"),
@@ -51,7 +51,8 @@ class FinalModelWrapper(ModelSelector):
         self.model = MultiPhaseDeepRandomizedNeuralNetworkFinal(
             subsequent_instance=network_cfg.get('subsequent_model'),
             mu=network_cfg.get("mu"),
-            sigma=network_cfg.get("sigma"))
+            sigma=network_cfg.get("sigma")
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)

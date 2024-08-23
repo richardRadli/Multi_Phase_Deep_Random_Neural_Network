@@ -21,11 +21,6 @@
       "type": "boolean",
       "description": "Controls the way to generate random values. If set to True, the same values will be generated in every execution."
     },
-    "pruning_method": {
-      "type": "string",
-      "enum": ["max_rank", "sum_weight"],
-      "description": "The method to be used for pruning."
-    },
     "method": {
       "type": "string",
       "enum": ["BASE", "EXP_ORT", "EXP_ORT_C"],
@@ -590,5 +585,5 @@
       }
     }
   },
-  "required": ["dataset_name", "activation", "number_of_tests", "seed", "subset_percentage", "pruning_method", "method"]
+  "required": ["dataset_name", "activation", "number_of_tests", "seed", "subset_percentage", "method"]
 }

@@ -82,8 +82,8 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
                 if hi.shape[0] > hi.shape[1]:
                     if self.rcond is not None:
                         weights2.data = (
-                                torch.linalg.pinv(hi.T @ hi + identity_matrix / self.penalty_term, rcond=self.rcond) @ (
-                                hi.T @ train_y)
+                                torch.linalg.pinv(hi.T @ hi + identity_matrix / self.penalty_term, rcond=self.rcond)
+                                @ (hi.T @ train_y)
                         )
                     else:
                         weights2.data = (
@@ -120,15 +120,13 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
         )
 
     @staticmethod
-    def prune_weights(weights: torch.Tensor, pruning_percentage: float, pruning_method: str) \
-            -> tuple[torch.Tensor, torch.Tensor]:
+    def prune_weights(weights: torch.Tensor, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Prune weights based on a specified method and pruning percentage.
 
         Args:
             weights (torch.Tensor): Weight tensor to be pruned.
             pruning_percentage (float): Percentage of weights to be pruned.
-            pruning_method (str): Method to be used for pruning ('max_rank' or 'sum_weight').
 
         Returns:
             tuple[torch.Tensor, torch.Tensor]: Indices of most important and least important weights.
@@ -136,13 +134,8 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
 
         abs_weights = torch.abs(weights)
 
-        if pruning_method == "max_rank":
-            ranking_matrix = abs_weights.argsort(dim=0).argsort(dim=0)
-            importance_score, not_used = torch.max(ranking_matrix, dim=1)
-        elif pruning_method == "sum_weight":
-            importance_score = torch.sum(abs_weights, dim=1)
-        else:
-            raise ValueError("Pruning method must be either 'max_rank' or 'sum_weight'")
+        ranking_matrix = abs_weights.argsort(dim=0).argsort(dim=0)
+        importance_score, not_used = torch.max(ranking_matrix, dim=1)
 
         num_neurons_to_prune = int(pruning_percentage * abs_weights.shape[0])
         least_important_prune_indices = torch.argsort(importance_score)[:num_neurons_to_prune]
@@ -150,19 +143,18 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
 
         return most_important_prune_indices, least_important_prune_indices
 
-    def pruning(self, pruning_percentage: float, pruning_method: str) -> tuple[torch.Tensor, torch.Tensor]:
+    def pruning(self, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
         """
-        Prune the beta weights of the network.
+        Prune the alpha weights of the network.
 
         Args:
             pruning_percentage (float): Percentage of weights to be pruned.
-            pruning_method (str): Method to be used for pruning ('max_rank' or 'sum_weight').
 
         Returns:
             tuple[torch.Tensor, torch.Tensor]: Indices of most important and least important weights.
         """
 
-        return self.prune_weights(self.beta_weights, pruning_percentage, pruning_method)
+        return self.prune_weights(self.beta_weights, pruning_percentage)
 
     @staticmethod
     def forward(hidden_layer: torch.Tensor, weights: torch.Tensor) -> torch.Tensor:
@@ -237,13 +229,13 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
     @staticmethod
     def get_activation(activation: str) -> nn.Module:
         """
-       Get the activation function module.
+        Get the activation function module.
 
-       Args:
-           activation (str): Name of the activation function.
+        Args:
+            activation (str): Name of the activation function.
 
-       Returns:
-           nn.Module: Corresponding activation function module.
+        Returns:
+            nn.Module: Corresponding activation function module.
         """
 
         activation_map = {
@@ -362,7 +354,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             self, dataloader, operation: str, layer_weights=None,
             num_hidden_layers: int = None, verbose: bool = True):
         """
-        Predict and evaluate the performance of the subsequent network layers.
+        Predict and evaluate the performance of the subsequent network layer.
 
         Args:
             dataloader (torch.utils.data.DataLoader): DataLoader for evaluation data.
@@ -379,19 +371,18 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
             dataloader, operation, layer_weights, num_hidden_layers, verbose
         )
 
-    def pruning(self, pruning_percentage: float, pruning_method: str) -> tuple[torch.Tensor, torch.Tensor]:
+    def pruning(self, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
         """
-        Prune the gamma weights of the network.
+        Prune the extended beta weights of the network.
 
         Args:
             pruning_percentage (float): Percentage of weights to be pruned.
-            pruning_method (str): Method to be used for pruning ('max_rank' or 'sum_weight').
 
         Returns:
             tuple[torch.Tensor, torch.Tensor]: Indices of most important and least important weights.
         """
 
-        return self.prune_weights(self.gamma_weights, pruning_percentage, pruning_method)
+        return self.prune_weights(self.gamma_weights, pruning_percentage)
 
 
 class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralNetworkSubsequent):
@@ -465,7 +456,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralN
             self, dataloader, operation: str, layer_weights: torch.Tensor = None, num_hidden_layers: int = None,
             verbose: bool = True) -> list:
         """
-        Predict and evaluate the performance of the final network layers.
+        Predict and evaluate the performance of the final network layer.
 
         Args:
             dataloader (torch.utils.data.DataLoader): DataLoader for evaluation data.
@@ -482,16 +473,15 @@ class MultiPhaseDeepRandomizedNeuralNetworkFinal(MultiPhaseDeepRandomizedNeuralN
             dataloader, operation, layer_weights, num_hidden_layers, verbose
         )
 
-    def pruning(self, pruning_percentage: float, pruning_method: str) -> tuple[torch.Tensor, torch.Tensor]:
+    def pruning(self, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Prune the gamma weights of the network.
 
         Args:
             pruning_percentage (float): Percentage of weights to be pruned.
-            pruning_method (str): Method to be used for pruning ('max_rank' or 'sum_weight').
 
         Returns:
             tuple[torch.Tensor, torch.Tensor]: Indices of most important and least important weights.
         """
 
-        return self.prune_weights(self.delta_weights, pruning_percentage, pruning_method)
+        return self.prune_weights(self.delta_weights, pruning_percentage)

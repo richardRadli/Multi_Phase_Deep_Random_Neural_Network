@@ -3,7 +3,6 @@
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
-  "pruning_method": "max_rank",
   "method": "EXP_ORT_C",
   "mu": 0,
   "sigma": 0.15,

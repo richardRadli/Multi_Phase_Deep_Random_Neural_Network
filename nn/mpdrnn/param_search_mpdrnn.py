@@ -4,18 +4,20 @@ from ray import tune
 from ray.tune.schedulers import ASHAScheduler
 from ray.air import session
 
-from config.data_paths import JSON_FILES_PATHS
+from config.json_config import json_config_selector
 from config.dataset_config import general_dataset_configs
 from nn.models.model_selector import ModelFactory
 from utils.utils import (create_train_valid_test_datasets, load_config_json, get_num_of_neurons)
 
 
-class MPDRNN:
+class ParamSearchMPDRNN:
     def __init__(self):
         # Initialize paths and settings
         self.cfg = (
-            load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_mpdrnn"),
-                             json_filename=JSON_FILES_PATHS.get_data_path("config_mpdrnn"))
+            load_config_json(
+                json_schema_filename=json_config_selector("mpdrnn").get("schema"),
+                json_filename=json_config_selector("mpdrnn").get("config")
+            )
         )
 
         # Boilerplate
@@ -152,5 +154,5 @@ class MPDRNN:
 
 
 if __name__ == "__main__":
-    mpdrnn = MPDRNN()
+    mpdrnn = ParamSearchMPDRNN()
     mpdrnn.tune_params()
