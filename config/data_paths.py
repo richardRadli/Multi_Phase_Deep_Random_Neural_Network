@@ -65,9 +65,9 @@ class ConfigFilePaths(_Const):
         "config_schema_mpdrnn":
             "config/json_files/MPDRNN_config_schema.json",
 
-        "config_ipmdrnn":
+        "config_ipmpdrnn":
             "config/json_files/IPMPDRNN_config.json",
-        "config_schema_ipmdrnn":
+        "config_schema_ipmpdrnn":
             "config/json_files/IPMPDRNN_config_schema.json",
 
         "config_fcnn":

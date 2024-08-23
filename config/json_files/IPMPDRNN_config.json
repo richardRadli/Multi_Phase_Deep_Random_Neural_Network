@@ -1,7 +1,7 @@
 {
-  "dataset_name": "mnist_fashion",
+  "dataset_name": "mnist",
   "activation": "LeakyReLU",
-  "number_of_tests": 10,
+  "number_of_tests": 20,
   "seed": true,
   "pruning_method": "max_rank",
   "method": "EXP_ORT_C",
