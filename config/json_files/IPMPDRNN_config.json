@@ -1,7 +1,7 @@
 {
-  "dataset_name": "segment",
+  "dataset_name": "satimages",
   "activation": "LeakyReLU",
-  "number_of_tests": 20,
+  "number_of_tests": 4,
   "seed": true,
   "method": "EXP_ORT_C",
   "mu": 0,
