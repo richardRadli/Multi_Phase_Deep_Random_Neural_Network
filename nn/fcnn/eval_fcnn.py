@@ -42,7 +42,7 @@ class EvalFCNN:
         self.train_loader, _, self.test_loader = (
             create_train_valid_test_datasets(
                 file_path,
-                batch_size=64
+                batch_size=self.cfg.get("batch_size")
             )
         )
 

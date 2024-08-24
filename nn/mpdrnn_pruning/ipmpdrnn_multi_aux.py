@@ -6,14 +6,14 @@ import torch
 from tqdm import tqdm
 from typing import Any
 
-from config.data_paths import JSON_FILES_PATHS
+from config.json_config import json_config_selector
 from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel, setup_logger,
                          load_config_json, reorder_metrics_lists, create_train_valid_test_datasets, get_num_of_neurons)
 
 
-class Experiment:
+class IPMPDRNN:
     # ------------------------------------------------------------------------------------------------------------------
     # -------------------------------------------------- __I N I T__ ---------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -27,8 +27,10 @@ class Experiment:
 
         # Initialize paths and settings
         self.cfg = (
-            load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_ipmdrnn"),
-                             json_filename=JSON_FILES_PATHS.get_data_path("config_ipmdrnn"))
+            load_config_json(
+                json_schema_filename=json_config_selector("ipmpdrnn").get("schema"),
+                json_filename=json_config_selector("ipmpdrnn").get("config")
+            )
         )
 
         # Boilerplate
@@ -45,13 +47,12 @@ class Experiment:
 
         drnn_config = drnn_paths_config(self.dataset_name)
         sp = self.cfg.get('subset_percentage')
-        pm = self.cfg.get('pruning_method')
 
         # Save path
         self.save_filename = (
             os.path.join(
                 drnn_config.get("ipmpdrnn").get("path_to_results"),
-                f"{timestamp}_ipmpdrnn_{self.dataset_name}_{self.method}_sp_{sp}_pm_{pm}_rcond_{self.rcond}.xlsx")
+                f"{timestamp}_ipmpdrnn_{self.dataset_name}_{self.method}_sp_{sp}_rcond_{self.rcond}.xlsx")
         )
 
         # Set seed
@@ -62,7 +63,7 @@ class Experiment:
         file_path = general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
         self.train_loader, self.valid_loader, self.test_loader = create_train_valid_test_datasets(file_path)
 
-    def get_network_config(self, network_type: str) -> dict:
+    def get_network_config(self, network_type: str, aux_net: bool = None) -> dict:
         """
         Retrieves the configuration for a specified network type.
 
@@ -72,17 +73,22 @@ class Experiment:
                                 - "MultiPhaseDeepRandomizedNeuralNetworkBase"
                                 - "MultiPhaseDeepRandomizedNeuralNetworkSubsequent"
                                 - "MultiPhaseDeepRandomizedNeuralNetworkFinal"
+            aux_net (bool): Whether the network is an auxiliary network.
 
         Returns:
             Dict[str, Any]: A dictionary containing the configuration parameters for the specified network type.
                             The structure of the dictionary depends on the `network_type` value.
         """
 
+        neurons = get_num_of_neurons(self.cfg, self.method)
+        if aux_net:
+            neurons = [h // self.cfg.get("num_aux_net") for h in neurons]
+
         net_cfg = {
             "MultiPhaseDeepRandomizedNeuralNetworkBase": {
                 "first_layer_num_data": self.gen_ds_cfg.get("num_train_data"),
                 "first_layer_num_features": self.gen_ds_cfg.get("num_features"),
-                "first_layer_num_hidden": get_num_of_neurons(self.cfg, self.method),
+                "list_of_hidden_neurons": neurons,
                 "first_layer_output_nodes": self.gen_ds_cfg.get("num_classes"),
                 "activation": self.activation,
                 "method": self.method,
@@ -167,8 +173,9 @@ class Experiment:
         """
 
         _, least_important_prune_indices = (
-            model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
-                          pruning_method=self.cfg.get("pruning_method"))
+            model.pruning(
+                pruning_percentage=self.cfg.get("subset_percentage")
+            )
         )
 
         if set_weights_to_zero:
@@ -233,7 +240,7 @@ class Experiment:
         return self.pruning_model(model, weight_attr="extended_gamma_weights", set_weights_to_zero=set_weights_to_zero)
 
     def create_train_prune_aux_model(self, model: Any, model_type: str, weight_attr: str,
-                                     least_important_prune_indices: list = None):
+                                     least_important_prune_indices: list, num_aux_models: int):
         """
         Creates and trains an auxiliary model, prunes it, and uses the weights from the pruned auxiliary model
         to update the weights of the original model.
@@ -250,22 +257,37 @@ class Experiment:
             The updated original model with weights set based on the pruned auxiliary model.
         """
 
-        net_cfg = self.get_network_config(model_type)
-        aux_model = ModelFactory.create(model_type, net_cfg)
+        net_cfg = self.get_network_config(model_type, aux_net=True)
+        all_best_weights = []
 
-        aux_model.train_layer(self.train_loader)
-        most_important_prune_indices, _ = (
-            aux_model.pruning(pruning_percentage=self.cfg.get("subset_percentage"),
-                              pruning_method=self.cfg.get("pruning_method"))
-        )
+        for _ in range(num_aux_models):
+            aux_model = ModelFactory.create(model_type, net_cfg)
+            aux_model.train_layer(self.train_loader)
 
-        best_weight_tensor = getattr(aux_model, weight_attr).data
-        best_weights = best_weight_tensor[:, most_important_prune_indices]
-        if least_important_prune_indices is None:
-            least_important_prune_indices = self.prune_initial_model(model, set_weights_to_zero=False)
+            most_important_prune_indices, _ = (
+                aux_model.pruning(
+                    pruning_percentage=self.cfg.get("subset_percentage")
+                )
+            )
+
+            best_weight_tensor = getattr(aux_model, weight_attr).data
+            best_weights = best_weight_tensor[:, most_important_prune_indices]
+            all_best_weights.append(best_weights)
+
+        best_weights_final = torch.cat(all_best_weights, dim=1)
+
+        current_dim = best_weights_final.shape[1]
+        required_dim = len(least_important_prune_indices)
+
+        if current_dim > required_dim:
+            best_weights_final = best_weights_final[:, :required_dim]
+        elif current_dim < required_dim:
+            padding = required_dim - current_dim
+            padding_tensor = torch.zeros(best_weights_final.shape[0], padding)
+            best_weights_final = torch.cat((best_weights_final, padding_tensor), dim=1)
 
         weight_tensor = getattr(model, weight_attr).data
-        weight_tensor[:, least_important_prune_indices] = best_weights
+        weight_tensor[:, least_important_prune_indices] = best_weights_final
 
         return model
 
@@ -288,7 +310,8 @@ class Experiment:
         return self.create_train_prune_aux_model(model,
                                                  model_type,
                                                  weight_attr="alpha_weights",
-                                                 least_important_prune_indices=least_important_prune_indices)
+                                                 least_important_prune_indices=least_important_prune_indices,
+                                                 num_aux_models=2)
 
     def create_train_prune_subsequent_aux_model(self, model: Any, model_type: str, least_important_prune_indices: list):
         """
@@ -309,7 +332,8 @@ class Experiment:
         return self.create_train_prune_aux_model(model,
                                                  model_type,
                                                  weight_attr="extended_beta_weights",
-                                                 least_important_prune_indices=least_important_prune_indices)
+                                                 least_important_prune_indices=least_important_prune_indices,
+                                                 num_aux_models=2)
 
     def create_train_prune_final_aux_model(self, model: Any, model_type: str, least_important_prune_indices: list):
         """
@@ -330,7 +354,8 @@ class Experiment:
         return self.create_train_prune_aux_model(model,
                                                  model_type,
                                                  weight_attr="extended_gamma_weights",
-                                                 least_important_prune_indices=least_important_prune_indices)
+                                                 least_important_prune_indices=least_important_prune_indices,
+                                                 num_aux_models=2)
 
     def main(self):
         """
@@ -340,7 +365,6 @@ class Experiment:
         """
 
         # Load data
-        accuracies = []
         training_time = []
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
@@ -478,20 +502,6 @@ class Experiment:
             training_time.append(final_model.train_ith_layer.execution_time)
 
             # Excel
-            accuracies.append((initial_model_training_metrics,
-                               initial_model_testing_metrics,
-                               initial_model_subs_weights_training_metrics,
-                               initial_model_subs_weights_testing_metrics,
-                               subsequent_model_subs_weights_training_metrics,
-                               subsequent_model_subs_weights_testing_metrics,
-                               subsequent_model_model_subs_weights_training_metrics,
-                               subsequent_model_model_subs_weights_testing_metrics,
-                               final_model_subs_weights_training_metrics,
-                               final_model_subs_weights_testing_metrics,
-                               final_model_model_subs_weights_training_metrics,
-                               final_model_model_subs_weights_testing_metrics
-                               ))
-
             best = (
                 final_model_subs_weights_testing_metrics) if (final_model_subs_weights_testing_metrics[0] >
                                                               final_model_model_subs_weights_testing_metrics[0]) else (
@@ -503,7 +513,6 @@ class Experiment:
                                             training_time_list=training_time)
             insert_data_to_excel(self.save_filename, self.cfg.get("dataset_name"), i + 2, metrics)
 
-            accuracies.clear()
             training_time.clear()
 
         average_columns_in_excel(self.save_filename)
@@ -511,7 +520,7 @@ class Experiment:
 
 if __name__ == "__main__":
     try:
-        ipmpdrnn = Experiment()
+        ipmpdrnn = IPMPDRNN()
         ipmpdrnn.main()
     except KeyboardInterrupt as kie:
         logging.error(f"Keyboard interrupt received: {kie}")

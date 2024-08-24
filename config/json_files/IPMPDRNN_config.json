@@ -1,11 +1,12 @@
 {
-  "dataset_name": "mnist",
+  "dataset_name": "segment",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
   "method": "EXP_ORT_C",
   "mu": 0,
   "sigma": 0.15,
+  "num_aux_net": 2,
   "eq_neurons": {
     "connect4": [866, 866, 866],
     "isolete": [1300, 1300, 1300],

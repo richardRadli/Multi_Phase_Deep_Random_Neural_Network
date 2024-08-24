@@ -32,7 +32,11 @@
     },
     "sigma": {
       "type": "number",
-      "default": "The standard deviation of a uniform distribution is a measure of the spread of the distribution."
+      "description": "The standard deviation of a uniform distribution is a measure of the spread of the distribution."
+    },
+    "num_aux_net": {
+      "type": "integer",
+      "description": "Number of aux networks to create."
     },
     "eq_neurons": {
       "type": "object",
