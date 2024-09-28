@@ -189,6 +189,30 @@ def device_selector(preferred_device: str) -> torch.device:
         return torch.device("cpu")
 
 
+def exponential_neurons(num_of_layers, num_of_neurons, decay_rate=0.5):
+    if num_of_layers <= 0:
+        raise ValueError("Number of layers must be greater than zero.")
+    if num_of_neurons <= 0:
+        raise ValueError("Number of neurons must be greater than zero.")
+
+    layers = np.arange(num_of_layers)
+    neuron_distribution = np.exp(-decay_rate * layers)
+
+    neuron_distribution /= neuron_distribution.sum()
+    neuron_distribution *= num_of_neurons
+
+    neuron_distribution = np.round(neuron_distribution).astype(int)
+
+    while neuron_distribution.sum() < num_of_neurons:
+        for i in range(len(neuron_distribution)):
+            if neuron_distribution[i] > 0:
+                neuron_distribution[i] += 1
+                if neuron_distribution.sum() >= num_of_neurons:
+                    break
+
+    return neuron_distribution.tolist()
+
+
 def find_latest_file_in_latest_directory(path: str) -> str:
     """
     Finds and returns the path of the latest file in the most recently modified directory within a given path.

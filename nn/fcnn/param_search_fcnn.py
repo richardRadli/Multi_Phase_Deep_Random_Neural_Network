@@ -49,7 +49,7 @@ class HyperparameterSearch:
         self.hyperparam_config = {
             "lr": tune.loguniform(4e-4, 1e-1),
             "momentum": tune.uniform(0.5, 0.99),
-            "hidden_neurons": tune.grid_search([216, 500, 866, 1000]),
+            "hidden_neurons": tune.grid_search([216, 500, 866, 1000, 2000]),
             "batch_size": tune.choice([32, 64, 128])
         }
 

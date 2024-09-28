@@ -15,6 +15,8 @@ Datasets that are employed in our article can be found on the website of
 
 To convert them to appropriate format, use the python file called _convert_datasets.py_.
 
+Or it can be downloaded from <a href="https://drive.google.com/file/d/1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k/view?usp=drive_link">here<a/>.
+
 ## Requirement
 Make sure you have the following dependencies installed:
 
@@ -54,6 +56,8 @@ root_mapping = {
 }
 ```
 
+You have to replace the username (in this case 'ricsi') with your own by running the `whoami` command in your terminal to retrieve it.
+
 #### PROJECT_ROOT
 - Update this path to the directory where the Python scripts and JSON files of the project are located. This directory will be used as the central repository for essential files.
 #### DATASET_ROOT: 
@@ -82,3 +86,6 @@ Once your configuration files are set up, run the Python scripts to train, test,
 - First of all, it is advisable to run hyperparameter tuning, although config files contain the best settings.
   - There is a separate file for hyperparameter tuning for all available networks. 
 - After tuning, you may execute the training and evaluation for the desired network.
+- To train and evaluate the FCNN network, run __execute_test.py__ in the fcnn folder.
+- To train and evaluate the HELM network, run __helm.py__ in the helm folder.
+- To train and evaluate the MPDRNN network, run __mpdrnn.py__ in the mpdrnn folder.

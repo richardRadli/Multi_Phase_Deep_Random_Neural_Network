@@ -30,9 +30,11 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
         self.activation_function = (
             self.get_activation(activation_function)
         )
+
         self.alpha_weights = (
             nn.Parameter(torch.randn(num_features, hidden_nodes[0]), requires_grad=True)
         )
+
         self.beta_weights = (
             nn.Parameter(torch.zeros(hidden_nodes[0], output_nodes), requires_grad=True)
         )
@@ -71,7 +73,6 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
                 hi.data = self.activation_function(train_x @ weights1)
             else:
                 hi.data = self.activation_function(hi_prev @ weights1)
-
             if method in ['BASE', 'EXP_ORT']:
                 if self.rcond is not None:
                     weights2.data = torch.linalg.pinv(hi, rcond=self.rcond) @ train_y
@@ -325,8 +326,8 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
         else:
             w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes // 2))
             q, _ = torch.linalg.qr(w_rnd)
-            hidden_layer_i = torch.cat((hidden_layer_i_a, q), dim=1)
-
+            orthogonal_matrix = torch.mm(q, q.t())
+            hidden_layer_i = torch.cat((hidden_layer_i_a, orthogonal_matrix), dim=1)
         return hidden_layer_i
 
     def train_layer(self, train_loader):

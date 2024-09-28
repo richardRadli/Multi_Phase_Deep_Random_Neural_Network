@@ -10,7 +10,8 @@ from config.json_config import json_config_selector
 from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel, setup_logger,
-                         load_config_json, reorder_metrics_lists, create_train_valid_test_datasets, get_num_of_neurons)
+                         load_config_json, reorder_metrics_lists, create_train_valid_test_datasets, get_num_of_neurons,
+                         measure_execution_time)
 
 
 class IPMPDRNN:
@@ -185,6 +186,7 @@ class IPMPDRNN:
         else:
             return least_important_prune_indices
 
+    @measure_execution_time
     def prune_initial_model(self, model: Any, set_weights_to_zero: bool):
         """
         Prunes the initial model's alpha weights based on the specified parameters.
@@ -203,6 +205,7 @@ class IPMPDRNN:
 
         return self.pruning_model(model, weight_attr="alpha_weights", set_weights_to_zero=set_weights_to_zero)
 
+    @measure_execution_time
     def prune_subsequent_model(self, model, set_weights_to_zero: bool):
         """
         Prunes the subsequent model's extended beta weights based on the specified parameters.
@@ -221,6 +224,7 @@ class IPMPDRNN:
 
         return self.pruning_model(model, weight_attr="extended_beta_weights", set_weights_to_zero=set_weights_to_zero)
 
+    @measure_execution_time
     def prune_final_model(self, model, set_weights_to_zero: bool):
         """
         Prunes the final model's extended gamma weights based on the specified parameters.
@@ -252,6 +256,7 @@ class IPMPDRNN:
             weight_attr: The attribute name of the model that holds the weights to be updated.
             least_important_prune_indices: Optional list of indices of the least important weights to be pruned.
                                             If not provided, the indices are computed by pruning the original model.
+            num_aux_models: The number of auxiliary models to be created.
 
         Returns:
             The updated original model with weights set based on the pruned auxiliary model.
@@ -291,6 +296,7 @@ class IPMPDRNN:
 
         return model
 
+    @measure_execution_time
     def create_train_prune_initial_aux_model(self, model: Any, model_type: str, least_important_prune_indices: list):
         """
         Creates and trains an auxiliary model, prunes it, and updates the weights of the original model
@@ -313,6 +319,7 @@ class IPMPDRNN:
                                                  least_important_prune_indices=least_important_prune_indices,
                                                  num_aux_models=2)
 
+    @measure_execution_time
     def create_train_prune_subsequent_aux_model(self, model: Any, model_type: str, least_important_prune_indices: list):
         """
         Creates and trains an auxiliary model, prunes it, and updates the weights of the original model
@@ -335,6 +342,7 @@ class IPMPDRNN:
                                                  least_important_prune_indices=least_important_prune_indices,
                                                  num_aux_models=2)
 
+    @measure_execution_time
     def create_train_prune_final_aux_model(self, model: Any, model_type: str, least_important_prune_indices: list):
         """
         Creates and trains an auxiliary model, prunes it, and updates the weights of the original model

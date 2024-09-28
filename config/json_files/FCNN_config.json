@@ -1,9 +1,9 @@
 {
-  "dataset_name": "mnist_fashion",
+  "dataset_name": "spambase",
   "patience": 10,
   "seed": false,
   "epochs": 1000,
-  "device": "cuda",
+  "device": "cpu",
   "num_tests": 10,
   "optimizer": "sgd",
   "optimization": {
