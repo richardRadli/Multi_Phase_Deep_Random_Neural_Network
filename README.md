@@ -91,4 +91,4 @@ Once your configuration files are set up, run the Python scripts to train, test,
 - To train and evaluate the FCNN network, run __execute_test.py__ in the fcnn folder.
 - To train and evaluate the HELM network, run __helm.py__ in the helm folder.
 - To train and evaluate the MPDRNN network, run __mpdrnn.py__ in the mpdrnn folder.
->>>>>>> journal
+
