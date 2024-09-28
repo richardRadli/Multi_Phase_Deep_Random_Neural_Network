@@ -1,0 +1,593 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Network Configuration",
+  "type": "object",
+  "properties": {
+    "dataset_name": {
+      "type": "string",
+      "enum": ["connect4", "isolete", "letter", "mnist", "mnist_fashion", "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle", "spambase", "usps"],
+      "description": "The name of the dataset to be used."
+    },
+    "activation": {
+      "type": "string",
+      "enum": ["ReLU", "LeakyReLU", "Tanh", "Sigmoid", "Identity"],
+      "description": "The activation function to be used in the neural network."
+    },
+    "number_of_tests": {
+      "type": "integer",
+      "description": "Number of tests to be performed."
+    },
+    "seed": {
+      "type": "boolean",
+      "description": "Controls the way to generate random values. If set to True, the same values will be generated in every execution."
+    },
+    "method": {
+      "type": "string",
+      "enum": ["BASE", "EXP_ORT", "EXP_ORT_C"],
+      "description": "The method to generate new weights in consecutive layers."
+    },
+    "mu": {
+      "type": "number",
+      "description": "The mean of a uniform distribution is the midpoint of the interval."
+    },
+    "sigma": {
+      "type": "number",
+      "description": "The standard deviation of a uniform distribution is a measure of the spread of the distribution."
+    },
+    "num_aux_net": {
+      "type": "integer",
+      "description": "Number of aux networks to create."
+    },
+    "eq_neurons": {
+      "type": "object",
+      "description": "Number of equal neurons.",
+      "properties": {
+        "connect4": {
+          "type": "array"
+        },
+        "isolete": {
+          "type": "array"
+        },
+        "letter": {
+          "type": "array"
+        },
+        "mnist": {
+          "type": "array"
+        },
+        "mnist_fashion": {
+          "type": "array"
+        },
+        "musk2": {
+          "type": "array"
+        },
+        "optdigits": {
+          "type": "array"
+        },
+        "page_blocks": {
+          "type": "array"
+        },
+        "satimages": {
+          "type": "array"
+        },
+        "segment": {
+          "type": "array"
+        },
+        "shuttle": {
+          "type": "array"
+        },
+        "spambase": {
+          "type": "array"
+        },
+        "usps": {
+          "type": "array"
+        }
+      }
+    },
+    "exp_neurons": {
+      "type": "object",
+      "description": "Number of equal neurons.",
+      "properties": {
+        "connect4": {
+          "type": "array"
+        },
+        "isolete": {
+          "type": "array"
+        },
+        "letter": {
+          "type": "array"
+        },
+        "mnist": {
+          "type": "array"
+        },
+        "mnist_fashion": {
+          "type": "array"
+        },
+        "musk2": {
+          "type": "array"
+        },
+        "optdigits": {
+          "type": "array"
+        },
+        "page_blocks": {
+          "type": "array"
+        },
+        "satimages": {
+          "type": "array"
+        },
+        "segment": {
+          "type": "array"
+        },
+        "shuttle": {
+          "type": "array"
+        },
+        "spambase": {
+          "type": "array"
+        },
+        "usps": {
+          "type": "array"
+        }
+      }
+    },
+    "subset_percentage": {
+      "type": "object",
+      "description": "Percentage of how much of the weights should be substituted.",
+      "properties": {
+        "connect4": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "isolete": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "letter": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist_fashion": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "musk2": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "optdigits": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "page_blocks": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "satimages": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "segment": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "shuttle": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "spambase": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "usps": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "rcond": {
+      "type": "object",
+      "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
+      "properties": {
+        "connect4": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "isolete": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "letter": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "mnist": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "mnist_fashion": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "musk2": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "optdigits": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "page_blocks": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "satimages": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "segment": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "shuttle": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "spambase": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "usps": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "penalty": {
+      "type": "object",
+      "description": "Value of the L2 penalty term.",
+      "properties": {
+        "connect4": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "isolete": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "letter": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist_fashion": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "musk2": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "optdigits": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "page_blocks": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "satimages": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "segment": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "shuttle": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "spambase": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "usps": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        }
+      }
+    }
+  },
+  "required": ["dataset_name", "activation", "number_of_tests", "seed", "subset_percentage", "method"]
+}

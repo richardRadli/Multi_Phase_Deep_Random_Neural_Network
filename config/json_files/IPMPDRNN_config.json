@@ -1,0 +1,137 @@
+{
+  "dataset_name": "spambase",
+  "activation": "LeakyReLU",
+  "number_of_tests": 1,
+  "seed": true,
+  "method": "EXP_ORT_C",
+  "mu": 0,
+  "sigma": 0.15,
+  "num_aux_net": 1,
+  "eq_neurons": {
+    "connect4": [866, 866, 866],
+    "isolete": [1300, 1300, 1300],
+    "letter": [1500, 1500, 1500],
+    "mnist": [2000, 2000, 2000],
+    "mnist_fashion": [2000, 2000, 2000],
+    "musk2": [866, 866, 866],
+    "optdigits": [216, 216, 216],
+    "page_blocks": [216, 216, 216],
+    "satimages": [600, 600, 600],
+    "segment": [300, 300, 300],
+    "shuttle": [216, 216, 216],
+    "spambase": [400, 50, 50],
+    "usps": [1000, 1000, 1000]
+  },
+  "exp_neurons": {
+    "connect4": [2049, 452, 100],
+    "isolete": [1400, 1300, 1200],
+    "letter": [3000, 1000, 500],
+    "mnist": [4000, 1500, 500],
+    "mnist_fashion": [4000, 1500, 500],
+    "musk2": [1200, 750, 650],
+    "optdigits": [1000, 500, 300],
+    "page_blocks": [300, 200, 150],
+    "satimages": [2600, 700, 300],
+    "segment": [600, 200, 100],
+    "shuttle": [400, 200, 50],
+    "spambase": [800, 400, 300],
+    "usps": [1600, 1000, 400]
+  },
+  "subset_percentage": {
+    "connect4": 0.5,
+    "isolete": 0.55,
+    "letter": 0.1,
+    "mnist": 0.05,
+    "mnist_fashion": 0.05,
+    "musk2": 0.6,
+    "optdigits": 0.4,
+    "page_blocks": 0.6,
+    "satimages": 0.3,
+    "segment": 0.4,
+    "shuttle": 0.45,
+    "spambase": 0.65,
+    "usps": 0.4
+  },
+  "rcond": {
+    "connect4": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "isolete": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "letter": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "mnist": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-30
+    },
+    "mnist_fashion": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-30
+    },
+    "musk2": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "optdigits": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-5
+    },
+    "page_blocks": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "satimages": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-20
+    },
+    "segment": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    },
+    "shuttle": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "spambase": {
+      "BASE": 1e-15,
+      "EXP_ORT": 1e-15,
+      "EXP_ORT_C": 1e-15
+    },
+    "usps": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1e-15
+    }
+  },
+  "penalty": {
+    "connect4": 5,
+    "isolete": 5,
+    "letter": 0.15,
+    "mnist": 0.15,
+    "mnist_fashion": 0.15,
+    "musk2": 0.8,
+    "optdigits": 8,
+    "page_blocks": 23,
+    "satimages": 8,
+    "segment": 9,
+    "shuttle": 8,
+    "spambase": 0.15,
+    "usps": 0.15
+  }
+}
