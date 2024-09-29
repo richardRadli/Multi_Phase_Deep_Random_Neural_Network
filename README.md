@@ -1,4 +1,4 @@
-# Multi Phase Deep Random Neural Network Research Repository
+# Multi Phase Deep Random Neural Networks
  
 ![Python](https://img.shields.io/badge/python-v3.11-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![PyTorch](https://img.shields.io/badge/PyTorch-v2.2.1-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
@@ -7,9 +7,6 @@
 ![Pandas](https://img.shields.io/badge/pandas-v2.1.0-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
 ![SciPy](https://img.shields.io/badge/SciPy-v1.12.0-%230C55A5.svg?style=for-the-badge&logo=scipy&logoColor=%white)
 ![Ray Badge](https://img.shields.io/badge/Ray-v2.23.0-028CF0?logo=ray&logoColor=fff&style=for-the-badge)
-
-
-# Iteratively increasing randomized networks
 
 ## Datasets
 Datasets that are employed in our article can be found on the website of 
