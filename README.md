@@ -8,16 +8,21 @@
 ![SciPy](https://img.shields.io/badge/SciPy-v1.12.0-%230C55A5.svg?style=for-the-badge&logo=scipy&logoColor=%white)
 ![Ray Badge](https://img.shields.io/badge/Ray-v2.23.0-028CF0?logo=ray&logoColor=fff&style=for-the-badge)
 
-## Datasets
+
+# Overview
+
+
+
+## 📚 Datasets
 Datasets that are employed in our article can be found on the website of 
 <a href="https://www.example.com/my great page">UCI Machine Learning Repository</a>.
 
 To convert them to appropriate format, use the python file called _convert_datasets.py_.
 
-Or it can be downloaded from <a href="https://drive.google.com/file/d/1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k/view?usp=drive_link">here<a/>.
+Or datasets can be downloaded from <a href="https://drive.google.com/file/d/1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k/view?usp=drive_link">here<a/>.
 
-## Requirement
-Make sure you have the following dependencies installed:
+## 🛠️ Requirements
+Make sure you have the following packages installed:
 
 ```bash
 colorlog~=6.8.2
@@ -33,13 +38,12 @@ colorama~=0.4.6
 jsonschema~=4.23.0
 torchinfo~=1.8.0
 ```
+## 🚀 Installation
 
-## Installation
-
-### Clone or Download the Repository
+### 1. Clone or download the repository
 Begin by cloning or downloading this repository to your local machine.
 
-### Update Configuration
+### 2. Update configuration
 Open the _data_paths.py_ file. You will find the following dictionary:
 
 ```python
@@ -55,7 +59,7 @@ root_mapping = {
 }
 ```
 
-You have to replace the username (in this case 'ricsi') with your own by running the `whoami` command in your terminal to retrieve it.
+You have to replace the username (in this case 'ricsi') with your own. Your username cane be acquired by running the `whoami` command in your terminal to retrieve it.
 
 #### PROJECT_ROOT
 - Update this path to the directory where the Python scripts and JSON files of the project are located. This directory will be used as the central repository for essential files.
@@ -64,11 +68,11 @@ You have to replace the username (in this case 'ricsi') with your own by running
 #### STORAGE_ROOT: 
 - Adjust this path to the location where you want to save project outputs and other data generated during the execution of the project.
 
-### Create Necessary Folders
+### 3. Create necessary folders
 Run the __data_paths.py__ script. This will create all the required folders based on the paths specified in the configuration.
 
-### Download Datasets
-Obtain the necessary datasets and place them into the DATASET_ROOT directory as specified in your updated configuration
+### 4. Download and place datasets
+Obtain the necessary datasets and place them into the DATASET_ROOT directory as specified in your updated configuration.
 
 ## Usage
 ### Setting Up Configuration Files
@@ -79,13 +83,17 @@ Before running the Python scripts, you need to configure your settings by prepar
 - Configuration for the MPDRNN (MPDRNN_config.json)
 
 
-Once your configuration files are set up, run the Python scripts to train, test, or augment data
+Once your configuration files are set up, run the Python scripts to train and test.
 
 ### Workflow
-- First of all, it is advisable to run hyperparameter tuning, although config files contain the best settings.
+- Optional: It is advisable to run hyperparameter tuning, although config files contain the best settings.
   - There is a separate file for hyperparameter tuning for all available networks. 
 - After tuning, you may execute the training and evaluation for the desired network.
-- To train and evaluate the FCNN network, run __execute_test.py__ in the fcnn folder.
-- To train and evaluate the HELM network, run __helm.py__ in the helm folder.
-- To train and evaluate the MPDRNN network, run __mpdrnn.py__ in the mpdrnn folder.
+  - To train and evaluate the FCNN network, run __execute_test.py__ in the fcnn folder.
+  - To train and evaluate the HELM network, run __helm.py__ in the helm folder.
+  - To train and evaluate the MPDRNN network, run __mpdrnn.py__ in the mpdrnn folder.
 
+
+### Link to Papers
+
+For detailed insights, check out our [research paper](https://link.springer.com/chapter/10.1007/978-3-031-44505-7_9).
