@@ -1,11 +1,11 @@
 {
-  "dataset_name": "spambase",
+  "dataset_name": "wall",
   "patience": 10,
   "seed": false,
   "epochs": 1000,
-  "device": "cpu",
+  "device": "cuda",
   "num_tests": 10,
-  "optimizer": "sgd",
+  "optimizer": "adam",
   "optimization": {
     "adam": {
       "learning_rate": {
@@ -21,7 +21,9 @@
         "segment": 0.0009172205002756651,
         "shuttle": 0.0007259147473856188,
         "spambase": 0.0009002077236058769,
-        "usps": 0.0010065774024284563
+        "usps": 0.0010065774024284563,
+        "wall": 0.0024484865064793807,
+        "waveform": 0.0007079991167221878
       }
     },
     "sgd": {
@@ -38,7 +40,9 @@
         "segment": 0.010144021097474178,
         "shuttle": 0.025163419995939785,
         "spambase": 0.010401290366553876,
-        "usps": 0.008074552694497727
+        "usps": 0.008074552694497727,
+        "wall": 0,
+        "waveform": 0
       },
       "momentum": {
         "connect4": 0.981549,
@@ -53,7 +57,9 @@
         "segment": 0.9787279039238386,
         "shuttle": 0.7951258472078417,
         "spambase": 0.5258957501732601,
-        "usps": 0.9872259959152406
+        "usps": 0.9872259959152406,
+        "wall": 0,
+        "waveform": 0
       }
     }
   },
@@ -70,7 +76,9 @@
     "segment": 1000,
     "shuttle": 216,
     "spambase": 500,
-    "usps": 1000
+    "usps": 1000,
+    "wall": 866,
+    "waveform": 500
   },
   "batch_size": {
     "connect4": 128,
@@ -85,6 +93,8 @@
     "segment": 128,
     "shuttle": 64,
     "spambase": 32,
-    "usps": 64
+    "usps": 64,
+    "wall": 128,
+    "waveform": 64
   }
 }

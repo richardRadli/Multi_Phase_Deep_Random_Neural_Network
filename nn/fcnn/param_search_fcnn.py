@@ -32,9 +32,6 @@ class HyperparameterSearch:
             general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
         )
 
-        self.save_path = fcnn_paths_configs(self.cfg.get("dataset_name")).get("hyperparam_tuning")
-        self.save_log_file = os.path.join(self.save_path, "SGD_hyperparam_search_best_results.txt")
-
         self.device = device_selector(preferred_device="cuda")
 
         dataset_name = self.cfg.get("dataset_name")
@@ -52,6 +49,9 @@ class HyperparameterSearch:
             "hidden_neurons": tune.grid_search([216, 500, 866, 1000, 2000]),
             "batch_size": tune.choice([32, 64, 128])
         }
+
+        self.save_path = fcnn_paths_configs(self.cfg.get("dataset_name")).get("hyperparam_tuning")
+        self.save_log_file = os.path.join(self.save_path, f"{self.optimizer}_hyperparam_search_best_results.txt")
 
     def fit(self, config: Dict[str, Any]) -> None:
         """

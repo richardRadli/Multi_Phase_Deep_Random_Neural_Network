@@ -1,5 +1,5 @@
 {
-  "dataset_name": "connect4",
+  "dataset_name": "letter",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
@@ -19,7 +19,9 @@
     "segment": [300, 300, 300],
     "shuttle": [216, 216, 216],
     "spambase": [400, 50, 50],
-    "usps": [1000, 1000, 1000]
+    "usps": [1000, 1000, 1000],
+    "wal": [216, 216, 216],
+    "waveform": [216, 216, 216]
   },
   "exp_neurons": {
     "connect4": [2049, 452, 100],
@@ -34,33 +36,37 @@
     "segment": [600, 200, 100],
     "shuttle": [400, 200, 50],
     "spambase": [800, 400, 300],
-    "usps": [1600, 1000, 400]
+    "usps": [1600, 1000, 400],
+    "wall": [300, 200, 150],
+    "waveform": [300, 200, 150]
   },
   "penalty": {
-    "connect4": 5,
-    "isolete": 5,
+    "connect4": 0.9160671883437745,
+    "isolete": 11.804836784809297,
     "letter": 11,
     "mnist": 5,
     "mnist_fashion": 1,
-    "musk2": 0.8,
-    "optdigits": 8,
+    "musk2": 4.307758353672464,
+    "optdigits": 4.249456334574201,
     "page_blocks": 23,
-    "satimages": 8,
-    "segment": 9,
-    "shuttle": 8,
+    "satimages": 14.617630338233269,
+    "segment": 27.081874713319767,
+    "shuttle": 26.663624151189453,
     "spambase": 0.15,
-    "usps": 0.15
+    "usps": 0.32276974572019584,
+    "wall": 21.03915462212697,
+    "waveform": 9.15257945370649
   },
   "rcond": {
     "connect4": {
       "BASE": 1e-15,
       "EXP_ORT": 1e-15,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 3.254980105482745e-20
     },
     "isolete": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 4.727526246819078e-08
     },
     "letter": {
       "BASE": 1e-5,
@@ -80,12 +86,12 @@
     "musk2": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 9.134960717559678e-08
     },
     "optdigits": {
       "BASE": 1e-5,
       "EXP_ORT": 1e-5,
-      "EXP_ORT_C": 1e-5
+      "EXP_ORT_C": 2.1775241986834606e-08
     },
     "page_blocks": {
       "BASE": 1e-5,
@@ -95,17 +101,17 @@
     "satimages": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 1e-20
+      "EXP_ORT_C": 6.390253384929867e-18
     },
     "segment": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 6.98737699809845e-09
     },
     "shuttle": {
       "BASE": 1e-5,
       "EXP_ORT": 1e-5,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 2.4524587801123995e-26
     },
     "spambase": {
       "BASE": 1e-15,
@@ -115,7 +121,17 @@
     "usps": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 3.1605145890338398e-18
+    },
+    "wall": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 8.05770467115148e-24
+    },
+    "waveform": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 3.524860534312266e-12
     }
   }
 }

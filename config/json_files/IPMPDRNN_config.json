@@ -1,7 +1,7 @@
 {
-  "dataset_name": "spambase",
+  "dataset_name": "mnist_fashion",
   "activation": "LeakyReLU",
-  "number_of_tests": 1,
+  "number_of_tests": 10,
   "seed": true,
   "method": "EXP_ORT_C",
   "mu": 0,
@@ -20,7 +20,9 @@
     "segment": [300, 300, 300],
     "shuttle": [216, 216, 216],
     "spambase": [400, 50, 50],
-    "usps": [1000, 1000, 1000]
+    "usps": [1000, 1000, 1000],
+    "wall": [216, 216, 216],
+    "waveform": [216, 216, 216]
   },
   "exp_neurons": {
     "connect4": [2049, 452, 100],
@@ -35,7 +37,9 @@
     "segment": [600, 200, 100],
     "shuttle": [400, 200, 50],
     "spambase": [800, 400, 300],
-    "usps": [1600, 1000, 400]
+    "usps": [1600, 1000, 400],
+    "wall": [300, 200, 150],
+    "waveform": [300, 200, 150]
   },
   "subset_percentage": {
     "connect4": 0.5,
@@ -50,7 +54,9 @@
     "segment": 0.4,
     "shuttle": 0.45,
     "spambase": 0.65,
-    "usps": 0.4
+    "usps": 0.4,
+    "wall": 0.2,
+    "waveform": 0.2
   },
   "rcond": {
     "connect4": {
@@ -117,6 +123,16 @@
       "BASE": null,
       "EXP_ORT": null,
       "EXP_ORT_C": 1e-15
+    },
+    "wall": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 9.732256043853299e-30
+    },
+    "waveform": {
+      "BASE": null,
+      "EXP_ORT": null,
+      "EXP_ORT_C": 1.15747776379548e-25
     }
   },
   "penalty": {
@@ -132,6 +148,8 @@
     "segment": 9,
     "shuttle": 8,
     "spambase": 0.15,
-    "usps": 0.15
+    "usps": 0.15,
+    "wall": 29.26660380653489,
+    "waveform": 15.103111804878713
   }
 }

@@ -150,6 +150,8 @@ def create_train_valid_test_datasets(file_path, batch_size=None) -> Tuple[DataLo
         )
     )
 
+    logging.info(f"Size of train dataset: {len(train_dataset)}, Size of test dataset: {len(test_dataset)}")
+
     return train_loader, valid_loader, test_loader
 
 

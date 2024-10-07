@@ -47,6 +47,7 @@ class IPMPDRNN:
         self.subsequent_model = None
 
         drnn_config = drnn_paths_config(self.dataset_name)
+
         sp = self.cfg.get('subset_percentage')
 
         # Save path
@@ -62,7 +63,7 @@ class IPMPDRNN:
 
         # Load dataset
         file_path = general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
-        self.train_loader, self.valid_loader, self.test_loader = create_train_valid_test_datasets(file_path)
+        self.train_loader, _, self.test_loader = create_train_valid_test_datasets(file_path)
 
     def get_network_config(self, network_type: str, aux_net: bool = None) -> dict:
         """
@@ -377,7 +378,6 @@ class IPMPDRNN:
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
             # Create model
-
             net_cfg = self.get_network_config("MultiPhaseDeepRandomizedNeuralNetworkBase")
             self.initial_model = ModelFactory.create("MultiPhaseDeepRandomizedNeuralNetworkBase", net_cfg)
 
