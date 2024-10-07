@@ -5,7 +5,7 @@ from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 from sklearn.model_selection import train_test_split
 
-from config.data_paths import JSON_FILES_PATHS
+from config.data_paths import ConfigFilePaths
 from config.dataset_config import general_dataset_configs
 from utils.utils import setup_logger, load_config_json
 
@@ -39,15 +39,16 @@ def main(split_ratio):
     setup_logger()
 
     cfg = (
-        load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_ipmdrnn"),
-                         json_filename=JSON_FILES_PATHS.get_data_path("config_ipmdrnn"))
+        load_config_json(
+            json_schema_filename=ConfigFilePaths().get_data_path("config_schema_ipmpdrnn"),
+            json_filename=ConfigFilePaths().get_data_path("config_ipmpdrnn")
+        )
     )
 
     dataset_name = cfg.get("dataset_name")
 
     path_to_dataset = general_dataset_configs(dataset_name).get("dataset_file")
-    num_data = (general_dataset_configs(dataset_name).get("num_train_data") +
-                general_dataset_configs(dataset_name).get("num_test_data"))
+    size_of_dataset = (general_dataset_configs(dataset_name).get("dataset_size"))
     num_features = general_dataset_configs(dataset_name).get("num_features")
 
     try:
@@ -61,7 +62,7 @@ def main(split_ratio):
             split = line.strip().split(',')
             # label at the end
             if dataset_name in ["connect4", "isolete", "iris", "musk2", "optdigits", "page_blocks", "satimages",
-                                "shuttle", "spambase", "forest", "usps"]:
+                                "shuttle", "spambase", "forest", "usps", "wall", "waveform"]:
                 labels.append(split[-1])
                 features.append(split[:-1])
             # label at the front
@@ -76,7 +77,7 @@ def main(split_ratio):
 
         if all_elements_numeric(features):
             reshaped_features = np.array(features, dtype=np.float32)
-            reshaped_features = reshaped_features.reshape((num_data, num_features))
+            reshaped_features = reshaped_features.reshape((size_of_dataset, num_features))
         else:
             encoder = LabelEncoder()
             reshaped_features = []
@@ -86,7 +87,6 @@ def main(split_ratio):
         scaler = MinMaxScaler()
         normalized_features = scaler.fit_transform(reshaped_features)
 
-        size_of_dataset = general_dataset_configs(dataset_name).get("dataset_size")
         size_of_test_subset = int(size_of_dataset * split_ratio[2])
 
         train_valid_x, test_x, train_valid_y, test_y = (
@@ -94,7 +94,7 @@ def main(split_ratio):
                 normalized_features,
                 encoded_labels,
                 test_size=size_of_test_subset,
-                random_state=42
+                random_state=1234
             )
         )
 
@@ -105,7 +105,7 @@ def main(split_ratio):
                 train_valid_x,
                 train_valid_y,
                 test_size=validation_ratio,
-                random_state=42
+                random_state=1234
             )
         )
 

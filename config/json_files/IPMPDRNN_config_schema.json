@@ -5,7 +5,8 @@
   "properties": {
     "dataset_name": {
       "type": "string",
-      "enum": ["connect4", "isolete", "letter", "mnist", "mnist_fashion", "musk2", "optdigits", "page_blocks", "satimages", "segment", "shuttle", "spambase", "usps"],
+      "enum": ["connect4", "isolete", "letter", "mnist", "mnist_fashion", "musk2", "optdigits", "page_blocks",
+               "satimages", "segment", "shuttle", "spambase", "usps", "wall", "waveform"],
       "description": "The name of the dataset to be used."
     },
     "activation": {
@@ -80,6 +81,12 @@
         },
         "usps": {
           "type": "array"
+        },
+        "wall": {
+          "type": "array"
+        },
+        "waveform": {
+          "type": "array"
         }
       }
     },
@@ -124,6 +131,12 @@
           "type": "array"
         },
         "usps": {
+          "type": "array"
+        },
+        "wall": {
+          "type": "array"
+        },
+        "waveform": {
           "type": "array"
         }
       }
@@ -205,6 +218,18 @@
           ]
         },
         "usps": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "wall": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "waveform": {
           "oneOf": [
             { "type": "number" },
             { "type": "null" }
@@ -501,6 +526,50 @@
               ]
             }
           }
+        },
+        "wall": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "waveform": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
         }
       }
     },
@@ -581,6 +650,18 @@
           ]
         },
         "usps": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "wall": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "waveform": {
           "oneOf": [
             { "type": "number" },
             { "type": "null" }

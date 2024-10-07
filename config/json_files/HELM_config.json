@@ -1,5 +1,5 @@
 {
-  "dataset_name": "usps",
+  "dataset_name": "waveform",
   "seed": false,
   "num_tests": 10,
   "penalty": {
@@ -15,7 +15,9 @@
     "segment": 2.5634299766240685e-11,
     "shuttle": 4.9501035759603156e-29,
     "spambase": 4.0238638857332915e-13,
-    "usps": 1.0410413967617076e-12
+    "usps": 1.0410413967617076e-12,
+    "wall": 1.0601267257939107e-16,
+    "waveform": 7.514883372313729e-06
   },
   "scaling_factor": {
     "connect4": 0.6296642684522955,
@@ -30,7 +32,9 @@
     "segment": 0.9525663426397086,
     "shuttle": 0.8145734922136045,
     "spambase": 0.12218852497271493,
-    "usps": 0.9806451612903225
+    "usps": 0.9806451612903225,
+    "wall": 0.8783347904912766,
+    "waveform": 0.8746666666666667
   },
   "hidden_neurons": {
     "connect4": [400, 200, 2000],
@@ -45,7 +49,9 @@
     "segment": [100, 50, 750],
     "shuttle": [100, 50, 500],
     "spambase": [900, 300, 400],
-    "usps": [800, 200, 2000]
+    "usps": [800, 200, 2000],
+    "wall": [100, 50, 500],
+    "waveform": [100, 50, 500]
   },
   "hyperparamtuning": {
     "metric": "accuracy",

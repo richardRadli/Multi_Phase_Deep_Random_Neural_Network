@@ -1,13 +1,14 @@
 import colorama
+import os
 
 from ray import tune
 from ray.tune.schedulers import ASHAScheduler
 from ray.air import session
 
 from config.json_config import json_config_selector
-from config.dataset_config import general_dataset_configs
+from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.models.model_selector import ModelFactory
-from utils.utils import (create_train_valid_test_datasets, load_config_json, get_num_of_neurons)
+from utils.utils import (create_train_valid_test_datasets, load_config_json, get_num_of_neurons, save_log_to_txt)
 
 
 class ParamSearchMPDRNN:
@@ -30,13 +31,15 @@ class ParamSearchMPDRNN:
         self.subsequent_model = None
 
         file_path = general_dataset_configs(self.dataset_name).get("cached_dataset_file")
-        self.train_loader, _, self.valid_loader = create_train_valid_test_datasets(file_path)
+        self.train_loader, self.valid_loader, _ = create_train_valid_test_datasets(file_path)
+
+        self.save_path = drnn_paths_config(self.cfg.get("dataset_name")).get("mpdrnn").get("hyperparam_tuning")
+        self.save_log_file = os.path.join(self.save_path, "hyperparam_search_best_results.txt")
 
         self.hyperparam_config = {
             "rcond": tune.loguniform(1e-1, 1e-30),
-            "penalty_term": tune.uniform(0.15, 30)
+            "penalty_term": tune.uniform(0.1, 30)
         }
-
         colorama.init()
 
     def get_network_config(self, network_type, config):
@@ -44,7 +47,7 @@ class ParamSearchMPDRNN:
             "MultiPhaseDeepRandomizedNeuralNetworkBase": {
                 "first_layer_num_data": self.gen_ds_cfg.get("num_train_data"),
                 "first_layer_num_features": self.gen_ds_cfg.get("num_features"),
-                "first_layer_num_hidden": get_num_of_neurons(self.cfg, self.method),
+                "list_of_hidden_neurons": get_num_of_neurons(self.cfg, self.method),
                 "first_layer_output_nodes": self.gen_ds_cfg.get("num_classes"),
                 "activation": self.activation,
                 "method": self.method,
@@ -139,18 +142,22 @@ class ParamSearchMPDRNN:
 
         result = tune.run(
             self.main,
-            resources_per_trial={"cpu": 2,
+            resources_per_trial={"cpu": 6,
                                  "gpu": 0},
             config=self.hyperparam_config,
-            num_samples=30,
+            num_samples=60,
             scheduler=scheduler,
             progress_reporter=reporter,
-            storage_path="C:/Users/ricsi/Desktop/hyper"
+            storage_path=self.save_path
         )
 
         best_trial = result.get_best_trial("accuracy", "max", "last")
         print("Best trial config: {}".format(best_trial.config))
         print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+
+        save_log_to_txt(output_file=self.save_log_file,
+                        result=result,
+                        operation="accuracy")
 
 
 if __name__ == "__main__":

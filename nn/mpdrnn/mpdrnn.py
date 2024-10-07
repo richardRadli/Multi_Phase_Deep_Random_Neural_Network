@@ -52,7 +52,6 @@ class MPDRNN:
 
         file_path = general_dataset_configs(self.dataset_name).get("cached_dataset_file")
         self.train_loader, _, self.test_loader = create_train_valid_test_datasets(file_path)
-
         colorama.init()
 
     def get_network_config(self, network_type: str) -> dict:

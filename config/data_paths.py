@@ -123,6 +123,10 @@ class MPDRNNPaths(_Const):
             "mpdrnn/images/confusion_matrix/usps",
         "cm_satimages":
             "mpdrnn/images/confusion_matrix/satimages",
+        "cm_wall":
+            "mpdrnn/images/confusion_matrix/wall",
+        "cm_waveform":
+            "mpdrnn/images/confusion_matrix/waveform",
 
         "results_connect4":
             "mpdrnn/data/results/connect4",
@@ -149,7 +153,42 @@ class MPDRNNPaths(_Const):
         "results_usps":
             "mpdrnn/data/results/usps",
         "results_satimages":
-            "mpdrnn/data/results/satimages"
+            "mpdrnn/data/results/satimages",
+        "results_wall":
+            "mpdrnn/data/results/wall",
+        "results_waveform":
+            "mpdrnn/data/results/waveform",
+
+        "hyperparam_connect4":
+            "mpdrnn/data/hyperparam/connect4",
+        "hyperparam_isolete":
+            "mpdrnn/data/hyperparam/isolete",
+        "hyperparam_letter":
+            "mpdrnn/data/hyperparam/letter",
+        "hyperparam_mnist":
+            "mpdrnn/data/hyperparam/mnist",
+        "hyperparam_mnist_fashion":
+            "mpdrnn/data/hyperparam/mnist_fashion",
+        "hyperparam_musk2":
+            "mpdrnn/data/hyperparam/musk2",
+        "hyperparam_optdigits":
+            "mpdrnn/data/hyperparam/optdigits",
+        "hyperparam_page_blocks":
+            "mpdrnn/data/hyperparam/page_blocks",
+        "hyperparam_segment":
+            "mpdrnn/data/hyperparam/segment",
+        "hyperparam_shuttle":
+            "mpdrnn/data/hyperparam/shuttle",
+        "hyperparam_spambase":
+            "mpdrnn/data/hyperparam/spambase",
+        "hyperparam_usps":
+            "mpdrnn/data/hyperparam/usps",
+        "hyperparam_satimages":
+            "mpdrnn/data/hyperparam/satimages",
+        "hyperparam_wall":
+            "mpdrnn/data/hyperparam/wall",
+        "hyperparam_waveform":
+            "mpdrnn/data/hyperparam/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -195,6 +234,10 @@ class IPMPDRNNPaths(_Const):
             "ipmpdrnn/images/confusion_matrix/usps",
         "cm_satimages":
             "ipmpdrnn/images/confusion_matrix/satimages",
+        "cm_wall":
+            "ipmpdrnn/images/confusion_matrix/wall",
+        "cm_waveform":
+            "ipmpdrnn/images/confusion_matrix/waveform",
 
         "results_connect4":
             "ipmpdrnn/data/results/connect4",
@@ -221,7 +264,11 @@ class IPMPDRNNPaths(_Const):
         "results_usps":
             "ipmpdrnn/data/results/usps",
         "results_satimages":
-            "ipmpdrnn/data/results/satimages"
+            "ipmpdrnn/data/results/satimages",
+        "results_wall":
+            "ipmpdrnn/data/results/wall",
+        "results_waveform":
+            "ipmpdrnn/data/results/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -267,6 +314,10 @@ class FCNNPaths(_Const):
             "fcnn_data/saved_weights_fcnn/usps",
         "sw_satimages":
             "fcnn_data/saved_weights_fcnn/satimages",
+        "sw_wall":
+            "fcnn_data/saved_weights_fcnn/wall",
+        "sw_waveform":
+            "fcnn_data/saved_weights_fcnn/waveform",
 
         # FCNN logs
         "logs_connect4":
@@ -295,6 +346,10 @@ class FCNNPaths(_Const):
             "fcnn_data/logs_fcnn/usps",
         "logs_satimages":
             "fcnn_data/logs_fcnn/satiamges",
+        "logs_wall":
+            "fcnn_data/logs_fcnn/wall",
+        "logs_waveform":
+            "fcnn_data/logs_fcnn/waveform",
 
         "results_connect4":
             "fcnn_data/results_fcnn/connect4",
@@ -322,6 +377,10 @@ class FCNNPaths(_Const):
             "fcnn_data/results_fcnn/spambase",
         "results_usps":
             "fcnn_data/results_fcnn/usps",
+        "results_wall":
+            "fcnn_data/results_fcnn/wall",
+        "results_waveform":
+            "fcnn_data/results_fcnn/waveform",
 
         "hyperparam_tuning_connect4":
             "fcnn_data/hyperparam_tuning/connect4",
@@ -348,7 +407,11 @@ class FCNNPaths(_Const):
         "hyperparam_tuning_spambase":
             "fcnn_data/hyperparam_tuning/spambase",
         "hyperparam_tuning_usps":
-            "fcnn_data/hyperparam_tuning/usps"
+            "fcnn_data/hyperparam_tuning/usps",
+        "hyperparam_tuning_wall":
+            "fcnn_data/hyperparam_tuning/wall",
+        "hyperparam_tuning_waveform":
+            "fcnn_data/hyperparam_tuning/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -394,6 +457,10 @@ class HELMPaths(_Const):
             "helm/images/confusion_matrix/usps",
         "helm_satimages":
             "helm/images/confusion_matrix/satimages",
+        "helm_wall":
+            "helm/images/confusion_matrix/wall",
+        "helm_waveform":
+            "helm/images/confusion_matrix/waveform",
 
         "results_connect4":
             "helm/data/results/connect4",
@@ -421,6 +488,10 @@ class HELMPaths(_Const):
             "helm/data/results/usps",
         "results_satimages":
             "helm/data/results/satimages",
+        "results_wall":
+            "helm/data/results/wall",
+        "results_waveform":
+            "helm/data/results/waveform",
 
         "hyperparam_tuning_connect4":
             "helm/data/hyperparam_tuning/connect4",
@@ -447,7 +518,11 @@ class HELMPaths(_Const):
         "hyperparam_tuning_spambase":
             "helm/data/hyperparam_tuning/spambase",
         "hyperparam_tuning_usps":
-            "helm/data/hyperparam_tuning/usps"
+            "helm/data/hyperparam_tuning/usps",
+        "hyperparam_tuning_wall":
+            "helm/data/hyperparam_tuning/wall",
+        "hyperparam_tuning_waveform":
+            "helm/data/hyperparam_tuning/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -493,6 +568,10 @@ class DatasetFilesPaths(_Const):
             "usps",
         "dataset_path_satimages":
             "satimages",
+        "dataset_path_wall":
+            "wall",
+        "dataset_path_waveform":
+            "waveform",
     }
 
     # ------------------------------------------------------------------------------------------------------------------
