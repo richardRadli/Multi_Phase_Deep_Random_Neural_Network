@@ -1,12 +1,12 @@
 {
-  "dataset_name": "mnist_fashion",
+  "dataset_name": "waveform",
   "activation": "LeakyReLU",
-  "number_of_tests": 10,
+  "number_of_tests": 20,
   "seed": true,
   "method": "EXP_ORT_C",
   "mu": 0,
   "sigma": 0.15,
-  "num_aux_net": 1,
+  "num_aux_net": 4,
   "eq_neurons": {
     "connect4": [866, 866, 866],
     "isolete": [1300, 1300, 1300],
@@ -28,18 +28,18 @@
     "connect4": [2049, 452, 100],
     "isolete": [1400, 1300, 1200],
     "letter": [3000, 1000, 500],
-    "mnist": [4000, 1500, 500],
+    "mnist": [8000, 5000, 3000],
     "mnist_fashion": [4000, 1500, 500],
     "musk2": [1200, 750, 650],
-    "optdigits": [1000, 500, 300],
-    "page_blocks": [300, 200, 150],
+    "optdigits": [500, 200, 100],
+    "page_blocks": [400, 200, 100],
     "satimages": [2600, 700, 300],
     "segment": [600, 200, 100],
     "shuttle": [400, 200, 50],
     "spambase": [800, 400, 300],
     "usps": [1600, 1000, 400],
-    "wall": [300, 200, 150],
-    "waveform": [300, 200, 150]
+    "wall": [600, 400, 300],
+    "waveform": [1500, 1100, 500]
   },
   "subset_percentage": {
     "connect4": 0.5,
@@ -49,14 +49,14 @@
     "mnist_fashion": 0.05,
     "musk2": 0.6,
     "optdigits": 0.4,
-    "page_blocks": 0.6,
+    "page_blocks": 0.5739251672543924,
     "satimages": 0.3,
     "segment": 0.4,
     "shuttle": 0.45,
     "spambase": 0.65,
     "usps": 0.4,
     "wall": 0.2,
-    "waveform": 0.2
+    "waveform": 0.8285131061826998
   },
   "rcond": {
     "connect4": {
@@ -97,7 +97,7 @@
     "page_blocks": {
       "BASE": 1e-5,
       "EXP_ORT": 1e-5,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 1.717895413695424e-21
     },
     "satimages": {
       "BASE": null,
@@ -127,12 +127,12 @@
     "wall": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 9.732256043853299e-30
+      "EXP_ORT_C": 3.046425256163358e-13
     },
     "waveform": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 1.15747776379548e-25
+      "EXP_ORT_C": 1.1873612516596942e-05
     }
   },
   "penalty": {
@@ -143,13 +143,13 @@
     "mnist_fashion": 0.15,
     "musk2": 0.8,
     "optdigits": 8,
-    "page_blocks": 23,
+    "page_blocks": 11.609226861754372,
     "satimages": 8,
     "segment": 9,
     "shuttle": 8,
     "spambase": 0.15,
     "usps": 0.15,
-    "wall": 29.26660380653489,
-    "waveform": 15.103111804878713
+    "wall": 28.262272871972648,
+    "waveform": 25.178141645775288
   }
 }

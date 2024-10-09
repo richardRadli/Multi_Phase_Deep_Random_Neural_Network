@@ -268,7 +268,38 @@ class IPMPDRNNPaths(_Const):
         "results_wall":
             "ipmpdrnn/data/results/wall",
         "results_waveform":
-            "ipmpdrnn/data/results/waveform"
+            "ipmpdrnn/data/results/waveform",
+
+        "hyperparam_connect4":
+            "ipmpdrnn/data/hyperparam_tuning/connect4",
+        "hyperparam_isolete":
+            "ipmpdrnn/data/hyperparam_tuning/isolete",
+        "hyperparam_letter":
+            "ipmpdrnn/data/hyperparam_tuning/letter",
+        "hyperparam_mnist":
+            "ipmpdrnn/data/hyperparam_tuning/mnist",
+        "hyperparam_mnist_fashion":
+            "ipmpdrnn/data/hyperparam_tuning/mnist_fashion",
+        "hyperparam_musk2":
+            "ipmpdrnn/data/hyperparam_tuning/musk2",
+        "hyperparam_optdigits":
+            "ipmpdrnn/data/hyperparam_tuning/optdigits",
+        "hyperparam_page_blocks":
+            "ipmpdrnn/data/hyperparam_tuning/page_blocks",
+        "hyperparam_segment":
+            "ipmpdrnn/data/hyperparam_tuning/segment",
+        "hyperparam_satimages":
+            "ipmpdrnn/data/hyperparam_tuning/satimages",
+        "hyperparam_shuttle":
+            "ipmpdrnn/data/hyperparam_tuning/shuttle",
+        "hyperparam_spambase":
+            "ipmpdrnn/data/hyperparam_tuning/spambase",
+        "hyperparam_usps":
+            "ipmpdrnn/data/hyperparam_tuning/usps",
+        "hyperparam_wall":
+            "ipmpdrnn/data/hyperparam_tuning/wall",
+        "hyperparam_waveform":
+            "ipmpdrnn/data/hyperparam_tuning/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------

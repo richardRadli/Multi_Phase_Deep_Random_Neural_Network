@@ -5,7 +5,7 @@ from ray.tune.schedulers import ASHAScheduler
 from ray.air import session
 
 from config.dataset_config import helm_paths_config
-from nn.helm.base import HELMBase
+from nn.helm.base_class_helm import HELMBase
 from utils.utils import save_log_to_txt
 
 

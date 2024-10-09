@@ -171,7 +171,7 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 5473,
             "num_train_data":
-                3831,
+                4925,
             "num_valid_data":
                 822,
             "num_test_data":
@@ -342,9 +342,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "num_train_data":
                 3500,
             "num_valid_data":
-                500,
+                750,
             "num_test_data":
-                500,
+                750,
             "num_features":
                 21,
             "num_classes":
@@ -379,7 +379,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_connect4"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_connect4")
+                    IPMPDRNN_PATHS.get_data_path("results_connect4"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_connect4"),
             }
         },
         "isolete": {
@@ -396,6 +398,8 @@ def drnn_paths_config(dataset_type) -> Dict:
                     IPMPDRNN_PATHS.get_data_path("cm_isolete"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_isolete"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_isolete"),
             }
         },
         "letter": {
@@ -412,6 +416,8 @@ def drnn_paths_config(dataset_type) -> Dict:
                     IPMPDRNN_PATHS.get_data_path("cm_letter"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_letter"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_letter"),
             }
         },
         "mnist": {
@@ -428,6 +434,8 @@ def drnn_paths_config(dataset_type) -> Dict:
                     IPMPDRNN_PATHS.get_data_path("cm_mnist"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_mnist"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_mnist"),
             }
         },
         "mnist_fashion": {
@@ -443,7 +451,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_mnist_fashion")
+                    IPMPDRNN_PATHS.get_data_path("results_mnist_fashion"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_mnist_fashion"),
             }
         },
         "musk2": {
@@ -459,7 +469,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_musk2"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_musk2")
+                    IPMPDRNN_PATHS.get_data_path("results_musk2"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_musk2"),
             }
         },
         "optdigits": {
@@ -476,6 +488,8 @@ def drnn_paths_config(dataset_type) -> Dict:
                     IPMPDRNN_PATHS.get_data_path("cm_optdigits"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_optdigits"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_optdigits"),
             }
         },
         "page_blocks": {
@@ -491,7 +505,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_page_blocks"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_page_blocks")
+                    IPMPDRNN_PATHS.get_data_path("results_page_blocks"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_page_blocks"),
             }
         },
         "satimages": {
@@ -507,7 +523,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_satimages"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_satimages")
+                    IPMPDRNN_PATHS.get_data_path("results_satimages"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_satimages")
             }
         },
         "segment": {
@@ -523,7 +541,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_segment"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_segment")
+                    IPMPDRNN_PATHS.get_data_path("results_segment"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_segment")
             }
         },
         "shuttle": {
@@ -539,7 +559,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_shuttle"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_shuttle")
+                    IPMPDRNN_PATHS.get_data_path("results_shuttle"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_shuttle"),
             }
         },
         "spambase": {
@@ -556,6 +578,8 @@ def drnn_paths_config(dataset_type) -> Dict:
                     IPMPDRNN_PATHS.get_data_path("cm_spambase"),
                 "path_to_results":
                     IPMPDRNN_PATHS.get_data_path("results_spambase"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_spambase"),
             }
         },
         "usps": {
@@ -571,7 +595,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_usps"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_usps")
+                    IPMPDRNN_PATHS.get_data_path("results_usps"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_usps"),
             }
         },
         "wall": {
@@ -587,7 +613,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_wall"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_wall")
+                    IPMPDRNN_PATHS.get_data_path("results_wall"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_wall"),
             }
         },
         "waveform": {
@@ -603,7 +631,9 @@ def drnn_paths_config(dataset_type) -> Dict:
                 "path_to_cm":
                     IPMPDRNN_PATHS.get_data_path("cm_waveform"),
                 "path_to_results":
-                    IPMPDRNN_PATHS.get_data_path("results_waveform")
+                    IPMPDRNN_PATHS.get_data_path("results_waveform"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_waveform"),
             }
         }
     }

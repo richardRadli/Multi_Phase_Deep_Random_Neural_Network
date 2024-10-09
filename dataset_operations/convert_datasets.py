@@ -105,7 +105,7 @@ def main(split_ratio):
                 train_valid_x,
                 train_valid_y,
                 test_size=validation_ratio,
-                random_state=1234
+                random_state=42
             )
         )
 

@@ -1,5 +1,5 @@
 {
-  "dataset_name": "letter",
+  "dataset_name": "waveform",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
@@ -38,7 +38,7 @@
     "spambase": [800, 400, 300],
     "usps": [1600, 1000, 400],
     "wall": [300, 200, 150],
-    "waveform": [300, 200, 150]
+    "waveform": [120, 60, 30]
   },
   "penalty": {
     "connect4": 0.9160671883437745,
