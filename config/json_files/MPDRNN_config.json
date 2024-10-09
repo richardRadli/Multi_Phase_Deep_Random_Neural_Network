@@ -1,5 +1,5 @@
 {
-  "dataset_name": "waveform",
+  "dataset_name": "page_blocks",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
@@ -34,11 +34,11 @@
     "page_blocks": [300, 200, 150],
     "satimages": [2600, 700, 300],
     "segment": [600, 200, 100],
-    "shuttle": [400, 200, 50],
+    "shuttle": [700, 400, 200],
     "spambase": [800, 400, 300],
     "usps": [1600, 1000, 400],
-    "wall": [300, 200, 150],
-    "waveform": [120, 60, 30]
+    "wall": [700, 400, 100],
+    "waveform": [700, 400, 100]
   },
   "penalty": {
     "connect4": 0.9160671883437745,
@@ -51,11 +51,11 @@
     "page_blocks": 23,
     "satimages": 14.617630338233269,
     "segment": 27.081874713319767,
-    "shuttle": 26.663624151189453,
-    "spambase": 0.15,
-    "usps": 0.32276974572019584,
-    "wall": 21.03915462212697,
-    "waveform": 9.15257945370649
+    "shuttle": 1.0931391890788145,
+    "spambase": 7.215794057622717,
+    "usps": 23.403336023701186,
+    "wall": 11.469504563606966,
+    "waveform": 2.6760824953901827
   },
   "rcond": {
     "connect4": {
@@ -111,27 +111,27 @@
     "shuttle": {
       "BASE": 1e-5,
       "EXP_ORT": 1e-5,
-      "EXP_ORT_C": 2.4524587801123995e-26
+      "EXP_ORT_C": 3.262325065151643e-16
     },
     "spambase": {
       "BASE": 1e-15,
       "EXP_ORT": 1e-15,
-      "EXP_ORT_C": 1e-15
+      "EXP_ORT_C": 1.482024716101846e-09
     },
     "usps": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 3.1605145890338398e-18
+      "EXP_ORT_C": 6.395608287454213e-21
     },
     "wall": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 8.05770467115148e-24
+      "EXP_ORT_C": 5.183566632255438e-25
     },
     "waveform": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 3.524860534312266e-12
+      "EXP_ORT_C": 2.5925474137582335e-05
     }
   }
 }

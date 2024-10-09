@@ -1,5 +1,5 @@
 {
-  "dataset_name": "waveform",
+  "dataset_name": "page_blocks",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
@@ -39,7 +39,7 @@
     "spambase": [800, 400, 300],
     "usps": [1600, 1000, 400],
     "wall": [600, 400, 300],
-    "waveform": [1500, 1100, 500]
+    "waveform": [700, 400, 100]
   },
   "subset_percentage": {
     "connect4": 0.5,
@@ -132,7 +132,7 @@
     "waveform": {
       "BASE": null,
       "EXP_ORT": null,
-      "EXP_ORT_C": 1.1873612516596942e-05
+      "EXP_ORT_C": 2.5925474137582335e-05
     }
   },
   "penalty": {
@@ -150,6 +150,6 @@
     "spambase": 0.15,
     "usps": 0.15,
     "wall": 28.262272871972648,
-    "waveform": 25.178141645775288
+    "waveform": 2.6760824953901827
   }
 }

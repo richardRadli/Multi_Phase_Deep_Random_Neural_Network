@@ -97,37 +97,6 @@ class ConfigFilePaths(_Const):
 class MPDRNNPaths(_Const):
     dirs_dataset_paths = {
         # Confusion matrices
-        "cm_connect4":
-            "mpdrnn/images/confusion_matrix/connect4",
-        "cm_isolete":
-            "mpdrnn/images/confusion_matrix/isolete",
-        "cm_letter":
-            "mpdrnn/images/confusion_matrix/letter",
-        "cm_mnist":
-            "mpdrnn/images/confusion_matrix/mnist",
-        "cm_mnist_fashion":
-            "mpdrnn/images/confusion_matrix/mnist_fashion",
-        "cm_musk2":
-            "mpdrnn/images/confusion_matrix/musk2",
-        "cm_optdigits":
-            "mpdrnn/images/confusion_matrix/optdigits",
-        "cm_page_blocks":
-            "mpdrnn/images/confusion_matrix/page_blocks",
-        "cm_segment":
-            "mpdrnn/images/confusion_matrix/segment",
-        "cm_shuttle":
-            "mpdrnn/images/confusion_matrix/shuttle",
-        "cm_spambase":
-            "mpdrnn/images/confusion_matrix/spambase",
-        "cm_usps":
-            "mpdrnn/images/confusion_matrix/usps",
-        "cm_satimages":
-            "mpdrnn/images/confusion_matrix/satimages",
-        "cm_wall":
-            "mpdrnn/images/confusion_matrix/wall",
-        "cm_waveform":
-            "mpdrnn/images/confusion_matrix/waveform",
-
         "results_connect4":
             "mpdrnn/data/results/connect4",
         "results_isolete":
@@ -207,38 +176,6 @@ class MPDRNNPaths(_Const):
 
 class IPMPDRNNPaths(_Const):
     dirs_dataset_paths = {
-        # Confusion matrices
-        "cm_connect4":
-            "ipmpdrnn/images/confusion_matrix/connect4",
-        "cm_isolete":
-            "ipmpdrnn/images/confusion_matrix/isolete",
-        "cm_letter":
-            "ipmpdrnn/images/confusion_matrix/letter",
-        "cm_mnist":
-            "ipmpdrnn/images/confusion_matrix/mnist",
-        "cm_mnist_fashion":
-            "ipmpdrnn/images/confusion_matrix/mnist_fashion",
-        "cm_musk2":
-            "ipmpdrnn/images/confusion_matrix/musk2",
-        "cm_optdigits":
-            "ipmpdrnn/images/confusion_matrix/optdigits",
-        "cm_page_blocks":
-            "ipmpdrnn/images/confusion_matrix/page_blocks",
-        "cm_segment":
-            "ipmpdrnn/images/confusion_matrix/segment",
-        "cm_shuttle":
-            "ipmpdrnn/images/confusion_matrix/shuttle",
-        "cm_spambase":
-            "ipmpdrnn/images/confusion_matrix/spambase",
-        "cm_usps":
-            "ipmpdrnn/images/confusion_matrix/usps",
-        "cm_satimages":
-            "ipmpdrnn/images/confusion_matrix/satimages",
-        "cm_wall":
-            "ipmpdrnn/images/confusion_matrix/wall",
-        "cm_waveform":
-            "ipmpdrnn/images/confusion_matrix/waveform",
-
         "results_connect4":
             "ipmpdrnn/data/results/connect4",
         "results_isolete":
