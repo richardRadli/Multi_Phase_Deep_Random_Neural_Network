@@ -77,6 +77,10 @@ class ConvolutionalSLFN(nn.Module):
             elif num_layers == 2:
                 h2 = torch.relu(h1.matmul(layer_weights[0]))
                 predictions = self.predict(h2, layer_weights[1])
+            elif num_layers == 3:
+                h2 = torch.relu(h1.matmul(layer_weights[0]))
+                h3 = torch.relu(h2.matmul(layer_weights[1]))
+                predictions = self.predict(h3, layer_weights[2])
             else:
                 raise ValueError(f"Unexpected number of layers: {num_layers}")
 
@@ -103,7 +107,7 @@ class ConvolutionalSLFN(nn.Module):
     def predict(hidden_features, weights):
         return hidden_features.matmul(weights)
 
-    def prune_weights(self, weights: torch.Tensor, num_neurons, pruning_percentage: float) \
+    def prune_conv_weights(self, weights: torch.Tensor, num_neurons, pruning_percentage: float) \
             -> tuple[torch.Tensor, torch.Tensor]:
         grouped_weights = weights.view(self.num_filters, num_neurons, -1)
         logging.info(grouped_weights.shape)
@@ -114,10 +118,10 @@ class ConvolutionalSLFN(nn.Module):
 
         return most_important_prune_indices, least_important_prune_indices
 
-    def pruning(self, pruning_percentage):
+    def pruning_first_layer(self, pruning_percentage):
         num_neurons = int(self.beta_weights.size(0) / self.num_filters)
         most_important_filters, least_important_filters = (
-            self.prune_weights(
+            self.prune_conv_weights(
                 self.beta_weights, num_neurons, pruning_percentage
             )
         )
@@ -131,9 +135,9 @@ class ConvolutionalSLFN(nn.Module):
         return main_net
 
 
-class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(ConvolutionalSLFN):
+class SecondLayer(ConvolutionalSLFN):
     def __init__(self, base_instance, mu, sigma, n_hidden_nodes, penalty_term):
-        super(MultiPhaseDeepRandomizedNeuralNetworkSubsequent, self).__init__(
+        super(SecondLayer, self).__init__(
             num_filters=base_instance.num_filters,
             kernel_size=base_instance.kernel_size,
             stride=base_instance.stride,
@@ -172,26 +176,93 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(ConvolutionalSLFN):
         hidden_layer_i = torch.cat((hidden_layer_i_a, q), dim=1)
         return hidden_layer_i
 
-    def train_second_layer(self, train_loader):
+    def train_fcnn_layer(self, train_loader):
+        return (
+            self.train_ith_layer(
+                train_loader,
+                self.h1,
+                self.h2,
+                self.extended_beta_weights,
+                self.gamma_weights
+            )
+        )
+
+    def train_ith_layer(self, train_loader, hi_prev, hi, weights1, weights2):
         for _, (images, labels) in tqdm(enumerate(train_loader), total=len(train_loader)):
             labels = torch.eye(self.output_channels)[labels]
 
-            self.h2.data = torch.relu(self.h1 @ self.extended_beta_weights)
-            identity_matrix = torch.eye(self.h2.shape[1], device=self.h2.device)
+            hi.data = torch.relu(hi_prev @ weights1)
+            identity_matrix = torch.eye(hi.shape[1], device=hi.device)
 
-            if self.h2.shape[0] > self.h2.shape[1]:
-                self.gamma_weights.data = (
-                        torch.linalg.pinv(self.h2.T @ self.h2 + identity_matrix / self.penalty_term, rcond=self.rcond)
-                        @ (self.h2.T @ labels)
+            if hi.shape[0] > hi.shape[1]:
+                weights2.data = (
+                        torch.linalg.pinv(hi.T @ hi + identity_matrix / self.penalty_term, rcond=self.rcond)
+                        @ (hi.T @ labels)
                 )
-
             else:
-                self.gamma_weights.data = (
-                        self.h2.T @ torch.linalg.pinv(self.h2 @ self.h2.T + identity_matrix / self.penalty_term,
-                                                      rcond=self.rcond) @ labels
+                weights2.data = (
+                        hi.T @ torch.linalg.pinv(hi @ hi.T + identity_matrix / self.penalty_term,
+                                                 rcond=self.rcond) @ labels
                 )
 
     def test_net(self, base_instance, data_loader, layer_weights, num_layers):
-        return super(MultiPhaseDeepRandomizedNeuralNetworkSubsequent, self).test_net(
+        return super(SecondLayer, self).test_net(
             base_instance, data_loader, layer_weights, num_layers
         )
+
+    @staticmethod
+    def prune_weights(weights: torch.Tensor, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
+        abs_weights = torch.abs(weights)
+
+        ranking_matrix = abs_weights.argsort(dim=0).argsort(dim=0)
+        importance_score, not_used = torch.max(ranking_matrix, dim=1)
+
+        num_neurons_to_prune = int(pruning_percentage * abs_weights.shape[0])
+        least_important_prune_indices = torch.argsort(importance_score)[:num_neurons_to_prune]
+        most_important_prune_indices = torch.argsort(importance_score, descending=True)[:num_neurons_to_prune]
+
+        return most_important_prune_indices, least_important_prune_indices
+
+    def pruning(self, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
+        return self.prune_weights(self.gamma_weights, pruning_percentage)
+
+
+class ThirdLayer(SecondLayer):
+    def __init__(self, second_layer, n_hidden_nodes):
+        super(ThirdLayer, self).__init__(
+            second_layer, second_layer.mu, second_layer.sigma, second_layer.n_hidden_nodes, second_layer.penalty_term
+        )
+
+        self.h2.data = second_layer.h2.data.clone()
+        self.extended_beta_weights.data = second_layer.extended_beta_weights.data.clone()
+        self.gamma_weights.data = second_layer.gamma_weights.data.clone()
+
+        self.n_hidden_nodes = n_hidden_nodes
+
+        self.extended_gamma_weights = self.create_hidden_layer(self.gamma_weights)
+        self.h3 = nn.Parameter(torch.randn(self.h2.size()), requires_grad=True)
+        self.delta_weights = nn.Parameter(torch.randn(self.h2.size(1), self.output_channels), requires_grad=True)
+
+    def train_fcnn_layer(self, train_loader):
+        """
+        Train the next layer of the network.
+
+        Args:
+            train_loader (torch.utils.data.DataLoader): DataLoader for training data.
+        """
+
+        return super(ThirdLayer, self).train_ith_layer(
+            train_loader=train_loader,
+            hi_prev=self.h2,
+            hi=self.h3,
+            weights1=self.extended_gamma_weights,
+            weights2=self.delta_weights,
+        )
+
+    def test_net(self, base_instance, data_loader, layer_weights, num_layers):
+        return super(ThirdLayer, self).test_net(
+            base_instance, data_loader, layer_weights, num_layers
+        )
+
+    def pruning(self, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
+        return self.prune_weights(self.delta_weights, pruning_percentage)
