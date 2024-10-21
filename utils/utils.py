@@ -376,6 +376,21 @@ def load_config_json(json_schema_filename: str, json_filename: str):
         logging.error(f"JSON data is invalid: {err}")
 
 
+def log_to_excel(execution_time, accuracy, file_path):
+    if not os.path.exists(file_path):
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = 'Log'
+        sheet.append(["Total Execution Time", "Accuracy"])
+    else:
+        workbook = openpyxl.load_workbook(file_path)
+        sheet = workbook.active
+
+    total_execution_time = sum(execution_time)
+    sheet.append([total_execution_time, accuracy])
+    workbook.save(file_path)
+
+
 def measure_execution_time(func: Callable) -> Callable:
     """
     Decorator to measure the execution time of a function.

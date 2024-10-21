@@ -5,24 +5,32 @@ import logging
 from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 
+from utils.utils import measure_execution_time
+
 
 class ConvolutionalSLFN(nn.Module):
-    def __init__(self, num_filters, kernel_size, stride, padding, pool_kernel_size, rcond, dataset_info: dict):
+    def __init__(self, parameter_settings: dict, dataset_info: dict):
         super(ConvolutionalSLFN, self).__init__()
 
-        self.num_filters = num_filters
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
-        self.pool_kernel_size = pool_kernel_size
-        self.rcond = rcond
-        self.dataset_info = dataset_info
+        # Parameter settings
+        self.parameter_settings = parameter_settings
+        self.num_filters = self.parameter_settings["num_filters"]
+        self.kernel_size = self.parameter_settings["conv_kernel_size"]
+        self.stride = self.parameter_settings["stride"]
+        self.padding = self.parameter_settings["padding"]
+        self.pool_kernel_size = self.parameter_settings["pool_kernel_size"]
+        self.rcond = self.parameter_settings["rcond"]
+        self.pruning_percentage = self.parameter_settings["pruning_percentage"]
 
+        # Dataset info
+        self.dataset_info = dataset_info
         self.output_channels = dataset_info["out_channels"]
         self.width = dataset_info["width"]
         self.height = dataset_info["height"]
         self.num_train_images = dataset_info["num_train_images"]
+
         self.num_hidden_neurons = self.calculate_flattened_size(self.width, self.height)
+        self.accuracy = []
 
         logging.info(f"Number of neurons: {self.num_hidden_neurons}")
 
@@ -58,6 +66,7 @@ class ConvolutionalSLFN(nn.Module):
         x = self.hidden(x)
         return x
 
+    @measure_execution_time
     def train_net(self, train_loader):
         for _, (images, labels) in tqdm(enumerate(train_loader), total=len(train_loader)):
             with torch.no_grad():
@@ -88,6 +97,7 @@ class ConvolutionalSLFN(nn.Module):
             y_true_argmax = torch.argmax(labels, dim=-1)
 
             accuracy = accuracy_score(y_true_argmax, y_predicted_argmax)
+            self.accuracy.append(accuracy)
             logging.info(f"Accuracy: {accuracy * 100:.2f}%")
 
     def calculate_flattened_size(self, height, width):
@@ -118,11 +128,11 @@ class ConvolutionalSLFN(nn.Module):
 
         return most_important_prune_indices, least_important_prune_indices
 
-    def pruning_first_layer(self, pruning_percentage):
+    def pruning_first_layer(self):
         num_neurons = int(self.beta_weights.size(0) / self.num_filters)
         most_important_filters, least_important_filters = (
             self.prune_conv_weights(
-                self.beta_weights, num_neurons, pruning_percentage
+                self.beta_weights, num_neurons, self. pruning_percentage
             )
         )
 
@@ -136,21 +146,16 @@ class ConvolutionalSLFN(nn.Module):
 
 
 class SecondLayer(ConvolutionalSLFN):
-    def __init__(self, base_instance, mu, sigma, n_hidden_nodes, penalty_term):
+    def __init__(self, base_instance):
         super(SecondLayer, self).__init__(
-            num_filters=base_instance.num_filters,
-            kernel_size=base_instance.kernel_size,
-            stride=base_instance.stride,
-            padding=base_instance.padding,
-            pool_kernel_size=base_instance.pool_kernel_size,
-            rcond=base_instance.rcond,
+            parameter_settings=base_instance.parameter_settings,
             dataset_info=base_instance.dataset_info
         )
 
-        self.mu = mu
-        self.sigma = sigma
-        self.n_hidden_nodes = n_hidden_nodes
-        self.penalty_term = penalty_term
+        self.mu = base_instance.parameter_settings["mu"]
+        self.sigma = base_instance.parameter_settings["sigma"]
+        self.n_hidden_nodes = base_instance.parameter_settings["hidden_nodes"][0]
+        self.penalty_term = base_instance.parameter_settings["penalty_term"]
 
         self.h1.data = base_instance.h1.data.clone()
         self.beta_weights.data = base_instance.beta_weights.data.clone()
@@ -176,7 +181,8 @@ class SecondLayer(ConvolutionalSLFN):
         hidden_layer_i = torch.cat((hidden_layer_i_a, q), dim=1)
         return hidden_layer_i
 
-    def train_fcnn_layer(self, train_loader):
+    @measure_execution_time
+    def train_fc_layer(self, train_loader):
         return (
             self.train_ith_layer(
                 train_loader,
@@ -223,27 +229,28 @@ class SecondLayer(ConvolutionalSLFN):
 
         return most_important_prune_indices, least_important_prune_indices
 
-    def pruning(self, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
-        return self.prune_weights(self.gamma_weights, pruning_percentage)
+    def pruning(self) -> tuple[torch.Tensor, torch.Tensor]:
+        return self.prune_weights(self.gamma_weights, self.pruning_percentage)
 
 
 class ThirdLayer(SecondLayer):
-    def __init__(self, second_layer, n_hidden_nodes):
+    def __init__(self, second_layer):
         super(ThirdLayer, self).__init__(
-            second_layer, second_layer.mu, second_layer.sigma, second_layer.n_hidden_nodes, second_layer.penalty_term
+            second_layer
         )
 
         self.h2.data = second_layer.h2.data.clone()
         self.extended_beta_weights.data = second_layer.extended_beta_weights.data.clone()
         self.gamma_weights.data = second_layer.gamma_weights.data.clone()
 
-        self.n_hidden_nodes = n_hidden_nodes
+        self.n_hidden_nodes = second_layer.parameter_settings["hidden_nodes"][1]
 
         self.extended_gamma_weights = self.create_hidden_layer(self.gamma_weights)
         self.h3 = nn.Parameter(torch.randn(self.h2.size()), requires_grad=True)
         self.delta_weights = nn.Parameter(torch.randn(self.h2.size(1), self.output_channels), requires_grad=True)
 
-    def train_fcnn_layer(self, train_loader):
+    @measure_execution_time
+    def train_fc_layer(self, train_loader):
         """
         Train the next layer of the network.
 
@@ -264,5 +271,5 @@ class ThirdLayer(SecondLayer):
             base_instance, data_loader, layer_weights, num_layers
         )
 
-    def pruning(self, pruning_percentage: float) -> tuple[torch.Tensor, torch.Tensor]:
-        return self.prune_weights(self.delta_weights, pruning_percentage)
+    def pruning(self) -> tuple[torch.Tensor, torch.Tensor]:
+        return self.prune_weights(self.delta_weights, self.pruning_percentage)

@@ -9,7 +9,7 @@ from ray.air import session
 from config.dataset_config import drnn_paths_config
 from nn.mpdrnn_pruning.base_class_ipmpdrnn import BaseIPMPDRNN
 from nn.models.model_selector import ModelFactory
-from utils.utils import setup_logger
+from utils.utils import save_log_to_txt, setup_logger
 
 
 class ParamSearchIPMPDRNN(BaseIPMPDRNN):
@@ -37,7 +37,7 @@ class ParamSearchIPMPDRNN(BaseIPMPDRNN):
     @staticmethod
     def generate_neurons():
         # Generate 3 unique neurons with large gaps, in descending order
-        neurons = sorted(random.sample(range(100, 1000, 300), 3), reverse=True)
+        neurons = sorted(random.sample(range(100, 1000, 50), 3), reverse=True)
         return neurons
 
     def main(self, config):
@@ -201,9 +201,9 @@ class ParamSearchIPMPDRNN(BaseIPMPDRNN):
         print("Best trial config: {}".format(best_trial.config))
         print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
 
-        # save_log_to_txt(output_file=self.save_log_file,
-        #                 result=result,
-        #                 operation="accuracy")
+        save_log_to_txt(output_file=self.save_log_file,
+                        result=result,
+                        operation="accuracy")
 
 
 if __name__ == '__main__':

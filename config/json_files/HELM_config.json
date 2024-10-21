@@ -1,8 +1,9 @@
 {
-  "dataset_name": "waveform",
+  "dataset_name": "adult",
   "seed": false,
   "num_tests": 10,
   "penalty": {
+    "adult": 3.665702124518219e-17,
     "connect4": 3.665702124518219e-17,
     "isolete": 8.948176813872704e-12,
     "letter": 1.3214583874123556e-12,
@@ -20,6 +21,7 @@
     "waveform": 7.514883372313729e-06
   },
   "scaling_factor": {
+    "adult": 3.665702124518219e-17,
     "connect4": 0.6296642684522955,
     "isolete": 0.7130442990114634,
     "letter": 0.1722563334511953,
@@ -37,6 +39,7 @@
     "waveform": 0.8746666666666667
   },
   "hidden_neurons": {
+    "adult": [300, 100, 500],
     "connect4": [400, 200, 2000],
     "isolete": [800, 400, 3000],
     "letter": [1000, 500, 5000],
@@ -56,10 +59,10 @@
   "hyperparamtuning": {
     "metric": "accuracy",
     "mode": "max",
-    "max_t": 10,
+    "max_t": 30,
     "grace_period": 4,
     "reduction_factor": 2,
-    "num_samples": 10,
+    "num_samples": 610,
     "num_resources": {
       "cpu": 2,
       "gpu": 1

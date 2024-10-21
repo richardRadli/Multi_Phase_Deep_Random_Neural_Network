@@ -73,6 +73,7 @@ class BaseIPMPDRNN:
         Args:
             model: The model to be trained and evaluated. It should have methods
                    `train_layer` and `predict_and_evaluate`.
+            eval_set: Evaluation dataset, either validation or test set.
             weights: The weights to be used in the model's evaluation. This may
                      be used to initialize or modify the model.
             num_hidden_layers: The number of hidden layers in the model. This

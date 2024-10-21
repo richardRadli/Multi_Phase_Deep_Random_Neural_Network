@@ -47,7 +47,7 @@ class HyperparameterSearch:
             "lr": tune.loguniform(4e-4, 1e-1),
             "momentum": tune.uniform(0.5, 0.99),
             "hidden_neurons": tune.grid_search([216, 500, 866, 1000, 2000]),
-            "batch_size": tune.choice([32, 64, 128])
+            "batch_size": tune.grid_search([32, 64, 128])
         }
 
         self.save_path = fcnn_paths_configs(self.cfg.get("dataset_name")).get("hyperparam_tuning")

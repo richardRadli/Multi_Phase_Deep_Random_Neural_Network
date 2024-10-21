@@ -79,6 +79,10 @@ class HyperparameterSearchHELM(HELMBase):
             storage_path=self.save_path
         )
 
+        best_trial = result.get_best_trial("accuracy", "max", "last")
+        print("Best trial config: {}".format(best_trial.config))
+        print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+
         save_log_to_txt(output_file=self.save_log_file,
                         result=result,
                         operation="accuracy")

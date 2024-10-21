@@ -96,7 +96,8 @@ class ConfigFilePaths(_Const):
 
 class MPDRNNPaths(_Const):
     dirs_dataset_paths = {
-        # Confusion matrices
+        "results_adult":
+            "mpdrnn/data/results/adult",
         "results_connect4":
             "mpdrnn/data/results/connect4",
         "results_isolete":
@@ -128,6 +129,8 @@ class MPDRNNPaths(_Const):
         "results_waveform":
             "mpdrnn/data/results/waveform",
 
+        "hyperparam_adult":
+            "mpdrnn/data/hyperparam/adult",
         "hyperparam_connect4":
             "mpdrnn/data/hyperparam/connect4",
         "hyperparam_isolete":
@@ -176,6 +179,8 @@ class MPDRNNPaths(_Const):
 
 class IPMPDRNNPaths(_Const):
     dirs_dataset_paths = {
+        "results_adult":
+            "ipmpdrnn/data/results/adult",
         "results_connect4":
             "ipmpdrnn/data/results/connect4",
         "results_isolete":
@@ -207,6 +212,8 @@ class IPMPDRNNPaths(_Const):
         "results_waveform":
             "ipmpdrnn/data/results/waveform",
 
+        "hyperparam_adult":
+            "ipmpdrnn/data/hyperparam_tuning/adult",
         "hyperparam_connect4":
             "ipmpdrnn/data/hyperparam_tuning/connect4",
         "hyperparam_isolete":
@@ -256,130 +263,138 @@ class IPMPDRNNPaths(_Const):
 class FCNNPaths(_Const):
     dirs_dataset_paths = {
         # FCNN saved weights
+        "sw_adult":
+            "fcnn/saved_weights_fcnn/adult",
         "sw_connect4":
-            "fcnn_data/saved_weights_fcnn/connect4",
+            "fcnn/saved_weights_fcnn/connect4",
         "sw_isolete":
-            "fcnn_data/saved_weights_fcnn/isolete",
+            "fcnn/saved_weights_fcnn/isolete",
         "sw_letter":
-            "fcnn_data/saved_weights_fcnn/letter",
+            "fcnn/saved_weights_fcnn/letter",
         "sw_mnist":
-            "fcnn_data/saved_weights_fcnn/mnist",
+            "fcnn/saved_weights_fcnn/mnist",
         "sw_mnist_fashion":
-            "fcnn_data/saved_weights_fcnn/mnist_fashion",
+            "fcnn/saved_weights_fcnn/mnist_fashion",
         "sw_musk2":
-            "fcnn_data/saved_weights_fcnn/musk2",
+            "fcnn/saved_weights_fcnn/musk2",
         "sw_optdigits":
-            "fcnn_data/saved_weights_fcnn/optdigits",
+            "fcnn/saved_weights_fcnn/optdigits",
         "sw_page_blocks":
-            "fcnn_data/saved_weights_fcnn/page_blocks",
+            "fcnn/saved_weights_fcnn/page_blocks",
         "sw_segment":
-            "fcnn_data/saved_weights_fcnn/segment",
+            "fcnn/saved_weights_fcnn/segment",
         "sw_shuttle":
-            "fcnn_data/saved_weights_fcnn/shuttle",
+            "fcnn/saved_weights_fcnn/shuttle",
         "sw_spambase":
-            "fcnn_data/saved_weights_fcnn/spambase",
+            "fcnn/saved_weights_fcnn/spambase",
         "sw_usps":
-            "fcnn_data/saved_weights_fcnn/usps",
+            "fcnn/saved_weights_fcnn/usps",
         "sw_satimages":
-            "fcnn_data/saved_weights_fcnn/satimages",
+            "fcnn/saved_weights_fcnn/satimages",
         "sw_wall":
-            "fcnn_data/saved_weights_fcnn/wall",
+            "fcnn/saved_weights_fcnn/wall",
         "sw_waveform":
-            "fcnn_data/saved_weights_fcnn/waveform",
+            "fcnn/saved_weights_fcnn/waveform",
 
         # FCNN logs
+        "logs_adult":
+            "fcnn/logs_fcnn/adult",
         "logs_connect4":
-            "fcnn_data/logs_fcnn/connect4",
+            "fcnn/logs_fcnn/connect4",
         "logs_isolete":
-            "fcnn_data/logs_fcnn/isolete",
+            "fcnn/logs_fcnn/isolete",
         "logs_letter":
-            "fcnn_data/logs_fcnn/letter",
+            "fcnn/logs_fcnn/letter",
         "logs_mnist":
-            "fcnn_data/logs_fcnn/mnist",
+            "fcnn/logs_fcnn/mnist",
         "logs_mnist_fashion":
-            "fcnn_data/logs_fcnn/mnist_fashion",
+            "fcnn/logs_fcnn/mnist_fashion",
         "logs_musk2":
-            "fcnn_data/logs_fcnn/musk2",
+            "fcnn/logs_fcnn/musk2",
         "logs_optdigits":
-            "fcnn_data/logs_fcnn/optdigits",
+            "fcnn/logs_fcnn/optdigits",
         "logs_page_blocks":
-            "fcnn_data/logs_fcnn/page_blocks",
+            "fcnn/logs_fcnn/page_blocks",
         "logs_segment":
-            "fcnn_data/logs_fcnn/segment",
+            "fcnn/logs_fcnn/segment",
         "logs_shuttle":
-            "fcnn_data/logs_fcnn/shuttle",
+            "fcnn/logs_fcnn/shuttle",
         "logs_spambase":
-            "fcnn_data/logs_fcnn/spambase",
+            "fcnn/logs_fcnn/spambase",
         "logs_usps":
-            "fcnn_data/logs_fcnn/usps",
+            "fcnn/logs_fcnn/usps",
         "logs_satimages":
-            "fcnn_data/logs_fcnn/satiamges",
+            "fcnn/logs_fcnn/satiamges",
         "logs_wall":
-            "fcnn_data/logs_fcnn/wall",
+            "fcnn/logs_fcnn/wall",
         "logs_waveform":
-            "fcnn_data/logs_fcnn/waveform",
+            "fcnn/logs_fcnn/waveform",
 
+        "results_adult":
+            "fcnn/results_fcnn/adult",
         "results_connect4":
-            "fcnn_data/results_fcnn/connect4",
+            "fcnn/results_fcnn/connect4",
         "results_isolete":
-            "fcnn_data/results_fcnn/isolete",
+            "fcnn/results_fcnn/isolete",
         "results_letter":
-            "fcnn_data/results_fcnn/letter",
+            "fcnn/results_fcnn/letter",
         "results_mnist":
-            "fcnn_data/results_fcnn/mnist",
+            "fcnn/results_fcnn/mnist",
         "results_mnist_fashion":
-            "fcnn_data/results_fcnn/mnist_fashion",
+            "fcnn/results_fcnn/mnist_fashion",
         "results_musk2":
-            "fcnn_data/results_fcnn/musk2",
+            "fcnn/results_fcnn/musk2",
         "results_optdigits":
-            "fcnn_data/results_fcnn/optdigits",
+            "fcnn/results_fcnn/optdigits",
         "results_page_blocks":
-            "fcnn_data/results_fcnn/page_blocks",
+            "fcnn/results_fcnn/page_blocks",
         "results_satimages":
-            "fcnn_data/results_fcnn/satimages",
+            "fcnn/results_fcnn/satimages",
         "results_segment":
-            "fcnn_data/results_fcnn/segment",
+            "fcnn/results_fcnn/segment",
         "results_shuttle":
-            "fcnn_data/results_fcnn/shuttle",
+            "fcnn/results_fcnn/shuttle",
         "results_spambase":
-            "fcnn_data/results_fcnn/spambase",
+            "fcnn/results_fcnn/spambase",
         "results_usps":
-            "fcnn_data/results_fcnn/usps",
+            "fcnn/results_fcnn/usps",
         "results_wall":
-            "fcnn_data/results_fcnn/wall",
+            "fcnn/results_fcnn/wall",
         "results_waveform":
-            "fcnn_data/results_fcnn/waveform",
+            "fcnn/results_fcnn/waveform",
 
+        "hyperparam_tuning_adult":
+            "fcnn/hyperparam_tuning/adult",
         "hyperparam_tuning_connect4":
-            "fcnn_data/hyperparam_tuning/connect4",
+            "fcnn/hyperparam_tuning/connect4",
         "hyperparam_tuning_isolete":
-            "fcnn_data/hyperparam_tuning/isolete",
+            "fcnn/hyperparam_tuning/isolete",
         "hyperparam_tuning_letter":
-            "fcnn_data/hyperparam_tuning/letter",
+            "fcnn/hyperparam_tuning/letter",
         "hyperparam_tuning_mnist":
-            "fcnn_data/hyperparam_tuning/mnist",
+            "fcnn/hyperparam_tuning/mnist",
         "hyperparam_tuning_mnist_fashion":
-            "fcnn_data/hyperparam_tuning/mnist_fashion",
+            "fcnn/hyperparam_tuning/mnist_fashion",
         "hyperparam_tuning_musk2":
-            "fcnn_data/hyperparam_tuning/musk2",
+            "fcnn/hyperparam_tuning/musk2",
         "hyperparam_tuning_optdigits":
-            "fcnn_data/hyperparam_tuning/optdigits",
+            "fcnn/hyperparam_tuning/optdigits",
         "hyperparam_tuning_page_blocks":
-            "fcnn_data/hyperparam_tuning/page_blocks",
+            "fcnn/hyperparam_tuning/page_blocks",
         "hyperparam_tuning_segment":
-            "fcnn_data/hyperparam_tuning/segment",
+            "fcnn/hyperparam_tuning/segment",
         "hyperparam_tuning_satimages":
-            "fcnn_data/hyperparam_tuning/satimages",
+            "fcnn/hyperparam_tuning/satimages",
         "hyperparam_tuning_shuttle":
-            "fcnn_data/hyperparam_tuning/shuttle",
+            "fcnn/hyperparam_tuning/shuttle",
         "hyperparam_tuning_spambase":
-            "fcnn_data/hyperparam_tuning/spambase",
+            "fcnn/hyperparam_tuning/spambase",
         "hyperparam_tuning_usps":
-            "fcnn_data/hyperparam_tuning/usps",
+            "fcnn/hyperparam_tuning/usps",
         "hyperparam_tuning_wall":
-            "fcnn_data/hyperparam_tuning/wall",
+            "fcnn/hyperparam_tuning/wall",
         "hyperparam_tuning_waveform":
-            "fcnn_data/hyperparam_tuning/waveform"
+            "fcnn/hyperparam_tuning/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -398,7 +413,8 @@ class FCNNPaths(_Const):
 
 class HELMPaths(_Const):
     dirs_dataset_paths = {
-        # Confusion matrices
+        "helm_adult":
+            "helm/images/confusion_matrix/adult",
         "helm_connect4":
             "helm/images/confusion_matrix/connect4",
         "helm_isolete":
@@ -430,6 +446,8 @@ class HELMPaths(_Const):
         "helm_waveform":
             "helm/images/confusion_matrix/waveform",
 
+        "results_adult":
+            "helm/data/results/adult",
         "results_connect4":
             "helm/data/results/connect4",
         "results_isolete":
@@ -461,6 +479,8 @@ class HELMPaths(_Const):
         "results_waveform":
             "helm/data/results/waveform",
 
+        "hyperparam_tuning_adult":
+            "helm/data/hyperparam_tuning/adult",
         "hyperparam_tuning_connect4":
             "helm/data/hyperparam_tuning/connect4",
         "hyperparam_tuning_isolete":
@@ -509,7 +529,8 @@ class HELMPaths(_Const):
 
 class DatasetFilesPaths(_Const):
     dirs_dataset_paths = {
-        # Confusion matrices
+        "dataset_path_adult":
+            "adult",
         "dataset_path_connect4":
             "connect4",
         "dataset_path_isolete":

@@ -1,5 +1,5 @@
 {
-  "dataset_name": "wall",
+  "dataset_name": "adult",
   "patience": 10,
   "seed": false,
   "epochs": 1000,
@@ -9,6 +9,7 @@
   "optimization": {
     "adam": {
       "learning_rate": {
+        "adult": 0.0014840476104628093,
         "connect4": 0.0014840476104628093,
         "isolete": 0.001907640069101866,
         "letter": 0.000889053777822152,
@@ -28,6 +29,7 @@
     },
     "sgd": {
       "learning_rate": {
+        "adult": 0.0014840476104628093,
         "connect4": 0.00108595,
         "isolete": 0.0333806,
         "letter": 0.09160847263704444,
@@ -45,6 +47,7 @@
         "waveform": 0
       },
       "momentum": {
+        "adult": 0.0014840476104628093,
         "connect4": 0.981549,
         "isolete": 0.876804,
         "letter": 0.7396715844501105,
@@ -64,6 +67,7 @@
     }
   },
   "hidden_neurons": {
+    "adult": 866,
     "connect4": 866,
     "isolete": 1300,
     "letter": 1500,
@@ -81,6 +85,7 @@
     "waveform": 500
   },
   "batch_size": {
+    "adult": 128,
     "connect4": 128,
     "isolete": 128,
     "letter": 64,

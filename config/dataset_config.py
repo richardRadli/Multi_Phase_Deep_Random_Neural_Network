@@ -7,6 +7,24 @@ from config.data_paths import DATASET_FILES_PATHS, MPDRNN_PATHS, IPMPDRNN_PATHS,
 
 def general_dataset_configs(dataset_type) -> Dict:
     dataset_config = {
+        "adult": {
+            "dataset_name":
+                "adult",
+            "dataset_size":
+                32561,
+            "num_train_data":
+                22792,
+            "num_features":
+                13,
+            "num_classes":
+                2,
+            "class_labels":
+                ["<=50K", ">50K"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_adult"), "adult.data"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_adult"), "adult.npz")
+        },
         "connect4": {
             "dataset_name":
                 "connect4",
@@ -294,6 +312,20 @@ def general_dataset_configs(dataset_type) -> Dict:
 
 def drnn_paths_config(dataset_type) -> Dict:
     dataset_config = {
+        "adult": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_adult"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_adult"),
+            },
+            "ipmpdrnn": {
+                "path_to_results":
+                    IPMPDRNN_PATHS.get_data_path("results_adult"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_adult"),
+            }
+        },
         "connect4": {
             "mpdrnn": {
                 "path_to_results":
@@ -516,6 +548,16 @@ def drnn_paths_config(dataset_type) -> Dict:
 
 def fcnn_paths_configs(dataset_type) -> Dict:
     dataset_config = {
+        "adult": {
+            "fcnn_saved_weights":
+                FCNN_PATHS.get_data_path("sw_adult"),
+            "logs":
+                FCNN_PATHS.get_data_path("logs_adult"),
+            "saved_results":
+                FCNN_PATHS.get_data_path("results_adult"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_adult"),
+        },
         "connect4": {
             "fcnn_saved_weights":
                 FCNN_PATHS.get_data_path("sw_connect4"),
@@ -676,6 +718,14 @@ def fcnn_paths_configs(dataset_type) -> Dict:
 
 def helm_paths_config(dataset_type) -> Dict:
     dataset_config = {
+        "adult": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_adult"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_adult"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_adult")
+        },
         "connect4": {
             "path_to_cm":
                 HELM_PATHS.get_data_path("cm_connect4"),

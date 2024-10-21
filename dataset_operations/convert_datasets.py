@@ -61,8 +61,8 @@ def main(split_ratio):
         for line in tqdm(lines):
             split = line.strip().split(',')
             # label at the end
-            if dataset_name in ["connect4", "isolete", "iris", "musk2", "optdigits", "page_blocks", "satimages",
-                                "shuttle", "spambase", "forest", "usps", "wall", "waveform"]:
+            if dataset_name in ["adult", "connect4", "isolete", "iris", "musk2", "optdigits", "page_blocks",
+                                "satimages", "shuttle", "spambase", "forest", "usps", "wall", "waveform"]:
                 labels.append(split[-1])
                 features.append(split[:-1])
             # label at the front
@@ -82,7 +82,11 @@ def main(split_ratio):
             encoder = LabelEncoder()
             reshaped_features = []
             for feature in tqdm(features):
-                reshaped_features.append(encoder.fit_transform(feature))
+                processed_feature = [0 if val == ' ?' else val for val in feature]
+                reshaped_features.append(encoder.fit_transform(processed_feature))
+
+        if dataset_name == "adult":
+            reshaped_features = [arr[1:] for arr in reshaped_features]
 
         scaler = MinMaxScaler()
         normalized_features = scaler.fit_transform(reshaped_features)
@@ -94,7 +98,7 @@ def main(split_ratio):
                 normalized_features,
                 encoded_labels,
                 test_size=size_of_test_subset,
-                random_state=1234
+                random_state=42
             )
         )
 

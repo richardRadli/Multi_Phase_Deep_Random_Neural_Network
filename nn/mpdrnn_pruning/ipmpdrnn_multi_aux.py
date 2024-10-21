@@ -105,7 +105,6 @@ class IPMPDRNN(BaseIPMPDRNN):
             training_time.append(self.initial_model.train_ith_layer.execution_time)
 
             # Subsequent Model
-
             net_cfg = (
                 self.get_network_config(
                     "MultiPhaseDeepRandomizedNeuralNetworkSubsequent",
@@ -162,8 +161,7 @@ class IPMPDRNN(BaseIPMPDRNN):
             )
             training_time.append(self.subsequent_model.train_ith_layer.execution_time)
 
-            # Final Model
-
+            # Final layer
             net_cfg = (
                 self.get_network_config(
                     network_type="MultiPhaseDeepRandomizedNeuralNetworkFinal",
