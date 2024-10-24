@@ -1,0 +1,48 @@
+{
+  "dataset_name": "mnist",
+  "activation": "LeakyReLU",
+  "number_of_tests": 10,
+  "seed": true,
+  "mu": 0,
+  "sigma": 0.1,
+  "hidden_nodes": {
+    "mnist": [1500, 500],
+    "mnist_fashion": [1500, 500]
+  },
+  "subset_percentage": {
+    "mnist": 0.05,
+    "mnist_fashion": 0.05
+  },
+  "rcond": {
+    "mnist": 1e-30,
+    "mnist_fashion": 1e-30
+  },
+  "penalty": {
+    "mnist": 0.15,
+    "mnist_fashion": 0.15
+  },
+  "num_filters": {
+    "mnist": 24,
+    "mnist_fashion": 32
+  },
+  "conv_kernel_size": {
+    "mnist": 7,
+    "mnist_fashion": 5
+  },
+  "stride": {
+    "mnist": 1,
+    "mnist_fashion": 1
+  },
+  "padding": {
+    "mnist": 1,
+    "mnist_fashion": 1
+  },
+  "pool_kernel_size": {
+    "mnist": 2,
+    "mnist_fashion": 2
+  },
+  "pruning_percentage": {
+    "mnist": 0.2,
+    "mnist_fashion": 0.2
+  }
+}

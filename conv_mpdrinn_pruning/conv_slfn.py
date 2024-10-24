@@ -61,7 +61,7 @@ class ConvolutionalSLFN(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = torch.relu(x)
+        x = torch.nn.functional.leaky_relu(x, 0.2)
         x = self.pooling(x)
         x = self.hidden(x)
         return x
@@ -84,11 +84,11 @@ class ConvolutionalSLFN(nn.Module):
             if num_layers == 1:
                 predictions = self.predict(h1, layer_weights)
             elif num_layers == 2:
-                h2 = torch.relu(h1.matmul(layer_weights[0]))
+                h2 = torch.nn.functional.leaky_relu(h1.matmul(layer_weights[0]), 0.2)
                 predictions = self.predict(h2, layer_weights[1])
             elif num_layers == 3:
-                h2 = torch.relu(h1.matmul(layer_weights[0]))
-                h3 = torch.relu(h2.matmul(layer_weights[1]))
+                h2 = torch.nn.functional.leaky_relu(h1.matmul(layer_weights[0]), 0.2)
+                h3 = torch.nn.functional.leaky_relu(h2.matmul(layer_weights[1]), 0.2)
                 predictions = self.predict(h3, layer_weights[2])
             else:
                 raise ValueError(f"Unexpected number of layers: {num_layers}")
@@ -197,7 +197,7 @@ class SecondLayer(ConvolutionalSLFN):
         for _, (images, labels) in tqdm(enumerate(train_loader), total=len(train_loader)):
             labels = torch.eye(self.output_channels)[labels]
 
-            hi.data = torch.relu(hi_prev @ weights1)
+            hi.data = torch.nn.functional.leaky_relu(hi_prev @ weights1, 0.2)
             identity_matrix = torch.eye(hi.shape[1], device=hi.device)
 
             if hi.shape[0] > hi.shape[1]:

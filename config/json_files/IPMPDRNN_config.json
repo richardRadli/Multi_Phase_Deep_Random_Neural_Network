@@ -1,5 +1,5 @@
 {
-  "dataset_name": "mnist",
+  "dataset_name": "mnist_fashion",
   "activation": "LeakyReLU",
   "number_of_tests": 10,
   "seed": true,

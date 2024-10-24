@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Network Configuration",
+  "type": "object",
+  "properties": {
+    "dataset_name": {
+      "type": "string",
+      "enum": [
+        "mnist",
+        "mnist_fashion"
+      ],
+      "description": "The name of the dataset to be used."
+    },
+    "activation": {
+      "type": "string",
+      "enum": [
+        "ReLU",
+        "LeakyReLU"
+      ],
+      "description": "The activation function to be used in the neural network."
+    },
+    "number_of_tests": {
+      "type": "integer",
+      "description": "Number of tests to be performed."
+    },
+    "seed": {
+      "type": "boolean",
+      "description": "Controls the way to generate random values. If set to True, the same values will be generated in every execution."
+    },
+    "mu": {
+      "type": "number",
+      "description": "The mean of a uniform distribution is the midpoint of the interval."
+    },
+    "sigma": {
+      "type": "number",
+      "description": "The standard deviation of a uniform distribution is a measure of the spread of the distribution."
+    },
+    "hidden_nodes": {
+      "type": "object",
+      "description": "Number of neurons.",
+      "properties": {
+        "mnist": {
+          "type": "array"
+        },
+        "mnist_fashion": {
+          "type": "array"
+        }
+      }
+    },
+    "subset_percentage": {
+      "type": "object",
+      "description": "Percentage of how much of the weights should be substituted.",
+      "properties": {
+        "mnist": {
+          "type": "number"
+        },
+        "mnist_fashion": {
+          "type": "number"
+        }
+      }
+    },
+    "rcond": {
+    "type": "object",
+    "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
+    "properties": {
+      "mnist": {
+        "type": "number"
+      },
+      "mnist_fashion": {
+        "type": "number"
+      }
+    }
+  },
+    "penalty": {
+      "type": "object",
+      "description": "Value of the L2 penalty term.",
+      "properties": {
+        "mnist": {
+              "type": "number"
+        },
+        "mnist_fashion": {
+              "type": "number"
+        }
+      }
+    },
+    "num_filters": {
+      "type": "object",
+      "description": "Number of filters in the Conv2D layer.",
+      "properties": {
+        "mnist": {
+              "type": "integer"
+        },
+        "mnist_fashion": {
+              "type": "integer"
+        }
+      }
+    },
+    "conv_kernel_size": {
+      "type": "object",
+      "description": "Size of the kernel in the Conv2D layer.",
+      "properties": {
+        "mnist": {
+              "type": "integer"
+        },
+        "mnist_fashion": {
+              "type": "integer"
+        }
+      }
+    },
+    "stride": {
+      "type": "object",
+      "description": "Size of the stride in the Conv2D layer.",
+      "properties": {
+        "mnist": {
+              "type": "integer"
+        },
+        "mnist_fashion": {
+              "type": "integer"
+        }
+      }
+    },
+    "padding": {
+      "type": "object",
+      "description": "Size of the padding in the Conv2D layer.",
+      "properties": {
+        "mnist": {
+              "type": "integer"
+        },
+        "mnist_fashion": {
+              "type": "integer"
+        }
+      }
+    },
+    "pool_kernel_size": {
+      "type": "object",
+      "description": "Size of the kernel in the pooling layer.",
+      "properties": {
+        "mnist": {
+              "type": "integer"
+        },
+        "mnist_fashion": {
+              "type": "integer"
+        }
+      }
+    },
+    "pruning_percentage": {
+      "type": "object",
+      "description": "Percentage of pruning.",
+      "properties": {
+        "mnist": {
+              "type": "number"
+        },
+        "mnist_fashion": {
+              "type": "number"
+        }
+      }
+    }
+  },
+  "required": [
+    "dataset_name",
+    "activation",
+    "number_of_tests",
+    "seed",
+    "subset_percentage",
+    "rcond",
+    "penalty",
+    "num_filters",
+    "conv_kernel_size",
+    "stride",
+    "padding",
+    "pool_kernel_size"
+  ]
+}

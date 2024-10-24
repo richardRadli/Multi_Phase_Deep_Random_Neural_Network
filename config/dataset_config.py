@@ -2,7 +2,7 @@ import os
 
 from typing import Dict
 
-from config.data_paths import DATASET_FILES_PATHS, MPDRNN_PATHS, IPMPDRNN_PATHS, FCNN_PATHS, HELM_PATHS
+from config.data_paths import DATASET_FILES_PATHS, MPDRNN_PATHS, IPMPDRNN_PATHS, FCNN_PATHS, HELM_PATHS, CIPMPDRNN_PATHS
 
 
 def general_dataset_configs(dataset_type) -> Dict:
@@ -97,7 +97,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz")
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
+            "original_dataset":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist")
         },
         "mnist_fashion": {
             "dataset_name":
@@ -117,7 +119,8 @@ def general_dataset_configs(dataset_type) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "data.txt"),
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npz"),
-
+            "original_dataset":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion")
         },
         "musk2": {
             "dataset_name":
@@ -382,6 +385,10 @@ def drnn_paths_config(dataset_type) -> Dict:
                     IPMPDRNN_PATHS.get_data_path("results_mnist"),
                 "hyperparam_tuning":
                     IPMPDRNN_PATHS.get_data_path("hyperparam_mnist"),
+            },
+            "cipmpdrnn": {
+                "path_to_results":
+                    CIPMPDRNN_PATHS.get_data_path("results_mnist")
             }
         },
         "mnist_fashion": {
@@ -396,6 +403,10 @@ def drnn_paths_config(dataset_type) -> Dict:
                     IPMPDRNN_PATHS.get_data_path("results_mnist_fashion"),
                 "hyperparam_tuning":
                     IPMPDRNN_PATHS.get_data_path("hyperparam_mnist_fashion"),
+            },
+            "cipmpdrnn": {
+                "path_to_results":
+                    CIPMPDRNN_PATHS.get_data_path("results_mnist")
             }
         },
         "musk2": {

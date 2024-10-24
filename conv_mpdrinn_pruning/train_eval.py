@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+import os
 import torch
 
 from torch.utils.data import DataLoader
@@ -7,12 +8,28 @@ from torchvision.transforms import transforms
 from torchvision.datasets import MNIST, FashionMNIST
 
 from conv_mpdrinn_pruning.conv_slfn import ConvolutionalSLFN, SecondLayer, ThirdLayer
-from utils.utils import log_to_excel, setup_logger
+from config.json_config import json_config_selector
+from config.dataset_config import drnn_paths_config, general_dataset_configs
+from utils.utils import log_to_excel, load_config_json, setup_logger, create_timestamp
 
 
 class TrainEval:
     def __init__(self) -> None:
         setup_logger()
+        self.cfg = (
+            load_config_json(
+                json_schema_filename=json_config_selector("cipmpdrnn").get("schema"),
+                json_filename=json_config_selector("cipmpdrnn").get("config")
+            )
+        )
+        timestamp = create_timestamp()
+        self.save_path = (
+            os.path.join(
+                drnn_paths_config(self.cfg["dataset_name"])["cipmpdrnn"]["path_to_results"],
+                f"{self.cfg['dataset_name']}_{timestamp}.xlsx"
+            )
+        )
+
         train_dataset, test_dataset = self.load_dataset()
         sample_image = next(iter(train_dataset))
 
@@ -39,46 +56,44 @@ class TrainEval:
             "out_channels": len(np.unique(train_dataset.targets.data))
         }
 
-        parameter_settings = {
-            "num_filters": 32,
-            "conv_kernel_size": 7,
-            "stride": 1,
-            "padding": 1,
-            "pool_kernel_size": 2,
-            "pruning_percentage": 0.2,
-            "rcond": 1e-15,
-            "mu": 0,
-            "sigma": 0.1,
-            "penalty_term": 0.15,
-            "hidden_nodes": [1500, 1000]
+        self.settings = {
+            "num_filters": self.cfg["num_filters"],
+            "conv_kernel_size": self.cfg["conv_kernel_size"],
+            "stride": self.cfg["stride"],
+            "padding": self.cfg["padding"],
+            "pool_kernel_size": self.cfg["pool_kernel_size"],
+            "pruning_percentage": self.cfg["pruning_percentage"],
+            "rcond": self.cfg["rcond"],
+            "mu": self.cfg["mu"],
+            "sigma": self.cfg["sigma"],
+            "penalty_term": self.cfg["penalty"],
+            "hidden_nodes": self.cfg["hidden_nodes"]
         }
 
-        self.settings = parameter_settings
+    def load_dataset(self, dataset_type='mnist'):
+        if dataset_type.lower() == 'mnist':
+            dataset_class = MNIST
+        elif dataset_type.lower() == 'fashion_mnist':
+            dataset_class = FashionMNIST
+        else:
+            raise ValueError("Invalid dataset type. Choose either 'mnist' or 'fashion_mnist'.")
 
-    @staticmethod
-    def load_dataset():
-        train_dataset = FashionMNIST(
-            root="C:/Users/ricsi/Desktop/",
+        path_to_dataset = general_dataset_configs(dataset_type=self.cfg["dataset_name"])["original_dataset"]
+        train_dataset = dataset_class(
+            root=path_to_dataset,
             train=True,
             download=True,
             transform=transforms.Compose([transforms.ToTensor()])
         )
 
-        test_dataset = FashionMNIST(
-            root="C:/Users/ricsi/Desktop/",
+        test_dataset = dataset_class(
+            root=path_to_dataset,
             train=False,
             download=True,
             transform=transforms.Compose([transforms.ToTensor()])
         )
 
         return train_dataset, test_dataset
-
-    @staticmethod
-    def seed_everything(seed=42):
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed(seed)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
 
     def train_eval_main_net(self):
         cnn_slfn = (
@@ -221,10 +236,11 @@ class TrainEval:
         return main_layer
 
     def main(self):
-        self.seed_everything()
+        if self.cfg["seed"]:
+            torch.manual_seed(seed=42)
 
-        for i in range(10):
-            logging.info(f"\nActual iteration: {i}\n")
+        for i in range(self.cfg["number_of_tests"]):
+            logging.info(f"\nActual iteration: {i+1}\n")
             execution_time = []
 
             # First layer
@@ -291,7 +307,7 @@ class TrainEval:
             logging.info(f"Total execution time: {sum(execution_time)}")
             logging.info(f"Final accuracy: {third_layer.accuracy[-1]}")
 
-            log_to_excel(execution_time, third_layer.accuracy[-1], "C:/Users/ricsi/Desktop/test.xlsx")
+            log_to_excel(execution_time, third_layer.accuracy[-1], self.save_path)
 
             execution_time.clear()
 

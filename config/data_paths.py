@@ -78,7 +78,12 @@ class ConfigFilePaths(_Const):
         "config_helm":
             "config/json_files/HELM_config.json",
         "config_schema_helm":
-            "config/json_files/HELM_config_schema.json"
+            "config/json_files/HELM_config_schema.json",
+
+        "config_cipmpdrnn":
+            "config/json_files/CIPMPDRNN_config.json",
+        "config_schema_cipmpdrnn":
+            "config/json_files/CIPMPDRNN_config_schema.json"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -161,6 +166,28 @@ class MPDRNNPaths(_Const):
             "mpdrnn/data/hyperparam/wall",
         "hyperparam_waveform":
             "mpdrnn/data/hyperparam/waveform"
+    }
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------- I N I T -----------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super().__init__()
+        self.create_directories(self.dirs_dataset_paths, "STORAGE")
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def get_data_path(self, key):
+        return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
+
+
+class CIPMPDRNNPaths(_Const):
+    dirs_dataset_paths = {
+        "results_mnist":
+            "cipmpdrnn/data/results/mnist",
+        "results_mnist_fashion":
+            "cipmpdrnn/data/results/mnist_fashion"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -582,6 +609,7 @@ CONST: _Const = _Const()
 JSON_FILES_PATHS: ConfigFilePaths = ConfigFilePaths()
 MPDRNN_PATHS: MPDRNNPaths = MPDRNNPaths()
 IPMPDRNN_PATHS: IPMPDRNNPaths = IPMPDRNNPaths()
+CIPMPDRNN_PATHS: CIPMPDRNNPaths = CIPMPDRNNPaths()
 FCNN_PATHS: FCNNPaths = FCNNPaths()
 HELM_PATHS: HELMPaths = HELMPaths()
 DATASET_FILES_PATHS: DatasetFilesPaths = DatasetFilesPaths()

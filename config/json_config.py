@@ -18,7 +18,11 @@ def json_config_selector(network):
         "ipmpdrnn": {
             "config": JSON_FILES_PATHS.get_data_path("config_ipmpdrnn"),
             "schema": JSON_FILES_PATHS.get_data_path("config_schema_ipmpdrnn")
-        }
+        },
+        "cipmpdrnn": {
+            "config": JSON_FILES_PATHS.get_data_path("config_cipmpdrnn"),
+            "schema": JSON_FILES_PATHS.get_data_path("config_schema_cipmpdrnn")
+        },
     }
 
     return json_cfg[network]
