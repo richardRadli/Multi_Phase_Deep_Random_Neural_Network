@@ -7,7 +7,8 @@
       "type": "string",
       "enum": [
         "mnist",
-        "mnist_fashion"
+        "mnist_fashion",
+        "cifar10"
       ],
       "description": "The name of the dataset to be used."
     },
@@ -44,42 +45,39 @@
         },
         "mnist_fashion": {
           "type": "array"
+        },
+        "cifar10": {
+          "type": "array"
         }
       }
     },
-    "subset_percentage": {
+    "rcond": {
       "type": "object",
-      "description": "Percentage of how much of the weights should be substituted.",
+      "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
       "properties": {
         "mnist": {
           "type": "number"
         },
         "mnist_fashion": {
           "type": "number"
+        },
+        "cifar10": {
+          "type": "number"
         }
       }
     },
-    "rcond": {
-    "type": "object",
-    "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
-    "properties": {
-      "mnist": {
-        "type": "number"
-      },
-      "mnist_fashion": {
-        "type": "number"
-      }
-    }
-  },
     "penalty": {
       "type": "object",
       "description": "Value of the L2 penalty term.",
       "properties": {
         "mnist": {
-              "type": "number"
+          "type": "number"
         },
         "mnist_fashion": {
-              "type": "number"
+          "type": "number"
+        },
+        "cifar10": {
+          "type": "number"
         }
       }
     },
@@ -88,10 +86,13 @@
       "description": "Number of filters in the Conv2D layer.",
       "properties": {
         "mnist": {
-              "type": "integer"
+          "type": "integer"
         },
         "mnist_fashion": {
-              "type": "integer"
+          "type": "integer"
+        },
+        "cifar10": {
+          "type": "integer"
         }
       }
     },
@@ -100,10 +101,13 @@
       "description": "Size of the kernel in the Conv2D layer.",
       "properties": {
         "mnist": {
-              "type": "integer"
+          "type": "integer"
         },
         "mnist_fashion": {
-              "type": "integer"
+          "type": "integer"
+        },
+        "cifar10": {
+          "type": "integer"
         }
       }
     },
@@ -112,10 +116,13 @@
       "description": "Size of the stride in the Conv2D layer.",
       "properties": {
         "mnist": {
-              "type": "integer"
+          "type": "integer"
         },
         "mnist_fashion": {
-              "type": "integer"
+          "type": "integer"
+        },
+        "cifar10": {
+          "type": "integer"
         }
       }
     },
@@ -124,10 +131,13 @@
       "description": "Size of the padding in the Conv2D layer.",
       "properties": {
         "mnist": {
-              "type": "integer"
+          "type": "integer"
         },
         "mnist_fashion": {
-              "type": "integer"
+          "type": "integer"
+        },
+        "cifar10": {
+          "type": "integer"
         }
       }
     },
@@ -136,10 +146,13 @@
       "description": "Size of the kernel in the pooling layer.",
       "properties": {
         "mnist": {
-              "type": "integer"
+          "type": "integer"
         },
         "mnist_fashion": {
-              "type": "integer"
+          "type": "integer"
+        },
+        "cifar10": {
+          "type": "integer"
         }
       }
     },
@@ -148,10 +161,13 @@
       "description": "Percentage of pruning.",
       "properties": {
         "mnist": {
-              "type": "number"
+          "type": "number"
         },
         "mnist_fashion": {
-              "type": "number"
+          "type": "number"
+        },
+        "cifar10": {
+          "type": "number"
         }
       }
     }
@@ -161,7 +177,6 @@
     "activation",
     "number_of_tests",
     "seed",
-    "subset_percentage",
     "rcond",
     "penalty",
     "num_filters",

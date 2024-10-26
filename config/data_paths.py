@@ -187,7 +187,9 @@ class CIPMPDRNNPaths(_Const):
         "results_mnist":
             "cipmpdrnn/data/results/mnist",
         "results_mnist_fashion":
-            "cipmpdrnn/data/results/mnist_fashion"
+            "cipmpdrnn/data/results/mnist_fashion",
+        "results_cifar10":
+            "cipmpdrnn/data/results/cifar10"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -558,6 +560,8 @@ class DatasetFilesPaths(_Const):
     dirs_dataset_paths = {
         "dataset_path_adult":
             "adult",
+        "dataset_path_cifar10":
+            "cifar10",
         "dataset_path_connect4":
             "connect4",
         "dataset_path_isolete":

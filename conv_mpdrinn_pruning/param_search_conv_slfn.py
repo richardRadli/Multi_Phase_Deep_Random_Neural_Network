@@ -1,7 +1,11 @@
 import logging
+import multiprocessing as mp
 import os
-import torch
+import ray
 
+from ray import tune
+from ray.tune.schedulers import ASHAScheduler
+from ray.air import session
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 from torchvision.datasets import MNIST, FashionMNIST, CIFAR10, SVHN
@@ -9,7 +13,7 @@ from torchvision.datasets import MNIST, FashionMNIST, CIFAR10, SVHN
 from conv_mpdrinn_pruning.conv_slfn import ConvolutionalSLFN, SecondLayer, ThirdLayer
 from config.json_config import json_config_selector
 from config.dataset_config import drnn_paths_config, general_dataset_configs
-from utils.utils import log_to_excel, load_config_json, setup_logger, create_timestamp
+from utils.utils import load_config_json, setup_logger, create_timestamp
 
 
 class TrainEval:
@@ -32,20 +36,23 @@ class TrainEval:
         train_dataset, test_dataset = self.load_dataset(self.cfg["dataset_name"])
         sample_image = next(iter(train_dataset))
 
-        self.train_loader = (
+        train_loader = (
             DataLoader(
                 dataset=train_dataset,
                 batch_size=len(train_dataset),
                 shuffle=False
             )
         )
-        self.test_loader = (
+        test_loader = (
             DataLoader(
                 dataset=test_dataset,
                 batch_size=len(test_dataset),
                 shuffle=False
             )
         )
+
+        train_loader = ray.put(train_loader)
+        test_loader = ray.put(test_loader)
 
         self.dataset_info = {
             "width": sample_image[0].size(1),
@@ -56,24 +63,30 @@ class TrainEval:
         }
 
         self.settings = {
-            "num_filters": self.cfg["num_filters"],
-            "conv_kernel_size": self.cfg["conv_kernel_size"],
+            # Fixed settings
             "stride": self.cfg["stride"],
             "padding": self.cfg["padding"],
             "pool_kernel_size": self.cfg["pool_kernel_size"],
-            "pruning_percentage": self.cfg["pruning_percentage"],
-            "rcond": self.cfg["rcond"],
             "mu": self.cfg["mu"],
             "sigma": self.cfg["sigma"],
-            "penalty_term": self.cfg["penalty"],
-            "hidden_nodes": self.cfg["hidden_nodes"]
+            "hidden_nodes": self.cfg["hidden_nodes"],
+
+            "train_loader": train_loader,
+            "test_loader": test_loader,
+
+            # Hyperparameters to tune
+            "num_filters": tune.grid_search([12, 14, 16, 18, 20]),
+            "conv_kernel_size": tune.grid_search([3, 5, 7]),
+            "pruning_percentage": tune.uniform(0.1, 1.0),
+            "rcond": tune.loguniform(1e-30, 1e-1),
+            "penalty_term": tune.uniform(0.1, 45)
         }
 
     @staticmethod
     def select_dataset(dataset_type):
         dataset_dir = {
             "mnist": MNIST,
-            "fashion_mnist": FashionMNIST,
+            "mnist_fashion": FashionMNIST,
             "cifar10": CIFAR10,
             "svhn": SVHN
         }
@@ -86,7 +99,7 @@ class TrainEval:
         train_dataset = (
             dataset_class(
                 root=path_to_dataset,
-                split="train",
+                train=True,
                 download=True,
                 transform=transforms.Compose([transforms.ToTensor()])
             )
@@ -95,7 +108,7 @@ class TrainEval:
         test_dataset = (
             dataset_class(
                 root=path_to_dataset,
-                split="test",
+                train=False,
                 download=True,
                 transform=transforms.Compose([transforms.ToTensor()])
             )
@@ -103,16 +116,16 @@ class TrainEval:
 
         return train_dataset, test_dataset
 
-    def train_eval_main_net(self):
+    def train_eval_main_net(self, config, train_loader, test_loader):
         cnn_slfn = (
             ConvolutionalSLFN(
-                self.settings,
+                config,
                 self.dataset_info
             )
         )
 
-        cnn_slfn.train_net(self.train_loader)
-        cnn_slfn.test_net(cnn_slfn, self.test_loader, cnn_slfn.beta_weights, 1)
+        cnn_slfn.train_net(train_loader)
+        cnn_slfn.test_net(cnn_slfn, test_loader, cnn_slfn.beta_weights, 1)
 
         _, least_important_filters = (
             cnn_slfn.pruning_first_layer()
@@ -120,37 +133,41 @@ class TrainEval:
 
         return cnn_slfn, least_important_filters
 
-    def train_auxiliary_net(self):
+    def train_auxiliary_net(self, config, train_loader):
         aux_cnn_slfn = (
             ConvolutionalSLFN(
-                self.settings,
+                config,
                 self.dataset_info
             )
         )
-        aux_cnn_slfn.train_net(self.train_loader)
+        aux_cnn_slfn.train_net(train_loader)
         most_important_filters, _ = (
             aux_cnn_slfn.pruning_first_layer()
         )
 
         return aux_cnn_slfn, most_important_filters
 
-    def replace_retrain(self, cnn_slfn, aux_cnn_slfn, least_important_filters, most_important_filters):
+    @staticmethod
+    def replace_retrain(
+            cnn_slfn, aux_cnn_slfn, least_important_filters, most_important_filters, train_loader, test_loader
+    ):
         cnn_slfn = cnn_slfn.replace_filters(cnn_slfn, aux_cnn_slfn, least_important_filters, most_important_filters)
-        cnn_slfn.train_net(self.train_loader)
-        cnn_slfn.test_net(cnn_slfn, self.test_loader, cnn_slfn.beta_weights, 1)
+        cnn_slfn.train_net(train_loader)
+        cnn_slfn.test_net(cnn_slfn, test_loader, cnn_slfn.beta_weights, 1)
 
         return cnn_slfn
 
-    def train_eval_second_layer(self, cnn_slfn):
+    @staticmethod
+    def train_eval_second_layer(cnn_slfn, train_loader, test_loader):
         second_layer = (
             SecondLayer(
                 cnn_slfn
             )
         )
-        second_layer.train_fc_layer(self.train_loader)
+        second_layer.train_fc_layer(train_loader)
         second_layer.test_net(
             base_instance=cnn_slfn,
-            data_loader=self.test_loader,
+            data_loader=test_loader,
             layer_weights=[second_layer.extended_beta_weights,
                            second_layer.gamma_weights],
             num_layers=2
@@ -162,31 +179,34 @@ class TrainEval:
 
         return second_layer, least_important_indices
 
-    def train_prune_second_layer_auxiliary(self, cnn_slfn):
+    @staticmethod
+    def train_prune_second_layer_auxiliary(cnn_slfn, train_loader):
         second_layer_aux = (
             SecondLayer(
                 base_instance=cnn_slfn
             )
         )
-        second_layer_aux.train_fc_layer(self.train_loader)
+        second_layer_aux.train_fc_layer(train_loader)
         most_important_indices, _ = (
             second_layer_aux.pruning()
         )
 
         return second_layer_aux, most_important_indices
 
+    @staticmethod
     def replace_retrain_second_layer(
-            self, cnn_slfn, main_layer, aux_layer, most_important_indices, least_important_indices, weight_attr
+            cnn_slfn, main_layer, aux_layer, most_important_indices, least_important_indices,
+            weight_attr, train_loader, test_loader
     ):
         best_weight_tensor = getattr(aux_layer, weight_attr).data
         best_weights = best_weight_tensor[:, most_important_indices]
         weight_tensor = getattr(main_layer, weight_attr).data
         weight_tensor[:, least_important_indices] = best_weights
 
-        main_layer.train_fc_layer(self.train_loader)
+        main_layer.train_fc_layer(train_loader)
         main_layer.test_net(
             base_instance=cnn_slfn,
-            data_loader=self.test_loader,
+            data_loader=test_loader,
             layer_weights=[main_layer.extended_beta_weights,
                            main_layer.gamma_weights],
             num_layers=2
@@ -194,16 +214,17 @@ class TrainEval:
 
         return main_layer
 
-    def train_eval_third_layer(self, cnn_slfn, second_layer):
+    @staticmethod
+    def train_eval_third_layer(cnn_slfn, second_layer, train_loader, test_loader):
         third_layer = (
             ThirdLayer(
                 second_layer
             )
         )
-        third_layer.train_fc_layer(self.train_loader)
+        third_layer.train_fc_layer(train_loader)
         third_layer.test_net(
             base_instance=cnn_slfn,
-            data_loader=self.test_loader,
+            data_loader=test_loader,
             layer_weights=[third_layer.extended_beta_weights,
                            third_layer.extended_gamma_weights,
                            third_layer.delta_weights],
@@ -214,28 +235,31 @@ class TrainEval:
 
         return third_layer, least_important_indices
 
-    def train_prune_third_layer_auxiliary(self, second_layer):
+    @staticmethod
+    def train_prune_third_layer_auxiliary(second_layer, train_loader):
         third_layer_aux = (
             ThirdLayer(
                 second_layer
             )
         )
-        third_layer_aux.train_fc_layer(self.train_loader)
+        third_layer_aux.train_fc_layer(train_loader)
         most_important_indices, _ = third_layer_aux.pruning()
 
         return third_layer_aux, most_important_indices
 
+    @staticmethod
     def replace_retrain_third_layer(
-            self, cnn_slfn, main_layer, aux_layer, most_important_indices, least_important_indices, weight_attr
+            cnn_slfn, main_layer, aux_layer, most_important_indices, least_important_indices,
+            weight_attr, train_loader, test_loader
     ):
         best_weight_tensor = getattr(aux_layer, weight_attr).data
         best_weights = best_weight_tensor[:, most_important_indices]
         weight_tensor = getattr(main_layer, weight_attr).data
         weight_tensor[:, least_important_indices] = best_weights
 
-        main_layer.train_fc_layer(self.train_loader)
+        main_layer.train_fc_layer(train_loader)
         main_layer.test_net(cnn_slfn,
-                            self.test_loader,
+                            test_loader,
                             [main_layer.extended_beta_weights,
                              main_layer.extended_gamma_weights,
                              main_layer.delta_weights],
@@ -243,102 +267,119 @@ class TrainEval:
 
         return main_layer
 
-    def main(self):
-        if self.cfg["seed"]:
-            torch.manual_seed(seed=42)
+    def main(self, config):
+        train_loader = ray.get(config['train_loader'])
+        test_loader = ray.get(config['test_loader'])
 
-        for i in range(self.cfg["number_of_tests"]):
-            logging.info(f"\nActual iteration: {i+1}\n")
-            execution_time = []
+        # First layer
+        cnn_slfn, least_important_filters = (
+            self.train_eval_main_net(
+                config,
+                train_loader,
+                test_loader
+            )
+        )
+        aux_cnn_slfn, most_important_filters = (
+            self.train_auxiliary_net(
+                config,
+                train_loader
+            )
+        )
+        cnn_slfn = (
+            self.replace_retrain(
+                cnn_slfn, aux_cnn_slfn, least_important_filters, most_important_filters, train_loader, test_loader
+            )
+        )
 
-            # First layer
-            cnn_slfn, least_important_filters = (
-                self.train_eval_main_net()
+        # Second layer
+        second_layer, least_important_indices = (
+            self.train_eval_second_layer(
+                cnn_slfn, train_loader, test_loader
             )
-            execution_time.append(cnn_slfn.train_net.execution_time)
-            aux_cnn_slfn, most_important_filters = (
-                self.train_auxiliary_net()
+        )
+        second_layer_aux, most_important_indices = (
+            self.train_prune_second_layer_auxiliary(
+                cnn_slfn, train_loader
             )
-            execution_time.append(aux_cnn_slfn.train_net.execution_time)
-            cnn_slfn = (
-                self.replace_retrain(
-                    cnn_slfn, aux_cnn_slfn, least_important_filters, most_important_filters
-                )
+        )
+        second_layer = (
+            self.replace_retrain_second_layer(
+                cnn_slfn,
+                second_layer,
+                second_layer_aux,
+                most_important_indices,
+                least_important_indices,
+                "extended_beta_weights",
+                train_loader,
+                test_loader
             )
-            execution_time.append(cnn_slfn.train_net.execution_time)
+        )
 
-            # Second layer
-            second_layer, least_important_indices = (
-                self.train_eval_second_layer(
-                    cnn_slfn
-                )
+        # Third layer
+        third_layer, least_important_indices = (
+            self.train_eval_third_layer(
+                cnn_slfn,
+                second_layer,
+                train_loader,
+                test_loader
             )
-            execution_time.append(second_layer.train_fc_layer.execution_time)
-            second_layer_aux, most_important_indices = (
-                self.train_prune_second_layer_auxiliary(
-                    cnn_slfn
-                )
+        )
+        third_layer_aux, most_important_indices = (
+            self.train_prune_third_layer_auxiliary(
+                second_layer,
+                train_loader
             )
-            execution_time.append(second_layer_aux.train_fc_layer.execution_time)
-            second_layer = (
-                self.replace_retrain_second_layer(
-                    cnn_slfn,
-                    second_layer,
-                    second_layer_aux,
-                    most_important_indices,
-                    least_important_indices,
-                    "extended_beta_weights"
-                )
-            )
-            execution_time.append(second_layer.train_fc_layer.execution_time)
+        )
+        third_layer = self.replace_retrain_third_layer(
+            cnn_slfn, third_layer, third_layer_aux, most_important_indices, least_important_indices,
+            "extended_gamma_weights",
+            train_loader,
+            test_loader
+        )
 
-            # Third layer
-            third_layer, least_important_indices = (
-                self.train_eval_third_layer(
-                    cnn_slfn,
-                    second_layer
-                )
-            )
-            execution_time.append(third_layer.train_fc_layer.execution_time)
-            third_layer_aux, most_important_indices = (
-                self.train_prune_third_layer_auxiliary(
-                    second_layer
-                )
-            )
-            execution_time.append(third_layer_aux.train_fc_layer.execution_time)
-            third_layer = self.replace_retrain_third_layer(
-                cnn_slfn, third_layer, third_layer_aux, most_important_indices, least_important_indices,
-                "extended_gamma_weights"
-            )
-            execution_time.append(third_layer.train_fc_layer.execution_time)
+        session.report({"accuracy": third_layer.accuracy[-1]})
 
-            logging.info(f"Total execution time: {sum(execution_time)}")
-            logging.info(f"Final accuracy: {third_layer.accuracy[-1]}")
+    def tune_params(self):
+        scheduler = (
+            ASHAScheduler(
+                metric="accuracy",
+                mode="max",
+                max_t=1,
+                grace_period=1,
+                reduction_factor=2
+            )
+        )
 
-            log_to_excel(execution_time, third_layer.accuracy[-1], self.save_path)
+        reporter = (
+            tune.CLIReporter(
+                parameter_columns=["num_filters", "conv_kernel", "pruning_percentage", "rcond"],
+                metric_columns=["accuracy", "training_iteration"]
+            )
+        )
 
-            execution_time.clear()
+        result = (
+            tune.run(
+                self.main,
+                resources_per_trial={"gpu": 0, "cpu": mp.cpu_count()},
+                config=self.settings,
+                num_samples=16,
+                scheduler=scheduler,
+                progress_reporter=reporter,
+                storage_path="C:/Users/ricsi/Desktop/conv_slfn_hyper"
+            )
+        )
+
+        best_trial = result.get_best_trial("accuracy", "max", "last")
+        print("Best trial config: {}".format(best_trial.config))
+        print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-
 if __name__ == "__main__":
-    """
-    num_filters=16, kernel_size=7, stride=1, padding=1, pool_kernel_size=2, pruning_percentage=0.2
-    96.86% -> 97.08%
-    97.08% -> 97.51%
-    97.51% -> 97.60%
-    97.60% -> 97.68%
-    97.68% -> 97.71%
-    
-    neurons
-    2304 - 1500 - 500
-    """
-
     try:
         train_eval = TrainEval()
-        train_eval.main()
+        train_eval.tune_params()
     except KeyboardInterrupt:
         logging.error("Keyboard Interrupt")

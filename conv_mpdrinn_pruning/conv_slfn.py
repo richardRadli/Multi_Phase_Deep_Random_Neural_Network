@@ -132,7 +132,7 @@ class ConvolutionalSLFN(nn.Module):
         num_neurons = int(self.beta_weights.size(0) / self.num_filters)
         most_important_filters, least_important_filters = (
             self.prune_conv_weights(
-                self.beta_weights, num_neurons, self. pruning_percentage
+                self.beta_weights, num_neurons, self.pruning_percentage
             )
         )
 

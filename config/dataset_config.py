@@ -25,6 +25,10 @@ def general_dataset_configs(dataset_type) -> Dict:
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_adult"), "adult.npz")
         },
+        "cifar10": {
+            "original_dataset":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_cifar10")
+        },
         "connect4": {
             "dataset_name":
                 "connect4",
@@ -247,7 +251,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "data.txt"),
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npz"),
-
         },
         "usps": {
             "dataset_name":
@@ -341,6 +344,12 @@ def drnn_paths_config(dataset_type) -> Dict:
                     IPMPDRNN_PATHS.get_data_path("results_connect4"),
                 "hyperparam_tuning":
                     IPMPDRNN_PATHS.get_data_path("hyperparam_connect4"),
+            }
+        },
+        "cifar10": {
+            "cipmpdrnn": {
+                "path_to_results":
+                    CIPMPDRNN_PATHS.get_data_path("results_cifar10"),
             }
         },
         "isolete": {
