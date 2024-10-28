@@ -141,6 +141,8 @@ def general_dataset_configs(dataset_type) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "data.txt"),
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npz"),
+            "cached_pca_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion_pca_187.npz"),
             "original_dataset":
                 DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion")
         },

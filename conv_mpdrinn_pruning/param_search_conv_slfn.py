@@ -1,5 +1,6 @@
 import logging
 import multiprocessing as mp
+import numpy as np
 import os
 import ray
 
@@ -52,7 +53,7 @@ class TrainEval:
             "height": sample_image[0].size(2),
             "in_channels": sample_image[0].size(0),
             "num_train_images": len(train_dataset),
-            "out_channels": 10  # len(np.unique(train_dataset.targets.data))
+            "out_channels": len(np.unique(train_dataset.targets.data))
         }
 
         self.settings = {
@@ -68,14 +69,14 @@ class TrainEval:
             "test_loader": test_loader,
 
             # Hyperparameters to tune
-            "num_filters": tune.grid_search([12, 14, 16, 18, 20]),
+            "num_filters": tune.grid_search([16, 20, 24]),
             "conv_kernel_size": tune.grid_search([3, 5, 7]),
             "pruning_percentage": tune.uniform(0.1, 1.0),
             "rcond": tune.loguniform(1e-30, 1e-1),
             "penalty_term": tune.uniform(0.1, 45)
         }
 
-        self.save_path = drnn_paths_config(self.cfg.get("dataset_name")).get("hyperparam_tuning")
+        self.save_path = drnn_paths_config(self.cfg.get("dataset_name")).get("cipmpdrnn").get("hyperparam_tuning")
         self.save_log_file = os.path.join(self.save_path, "hyperparam_search_best_results.txt")
 
     @staticmethod
@@ -358,7 +359,7 @@ class TrainEval:
                 self.main,
                 resources_per_trial={"gpu": 0, "cpu": mp.cpu_count()},
                 config=self.settings,
-                num_samples=16,
+                num_samples=8,
                 scheduler=scheduler,
                 progress_reporter=reporter,
                 storage_path=self.save_path

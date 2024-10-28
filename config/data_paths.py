@@ -102,74 +102,74 @@ class ConfigFilePaths(_Const):
 class MPDRNNPaths(_Const):
     dirs_dataset_paths = {
         "results_adult":
-            "mpdrnn/data/results/adult",
+            "networks/mpdrnn/data/results/adult",
         "results_cifar10":
-            "mpdrnn/data/results/cifar10",
+            "networks/mpdrnn/data/results/cifar10",
         "results_connect4":
-            "mpdrnn/data/results/connect4",
+            "networks/mpdrnn/data/results/connect4",
         "results_isolete":
-            "mpdrnn/data/results/isolete",
+            "networks/mpdrnn/data/results/isolete",
         "results_letter":
-            "mpdrnn/data/results/letter",
+            "networks/mpdrnn/data/results/letter",
         "results_mnist":
-            "mpdrnn/data/results/mnist",
+            "networks/mpdrnn/data/results/mnist",
         "results_mnist_fashion":
-            "mpdrnn/data/results/mnist_fashion",
+            "networks/mpdrnn/data/results/mnist_fashion",
         "results_musk2":
-            "mpdrnn/data/results/musk2",
+            "networks/mpdrnn/data/results/musk2",
         "results_optdigits":
-            "mpdrnn/data/results/optdigits",
+            "networks/mpdrnn/data/results/optdigits",
         "results_page_blocks":
-            "mpdrnn/data/results/page_blocks",
+            "networks/mpdrnn/data/results/page_blocks",
         "results_segment":
-            "mpdrnn/data/results/segment",
+            "networks/mpdrnn/data/results/segment",
         "results_shuttle":
-            "mpdrnn/data/results/shuttle",
+            "networks/mpdrnn/data/results/shuttle",
         "results_spambase":
-            "mpdrnn/data/results/spambase",
+            "networks/mpdrnn/data/results/spambase",
         "results_usps":
-            "mpdrnn/data/results/usps",
+            "networks/mpdrnn/data/results/usps",
         "results_satimages":
-            "mpdrnn/data/results/satimages",
+            "networks/mpdrnn/data/results/satimages",
         "results_wall":
-            "mpdrnn/data/results/wall",
+            "networks/mpdrnn/data/results/wall",
         "results_waveform":
-            "mpdrnn/data/results/waveform",
+            "networks/mpdrnn/data/results/waveform",
 
         "hyperparam_adult":
-            "mpdrnn/data/hyperparam/adult",
+            "networks/mpdrnn/data/hyperparam/adult",
         "hyperparam_cifar10":
-            "mpdrnn/data/hyperparam/cifar10",
+            "networks/mpdrnn/data/hyperparam/cifar10",
         "hyperparam_connect4":
-            "mpdrnn/data/hyperparam/connect4",
+            "networks/mpdrnn/data/hyperparam/connect4",
         "hyperparam_isolete":
-            "mpdrnn/data/hyperparam/isolete",
+            "networks/mpdrnn/data/hyperparam/isolete",
         "hyperparam_letter":
-            "mpdrnn/data/hyperparam/letter",
+            "networks/mpdrnn/data/hyperparam/letter",
         "hyperparam_mnist":
-            "mpdrnn/data/hyperparam/mnist",
+            "networks/mpdrnn/data/hyperparam/mnist",
         "hyperparam_mnist_fashion":
-            "mpdrnn/data/hyperparam/mnist_fashion",
+            "networks/mpdrnn/data/hyperparam/mnist_fashion",
         "hyperparam_musk2":
-            "mpdrnn/data/hyperparam/musk2",
+            "networks/mpdrnn/data/hyperparam/musk2",
         "hyperparam_optdigits":
-            "mpdrnn/data/hyperparam/optdigits",
+            "networks/mpdrnn/data/hyperparam/optdigits",
         "hyperparam_page_blocks":
-            "mpdrnn/data/hyperparam/page_blocks",
+            "networks/mpdrnn/data/hyperparam/page_blocks",
         "hyperparam_segment":
-            "mpdrnn/data/hyperparam/segment",
+            "networks/mpdrnn/data/hyperparam/segment",
         "hyperparam_shuttle":
-            "mpdrnn/data/hyperparam/shuttle",
+            "networks/mpdrnn/data/hyperparam/shuttle",
         "hyperparam_spambase":
-            "mpdrnn/data/hyperparam/spambase",
+            "networks/mpdrnn/data/hyperparam/spambase",
         "hyperparam_usps":
-            "mpdrnn/data/hyperparam/usps",
+            "networks/mpdrnn/data/hyperparam/usps",
         "hyperparam_satimages":
-            "mpdrnn/data/hyperparam/satimages",
+            "networks/mpdrnn/data/hyperparam/satimages",
         "hyperparam_wall":
-            "mpdrnn/data/hyperparam/wall",
+            "networks/mpdrnn/data/hyperparam/wall",
         "hyperparam_waveform":
-            "mpdrnn/data/hyperparam/waveform"
+            "networks/mpdrnn/data/hyperparam/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -189,18 +189,18 @@ class MPDRNNPaths(_Const):
 class CIPMPDRNNPaths(_Const):
     dirs_dataset_paths = {
         "results_mnist":
-            "cipmpdrnn/data/results/mnist",
+            "networks/cipmpdrnn/data/results/mnist",
         "results_mnist_fashion":
-            "cipmpdrnn/data/results/mnist_fashion",
+            "networks/cipmpdrnn/data/results/mnist_fashion",
         "results_cifar10":
-            "cipmpdrnn/data/results/cifar10",
+            "networks/cipmpdrnn/data/results/cifar10",
 
         "hyperparam_mnist":
-            "cipmpdrnn/data/hyperparam_tuning/mnist",
+            "networks/cipmpdrnn/data/hyperparam_tuning/mnist",
         "hyperparam_mnist_fashion":
-            "cipmpdrnn/data/hyperparam_tuning/mnist_fashion",
+            "networks/cipmpdrnn/data/hyperparam_tuning/mnist_fashion",
         "hyperparam_cifar10":
-            "cipmpdrnn/data/hyperparam_tuning/cifar10"
+            "networks/cipmpdrnn/data/hyperparam_tuning/cifar10"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -220,74 +220,74 @@ class CIPMPDRNNPaths(_Const):
 class IPMPDRNNPaths(_Const):
     dirs_dataset_paths = {
         "results_adult":
-            "ipmpdrnn/data/results/adult",
+            "networks/ipmpdrnn/data/results/adult",
         "results_cifar10":
-            "ipmpdrnn/data/results/cifar10",
+            "networks/ipmpdrnn/data/results/cifar10",
         "results_connect4":
-            "ipmpdrnn/data/results/connect4",
+            "networks/ipmpdrnn/data/results/connect4",
         "results_isolete":
-            "ipmpdrnn/data/results/isolete",
+            "networks/ipmpdrnn/data/results/isolete",
         "results_letter":
-            "ipmpdrnn/data/results/letter",
+            "networks/ipmpdrnn/data/results/letter",
         "results_mnist":
-            "ipmpdrnn/data/results/mnist",
+            "networks/ipmpdrnn/data/results/mnist",
         "results_mnist_fashion":
-            "ipmpdrnn/data/results/mnist_fashion",
+            "networks/ipmpdrnn/data/results/mnist_fashion",
         "results_musk2":
-            "ipmpdrnn/data/results/musk2",
+            "networks/ipmpdrnn/data/results/musk2",
         "results_optdigits":
-            "ipmpdrnn/data/results/optdigits",
+            "networks/ipmpdrnn/data/results/optdigits",
         "results_page_blocks":
-            "ipmpdrnn/data/results/page_blocks",
+            "networks/ipmpdrnn/data/results/page_blocks",
         "results_segment":
-            "ipmpdrnn/data/results/segment",
+            "networks/ipmpdrnn/data/results/segment",
         "results_shuttle":
-            "ipmpdrnn/data/results/shuttle",
+            "networks/ipmpdrnn/data/results/shuttle",
         "results_spambase":
-            "ipmpdrnn/data/results/spambase",
+            "networks/ipmpdrnn/data/results/spambase",
         "results_usps":
-            "ipmpdrnn/data/results/usps",
+            "networks/ipmpdrnn/data/results/usps",
         "results_satimages":
-            "ipmpdrnn/data/results/satimages",
+            "networks/ipmpdrnn/data/results/satimages",
         "results_wall":
-            "ipmpdrnn/data/results/wall",
+            "networks/ipmpdrnn/data/results/wall",
         "results_waveform":
-            "ipmpdrnn/data/results/waveform",
+            "networks/ipmpdrnn/data/results/waveform",
 
         "hyperparam_adult":
-            "ipmpdrnn/data/hyperparam_tuning/adult",
+            "networks/ipmpdrnn/data/hyperparam_tuning/adult",
         "hyperparam_cifar10":
-            "ipmpdrnn/data/hyperparam_tuning/cifar10",
+            "networks/ipmpdrnn/data/hyperparam_tuning/cifar10",
         "hyperparam_connect4":
-            "ipmpdrnn/data/hyperparam_tuning/connect4",
+            "networks/ipmpdrnn/data/hyperparam_tuning/connect4",
         "hyperparam_isolete":
-            "ipmpdrnn/data/hyperparam_tuning/isolete",
+            "networks/ipmpdrnn/data/hyperparam_tuning/isolete",
         "hyperparam_letter":
-            "ipmpdrnn/data/hyperparam_tuning/letter",
+            "networks/ipmpdrnn/data/hyperparam_tuning/letter",
         "hyperparam_mnist":
-            "ipmpdrnn/data/hyperparam_tuning/mnist",
+            "networks/ipmpdrnn/data/hyperparam_tuning/mnist",
         "hyperparam_mnist_fashion":
-            "ipmpdrnn/data/hyperparam_tuning/mnist_fashion",
+            "networks/ipmpdrnn/data/hyperparam_tuning/mnist_fashion",
         "hyperparam_musk2":
-            "ipmpdrnn/data/hyperparam_tuning/musk2",
+            "networks/ipmpdrnn/data/hyperparam_tuning/musk2",
         "hyperparam_optdigits":
-            "ipmpdrnn/data/hyperparam_tuning/optdigits",
+            "networks/ipmpdrnn/data/hyperparam_tuning/optdigits",
         "hyperparam_page_blocks":
-            "ipmpdrnn/data/hyperparam_tuning/page_blocks",
+            "networks/ipmpdrnn/data/hyperparam_tuning/page_blocks",
         "hyperparam_segment":
-            "ipmpdrnn/data/hyperparam_tuning/segment",
+            "networks/ipmpdrnn/data/hyperparam_tuning/segment",
         "hyperparam_satimages":
-            "ipmpdrnn/data/hyperparam_tuning/satimages",
+            "networks/ipmpdrnn/data/hyperparam_tuning/satimages",
         "hyperparam_shuttle":
-            "ipmpdrnn/data/hyperparam_tuning/shuttle",
+            "networks/ipmpdrnn/data/hyperparam_tuning/shuttle",
         "hyperparam_spambase":
-            "ipmpdrnn/data/hyperparam_tuning/spambase",
+            "networks/ipmpdrnn/data/hyperparam_tuning/spambase",
         "hyperparam_usps":
-            "ipmpdrnn/data/hyperparam_tuning/usps",
+            "networks/ipmpdrnn/data/hyperparam_tuning/usps",
         "hyperparam_wall":
-            "ipmpdrnn/data/hyperparam_tuning/wall",
+            "networks/ipmpdrnn/data/hyperparam_tuning/wall",
         "hyperparam_waveform":
-            "ipmpdrnn/data/hyperparam_tuning/waveform"
+            "networks/ipmpdrnn/data/hyperparam_tuning/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -308,145 +308,145 @@ class FCNNPaths(_Const):
     dirs_dataset_paths = {
         # FCNN saved weights
         "sw_adult":
-            "fcnn/saved_weights_fcnn/adult",
+            "networks/fcnn/saved_weights_fcnn/adult",
         "sw_cifar10":
-            "fcnn/saved_weights_fcnn/cifar10",
+            "networks/fcnn/saved_weights_fcnn/cifar10",
         "sw_connect4":
-            "fcnn/saved_weights_fcnn/connect4",
+            "networks/fcnn/saved_weights_fcnn/connect4",
         "sw_isolete":
-            "fcnn/saved_weights_fcnn/isolete",
+            "networks/fcnn/saved_weights_fcnn/isolete",
         "sw_letter":
-            "fcnn/saved_weights_fcnn/letter",
+            "networks/fcnn/saved_weights_fcnn/letter",
         "sw_mnist":
-            "fcnn/saved_weights_fcnn/mnist",
+            "networks/fcnn/saved_weights_fcnn/mnist",
         "sw_mnist_fashion":
-            "fcnn/saved_weights_fcnn/mnist_fashion",
+            "networks/fcnn/saved_weights_fcnn/mnist_fashion",
         "sw_musk2":
-            "fcnn/saved_weights_fcnn/musk2",
+            "networks/fcnn/saved_weights_fcnn/musk2",
         "sw_optdigits":
-            "fcnn/saved_weights_fcnn/optdigits",
+            "networks/fcnn/saved_weights_fcnn/optdigits",
         "sw_page_blocks":
-            "fcnn/saved_weights_fcnn/page_blocks",
+            "networks/fcnn/saved_weights_fcnn/page_blocks",
         "sw_segment":
-            "fcnn/saved_weights_fcnn/segment",
+            "networks/fcnn/saved_weights_fcnn/segment",
         "sw_shuttle":
-            "fcnn/saved_weights_fcnn/shuttle",
+            "networks/fcnn/saved_weights_fcnn/shuttle",
         "sw_spambase":
-            "fcnn/saved_weights_fcnn/spambase",
+            "networks/fcnn/saved_weights_fcnn/spambase",
         "sw_usps":
-            "fcnn/saved_weights_fcnn/usps",
+            "networks/fcnn/saved_weights_fcnn/usps",
         "sw_satimages":
-            "fcnn/saved_weights_fcnn/satimages",
+            "networks/fcnn/saved_weights_fcnn/satimages",
         "sw_wall":
-            "fcnn/saved_weights_fcnn/wall",
+            "networks/fcnn/saved_weights_fcnn/wall",
         "sw_waveform":
-            "fcnn/saved_weights_fcnn/waveform",
+            "networks/fcnn/saved_weights_fcnn/waveform",
 
         # FCNN logs
         "logs_adult":
-            "fcnn/logs_fcnn/adult",
+            "networks/fcnn/logs_fcnn/adult",
         "logs_cifar10":
-            "fcnn/logs_fcnn/cifar10",
+            "networks/fcnn/logs_fcnn/cifar10",
         "logs_connect4":
-            "fcnn/logs_fcnn/connect4",
+            "networks/fcnn/logs_fcnn/connect4",
         "logs_isolete":
-            "fcnn/logs_fcnn/isolete",
+            "networks/fcnn/logs_fcnn/isolete",
         "logs_letter":
-            "fcnn/logs_fcnn/letter",
+            "networks/fcnn/logs_fcnn/letter",
         "logs_mnist":
-            "fcnn/logs_fcnn/mnist",
+            "networks/fcnn/logs_fcnn/mnist",
         "logs_mnist_fashion":
-            "fcnn/logs_fcnn/mnist_fashion",
+            "networks/fcnn/logs_fcnn/mnist_fashion",
         "logs_musk2":
-            "fcnn/logs_fcnn/musk2",
+            "networks/fcnn/logs_fcnn/musk2",
         "logs_optdigits":
-            "fcnn/logs_fcnn/optdigits",
+            "networks/fcnn/logs_fcnn/optdigits",
         "logs_page_blocks":
-            "fcnn/logs_fcnn/page_blocks",
+            "networks/fcnn/logs_fcnn/page_blocks",
         "logs_segment":
-            "fcnn/logs_fcnn/segment",
+            "networks/fcnn/logs_fcnn/segment",
         "logs_shuttle":
-            "fcnn/logs_fcnn/shuttle",
+            "networks/fcnn/logs_fcnn/shuttle",
         "logs_spambase":
-            "fcnn/logs_fcnn/spambase",
+            "networks/fcnn/logs_fcnn/spambase",
         "logs_usps":
-            "fcnn/logs_fcnn/usps",
+            "networks/fcnn/logs_fcnn/usps",
         "logs_satimages":
-            "fcnn/logs_fcnn/satiamges",
+            "networks/fcnn/logs_fcnn/satiamges",
         "logs_wall":
-            "fcnn/logs_fcnn/wall",
+            "networks/fcnn/logs_fcnn/wall",
         "logs_waveform":
-            "fcnn/logs_fcnn/waveform",
+            "networks/fcnn/logs_fcnn/waveform",
 
         "results_adult":
-            "fcnn/results_fcnn/adult",
+            "networks/fcnn/results_fcnn/adult",
         "results_cifar10":
-            "fcnn/results_fcnn/cifar10",
+            "networks/fcnn/results_fcnn/cifar10",
         "results_connect4":
-            "fcnn/results_fcnn/connect4",
+            "networks/fcnn/results_fcnn/connect4",
         "results_isolete":
-            "fcnn/results_fcnn/isolete",
+            "networks/fcnn/results_fcnn/isolete",
         "results_letter":
-            "fcnn/results_fcnn/letter",
+            "networks/fcnn/results_fcnn/letter",
         "results_mnist":
-            "fcnn/results_fcnn/mnist",
+            "networks/fcnn/results_fcnn/mnist",
         "results_mnist_fashion":
-            "fcnn/results_fcnn/mnist_fashion",
+            "networks/fcnn/results_fcnn/mnist_fashion",
         "results_musk2":
-            "fcnn/results_fcnn/musk2",
+            "networks/fcnn/results_fcnn/musk2",
         "results_optdigits":
-            "fcnn/results_fcnn/optdigits",
+            "networks/fcnn/results_fcnn/optdigits",
         "results_page_blocks":
-            "fcnn/results_fcnn/page_blocks",
+            "networks/fcnn/results_fcnn/page_blocks",
         "results_satimages":
-            "fcnn/results_fcnn/satimages",
+            "networks/fcnn/results_fcnn/satimages",
         "results_segment":
-            "fcnn/results_fcnn/segment",
+            "networks/fcnn/results_fcnn/segment",
         "results_shuttle":
-            "fcnn/results_fcnn/shuttle",
+            "networks/fcnn/results_fcnn/shuttle",
         "results_spambase":
-            "fcnn/results_fcnn/spambase",
+            "networks/fcnn/results_fcnn/spambase",
         "results_usps":
-            "fcnn/results_fcnn/usps",
+            "networks/fcnn/results_fcnn/usps",
         "results_wall":
-            "fcnn/results_fcnn/wall",
+            "networks/fcnn/results_fcnn/wall",
         "results_waveform":
-            "fcnn/results_fcnn/waveform",
+            "networks/fcnn/results_fcnn/waveform",
 
         "hyperparam_tuning_adult":
-            "fcnn/hyperparam_tuning/adult",
+            "networks/fcnn/hyperparam_tuning/adult",
         "hyperparam_tuning_cifar10":
-            "fcnn/hyperparam_tuning/cifar10",
+            "networks/fcnn/hyperparam_tuning/cifar10",
         "hyperparam_tuning_connect4":
-            "fcnn/hyperparam_tuning/connect4",
+            "networks/fcnn/hyperparam_tuning/connect4",
         "hyperparam_tuning_isolete":
-            "fcnn/hyperparam_tuning/isolete",
+            "networks/fcnn/hyperparam_tuning/isolete",
         "hyperparam_tuning_letter":
-            "fcnn/hyperparam_tuning/letter",
+            "networks/fcnn/hyperparam_tuning/letter",
         "hyperparam_tuning_mnist":
-            "fcnn/hyperparam_tuning/mnist",
+            "networks/fcnn/hyperparam_tuning/mnist",
         "hyperparam_tuning_mnist_fashion":
-            "fcnn/hyperparam_tuning/mnist_fashion",
+            "networks/fcnn/hyperparam_tuning/mnist_fashion",
         "hyperparam_tuning_musk2":
-            "fcnn/hyperparam_tuning/musk2",
+            "networks/fcnn/hyperparam_tuning/musk2",
         "hyperparam_tuning_optdigits":
-            "fcnn/hyperparam_tuning/optdigits",
+            "networks/fcnn/hyperparam_tuning/optdigits",
         "hyperparam_tuning_page_blocks":
-            "fcnn/hyperparam_tuning/page_blocks",
+            "networks/fcnn/hyperparam_tuning/page_blocks",
         "hyperparam_tuning_segment":
-            "fcnn/hyperparam_tuning/segment",
+            "networks/fcnn/hyperparam_tuning/segment",
         "hyperparam_tuning_satimages":
-            "fcnn/hyperparam_tuning/satimages",
+            "networks/fcnn/hyperparam_tuning/satimages",
         "hyperparam_tuning_shuttle":
-            "fcnn/hyperparam_tuning/shuttle",
+            "networks/fcnn/hyperparam_tuning/shuttle",
         "hyperparam_tuning_spambase":
-            "fcnn/hyperparam_tuning/spambase",
+            "networks/fcnn/hyperparam_tuning/spambase",
         "hyperparam_tuning_usps":
-            "fcnn/hyperparam_tuning/usps",
+            "networks/fcnn/hyperparam_tuning/usps",
         "hyperparam_tuning_wall":
-            "fcnn/hyperparam_tuning/wall",
+            "networks/fcnn/hyperparam_tuning/wall",
         "hyperparam_tuning_waveform":
-            "fcnn/hyperparam_tuning/waveform"
+            "networks/fcnn/hyperparam_tuning/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -466,109 +466,109 @@ class FCNNPaths(_Const):
 class HELMPaths(_Const):
     dirs_dataset_paths = {
         "helm_adult":
-            "helm/images/confusion_matrix/adult",
+            "networks/helm/images/confusion_matrix/adult",
         "helm_cifar10":
-            "helm/images/confusion_matrix/cifar10",
+            "networks/helm/images/confusion_matrix/cifar10",
         "helm_connect4":
-            "helm/images/confusion_matrix/connect4",
+            "networks/helm/images/confusion_matrix/connect4",
         "helm_isolete":
-            "helm/images/confusion_matrix/isolete",
+            "networks/helm/images/confusion_matrix/isolete",
         "helm_letter":
-            "helm/images/confusion_matrix/letter",
+            "networks/helm/images/confusion_matrix/letter",
         "helm_mnist":
-            "helm/images/confusion_matrix/mnist",
+            "networks/helm/images/confusion_matrix/mnist",
         "helm_mnist_fashion":
-            "helm/images/confusion_matrix/mnist_fashion",
+            "networks/helm/images/confusion_matrix/mnist_fashion",
         "helm_musk2":
-            "helm/images/confusion_matrix/musk2",
+            "networks/helm/images/confusion_matrix/musk2",
         "helm_optdigits":
-            "helm/images/confusion_matrix/optdigits",
+            "networks/helm/images/confusion_matrix/optdigits",
         "helm_page_blocks":
-            "helm/images/confusion_matrix/page_blocks",
+            "networks/helm/images/confusion_matrix/page_blocks",
         "helm_segment":
-            "helm/images/confusion_matrix/segment",
+            "networks/helm/images/confusion_matrix/segment",
         "helm_shuttle":
-            "helm/images/confusion_matrix/shuttle",
+            "networks/helm/images/confusion_matrix/shuttle",
         "helm_spambase":
-            "helm/images/confusion_matrix/spambase",
+            "networks/helm/images/confusion_matrix/spambase",
         "helm_usps":
-            "helm/images/confusion_matrix/usps",
+            "networks/helm/images/confusion_matrix/usps",
         "helm_satimages":
-            "helm/images/confusion_matrix/satimages",
+            "networks/helm/images/confusion_matrix/satimages",
         "helm_wall":
-            "helm/images/confusion_matrix/wall",
+            "networks/helm/images/confusion_matrix/wall",
         "helm_waveform":
-            "helm/images/confusion_matrix/waveform",
+            "networks/helm/images/confusion_matrix/waveform",
 
         "results_adult":
-            "helm/data/results/adult",
+            "networks/helm/data/results/adult",
         "results_cifar10":
-            "helm/data/results/cifar10",
+            "networks/helm/data/results/cifar10",
         "results_connect4":
-            "helm/data/results/connect4",
+            "networks/helm/data/results/connect4",
         "results_isolete":
-            "helm/data/results/isolete",
+            "networks/helm/data/results/isolete",
         "results_letter":
-            "helm/data/results/letter",
+            "networks/helm/data/results/letter",
         "results_mnist":
-            "helm/data/results/mnist",
+            "networks/helm/data/results/mnist",
         "results_mnist_fashion":
-            "helm/data/results/mnist_fashion",
+            "networks/helm/data/results/mnist_fashion",
         "results_musk2":
-            "helm/data/results/musk2",
+            "networks/helm/data/results/musk2",
         "results_optdigits":
-            "helm/data/results/optdigits",
+            "networks/helm/data/results/optdigits",
         "results_page_blocks":
-            "helm/data/results/page_blocks",
+            "networks/helm/data/results/page_blocks",
         "results_segment":
-            "helm/data/results/segment",
+            "networks/helm/data/results/segment",
         "results_shuttle":
-            "helm/data/results/shuttle",
+            "networks/helm/data/results/shuttle",
         "results_spambase":
-            "helm/data/results/spambase",
+            "networks/helm/data/results/spambase",
         "results_usps":
-            "helm/data/results/usps",
+            "networks/helm/data/results/usps",
         "results_satimages":
-            "helm/data/results/satimages",
+            "networks/helm/data/results/satimages",
         "results_wall":
-            "helm/data/results/wall",
+            "networks/helm/data/results/wall",
         "results_waveform":
-            "helm/data/results/waveform",
+            "networks/helm/data/results/waveform",
 
         "hyperparam_tuning_adult":
-            "helm/data/hyperparam_tuning/adult",
+            "networks/helm/data/hyperparam_tuning/adult",
         "hyperparam_tuning_cifar10":
-            "helm/data/hyperparam_tuning/cifar10",
+            "networks/helm/data/hyperparam_tuning/cifar10",
         "hyperparam_tuning_connect4":
-            "helm/data/hyperparam_tuning/connect4",
+            "networks/helm/data/hyperparam_tuning/connect4",
         "hyperparam_tuning_isolete":
-            "helm/data/hyperparam_tuning/isolete",
+            "networks/helm/data/hyperparam_tuning/isolete",
         "hyperparam_tuning_letter":
-            "helm/data/hyperparam_tuning/letter",
+            "networks/helm/data/hyperparam_tuning/letter",
         "hyperparam_tuning_mnist":
-            "helm/data/hyperparam_tuning/mnist",
+            "networks/helm/data/hyperparam_tuning/mnist",
         "hyperparam_tuning_mnist_fashion":
-            "helm/data/hyperparam_tuning/mnist_fashion",
+            "networks/helm/data/hyperparam_tuning/mnist_fashion",
         "hyperparam_tuning_musk2":
-            "helm/data/hyperparam_tuning/musk2",
+            "networks/helm/data/hyperparam_tuning/musk2",
         "hyperparam_tuning_optdigits":
-            "helm/data/hyperparam_tuning/optdigits",
+            "networks/helm/data/hyperparam_tuning/optdigits",
         "hyperparam_tuning_page_blocks":
-            "helm/data/hyperparam_tuning/page_blocks",
+            "networks/helm/data/hyperparam_tuning/page_blocks",
         "hyperparam_tuning_segment":
-            "helm/data/hyperparam_tuning/segment",
+            "networks/helm/data/hyperparam_tuning/segment",
         "hyperparam_tuning_satimages":
-            "helm/data/hyperparam_tuning/satimages",
+            "networks/helm/data/hyperparam_tuning/satimages",
         "hyperparam_tuning_shuttle":
-            "helm/data/hyperparam_tuning/shuttle",
+            "networks/helm/data/hyperparam_tuning/shuttle",
         "hyperparam_tuning_spambase":
-            "helm/data/hyperparam_tuning/spambase",
+            "networks/helm/data/hyperparam_tuning/spambase",
         "hyperparam_tuning_usps":
-            "helm/data/hyperparam_tuning/usps",
+            "networks/helm/data/hyperparam_tuning/usps",
         "hyperparam_tuning_wall":
-            "helm/data/hyperparam_tuning/wall",
+            "networks/helm/data/hyperparam_tuning/wall",
         "hyperparam_tuning_waveform":
-            "helm/data/hyperparam_tuning/waveform"
+            "networks/helm/data/hyperparam_tuning/waveform"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
