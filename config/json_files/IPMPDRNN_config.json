@@ -1,5 +1,5 @@
 {
-  "dataset_name": "mnist_fashion",
+  "dataset_name": "cifar10",
   "activation": "LeakyReLU",
   "number_of_tests": 10,
   "seed": true,
@@ -9,6 +9,7 @@
   "num_aux_net": 1,
   "eq_neurons": {
     "adult": [866, 866, 866],
+    "cifar10": [2000, 2000, 2000],
     "connect4": [866, 866, 866],
     "isolete": [1300, 1300, 1300],
     "letter": [1500, 1500, 1500],
@@ -27,6 +28,7 @@
   },
   "exp_neurons": {
     "adult": [800, 350, 200],
+    "cifar10": [4000, 1500, 500],
     "connect4": [2049, 452, 100],
     "isolete": [1400, 1300, 1200],
     "letter": [3000, 1000, 500],
@@ -45,6 +47,7 @@
   },
   "subset_percentage": {
     "adult": 0.53349549408446,
+    "cifar10": 0.05,
     "connect4": 0.5,
     "isolete": 0.55,
     "letter": 0.1,
@@ -66,6 +69,11 @@
       "BASE": 1e-5,
       "EXP_ORT": 1e-15,
       "EXP_ORT_C": 1.6918663436920012e-14
+    },
+    "cifar10": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-30
     },
     "connect4": {
       "BASE": 1e-5,
@@ -145,6 +153,7 @@
   },
   "penalty": {
     "adult": 3.5092910220340516,
+    "cifar10": 0.15,
     "connect4": 5,
     "isolete": 5,
     "letter": 0.15,

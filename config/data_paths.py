@@ -103,6 +103,8 @@ class MPDRNNPaths(_Const):
     dirs_dataset_paths = {
         "results_adult":
             "mpdrnn/data/results/adult",
+        "results_cifar10":
+            "mpdrnn/data/results/cifar10",
         "results_connect4":
             "mpdrnn/data/results/connect4",
         "results_isolete":
@@ -136,6 +138,8 @@ class MPDRNNPaths(_Const):
 
         "hyperparam_adult":
             "mpdrnn/data/hyperparam/adult",
+        "hyperparam_cifar10":
+            "mpdrnn/data/hyperparam/cifar10",
         "hyperparam_connect4":
             "mpdrnn/data/hyperparam/connect4",
         "hyperparam_isolete":
@@ -189,7 +193,14 @@ class CIPMPDRNNPaths(_Const):
         "results_mnist_fashion":
             "cipmpdrnn/data/results/mnist_fashion",
         "results_cifar10":
-            "cipmpdrnn/data/results/cifar10"
+            "cipmpdrnn/data/results/cifar10",
+
+        "hyperparam_mnist":
+            "cipmpdrnn/data/hyperparam_tuning/mnist",
+        "hyperparam_mnist_fashion":
+            "cipmpdrnn/data/hyperparam_tuning/mnist_fashion",
+        "hyperparam_cifar10":
+            "cipmpdrnn/data/hyperparam_tuning/cifar10"
     }
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -210,6 +221,8 @@ class IPMPDRNNPaths(_Const):
     dirs_dataset_paths = {
         "results_adult":
             "ipmpdrnn/data/results/adult",
+        "results_cifar10":
+            "ipmpdrnn/data/results/cifar10",
         "results_connect4":
             "ipmpdrnn/data/results/connect4",
         "results_isolete":
@@ -243,6 +256,8 @@ class IPMPDRNNPaths(_Const):
 
         "hyperparam_adult":
             "ipmpdrnn/data/hyperparam_tuning/adult",
+        "hyperparam_cifar10":
+            "ipmpdrnn/data/hyperparam_tuning/cifar10",
         "hyperparam_connect4":
             "ipmpdrnn/data/hyperparam_tuning/connect4",
         "hyperparam_isolete":
@@ -294,6 +309,8 @@ class FCNNPaths(_Const):
         # FCNN saved weights
         "sw_adult":
             "fcnn/saved_weights_fcnn/adult",
+        "sw_cifar10":
+            "fcnn/saved_weights_fcnn/cifar10",
         "sw_connect4":
             "fcnn/saved_weights_fcnn/connect4",
         "sw_isolete":
@@ -328,6 +345,8 @@ class FCNNPaths(_Const):
         # FCNN logs
         "logs_adult":
             "fcnn/logs_fcnn/adult",
+        "logs_cifar10":
+            "fcnn/logs_fcnn/cifar10",
         "logs_connect4":
             "fcnn/logs_fcnn/connect4",
         "logs_isolete":
@@ -361,6 +380,8 @@ class FCNNPaths(_Const):
 
         "results_adult":
             "fcnn/results_fcnn/adult",
+        "results_cifar10":
+            "fcnn/results_fcnn/cifar10",
         "results_connect4":
             "fcnn/results_fcnn/connect4",
         "results_isolete":
@@ -394,6 +415,8 @@ class FCNNPaths(_Const):
 
         "hyperparam_tuning_adult":
             "fcnn/hyperparam_tuning/adult",
+        "hyperparam_tuning_cifar10":
+            "fcnn/hyperparam_tuning/cifar10",
         "hyperparam_tuning_connect4":
             "fcnn/hyperparam_tuning/connect4",
         "hyperparam_tuning_isolete":
@@ -444,6 +467,8 @@ class HELMPaths(_Const):
     dirs_dataset_paths = {
         "helm_adult":
             "helm/images/confusion_matrix/adult",
+        "helm_cifar10":
+            "helm/images/confusion_matrix/cifar10",
         "helm_connect4":
             "helm/images/confusion_matrix/connect4",
         "helm_isolete":
@@ -477,6 +502,8 @@ class HELMPaths(_Const):
 
         "results_adult":
             "helm/data/results/adult",
+        "results_cifar10":
+            "helm/data/results/cifar10",
         "results_connect4":
             "helm/data/results/connect4",
         "results_isolete":
@@ -510,6 +537,8 @@ class HELMPaths(_Const):
 
         "hyperparam_tuning_adult":
             "helm/data/hyperparam_tuning/adult",
+        "hyperparam_tuning_cifar10":
+            "helm/data/hyperparam_tuning/cifar10",
         "hyperparam_tuning_connect4":
             "helm/data/hyperparam_tuning/connect4",
         "hyperparam_tuning_isolete":

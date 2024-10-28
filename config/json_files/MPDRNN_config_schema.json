@@ -5,8 +5,8 @@
   "properties": {
     "dataset_name": {
       "type": "string",
-      "enum": ["connect4", "isolete", "letter", "mnist", "mnist_fashion", "musk2", "optdigits", "page_blocks",
-               "satimages", "segment", "shuttle", "spambase", "usps", "wall", "waveform"],
+      "enum": ["adult", "cifar10", "connect4", "isolete", "letter", "mnist", "mnist_fashion", "musk2", "optdigits",
+        "page_blocks", "satimages", "segment", "shuttle", "spambase", "usps", "wall", "waveform"],
       "description": "The name of the dataset to be used."
     },
     "activation": {
@@ -41,6 +41,12 @@
       "type": "object",
       "description": "Number of equal neurons.",
       "properties": {
+        "adult": {
+          "type": "array"
+        },
+        "cifar10": {
+          "type": "array"
+        },
         "connect4": {
           "type": "array"
         },
@@ -92,6 +98,12 @@
       "type": "object",
       "description": "Number of equal neurons.",
       "properties": {
+        "adult": {
+          "type": "array"
+        },
+        "cifar10": {
+          "type": "array"
+        },
         "connect4": {
           "type": "array"
         },
@@ -143,6 +155,50 @@
       "type": "object",
       "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
       "properties": {
+        "adult": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "cifar10": {
+          "properties": {
+            "BASE": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            },
+            "EXP_ORT_C": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
         "connect4": {
           "properties": {
             "BASE": {
@@ -479,6 +535,18 @@
       "type": "object",
       "description": "Value of the L2 penalty term.",
       "properties": {
+        "adult": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "cifar10": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
         "connect4": {
           "oneOf": [
             { "type": "number" },

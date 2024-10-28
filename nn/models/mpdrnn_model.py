@@ -326,8 +326,8 @@ class MultiPhaseDeepRandomizedNeuralNetworkSubsequent(MultiPhaseDeepRandomizedNe
         else:
             w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes // 2))
             q, _ = torch.linalg.qr(w_rnd)
-            orthogonal_matrix = torch.mm(q, q.t())
-            hidden_layer_i = torch.cat((hidden_layer_i_a, orthogonal_matrix), dim=1)
+            # orthogonal_matrix = torch.mm(q, q.t())
+            hidden_layer_i = torch.cat((hidden_layer_i_a, q), dim=1)
         return hidden_layer_i
 
     def train_layer(self, train_loader):

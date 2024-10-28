@@ -26,6 +26,22 @@ def general_dataset_configs(dataset_type) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_adult"), "adult.npz")
         },
         "cifar10": {
+            "dataset_name":
+                "cifar10",
+            "dataset_size":
+                60000,
+            "num_train_data":
+                42000,
+            "num_features":
+                3072,
+            "num_classes":
+                10,
+            "class_labels":
+                ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"],
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_cifar10"), "cifar10.npz"),
+            "cached_pca_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_cifar10"), "cifar10_pca_99.npz"),
             "original_dataset":
                 DATASET_FILES_PATHS.get_data_path("dataset_path_cifar10")
         },
@@ -102,6 +118,8 @@ def general_dataset_configs(dataset_type) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
+            "cached_pca_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist_pca_51.npz"),
             "original_dataset":
                 DATASET_FILES_PATHS.get_data_path("dataset_path_mnist")
         },
@@ -347,9 +365,23 @@ def drnn_paths_config(dataset_type) -> Dict:
             }
         },
         "cifar10": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_cifar10"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_cifar10"),
+            },
+            "ipmpdrnn": {
+                "path_to_results":
+                    IPMPDRNN_PATHS.get_data_path("results_cifar10"),
+                "hyperparam_tuning":
+                    IPMPDRNN_PATHS.get_data_path("hyperparam_cifar10"),
+            },
             "cipmpdrnn": {
                 "path_to_results":
                     CIPMPDRNN_PATHS.get_data_path("results_cifar10"),
+                "hyperparam_tuning":
+                    CIPMPDRNN_PATHS.get_data_path("hyperparam_cifar10"),
             }
         },
         "isolete": {
@@ -397,7 +429,9 @@ def drnn_paths_config(dataset_type) -> Dict:
             },
             "cipmpdrnn": {
                 "path_to_results":
-                    CIPMPDRNN_PATHS.get_data_path("results_mnist")
+                    CIPMPDRNN_PATHS.get_data_path("results_mnist"),
+                "hyperparam_tuning":
+                    CIPMPDRNN_PATHS.get_data_path("hyperparam_mnist"),
             }
         },
         "mnist_fashion": {
@@ -415,7 +449,9 @@ def drnn_paths_config(dataset_type) -> Dict:
             },
             "cipmpdrnn": {
                 "path_to_results":
-                    CIPMPDRNN_PATHS.get_data_path("results_mnist")
+                    CIPMPDRNN_PATHS.get_data_path("results_mnist_fashion"),
+                "hyperparam_tuning":
+                    CIPMPDRNN_PATHS.get_data_path("hyperparam_mnist_fashion"),
             }
         },
         "musk2": {
@@ -577,6 +613,16 @@ def fcnn_paths_configs(dataset_type) -> Dict:
                 FCNN_PATHS.get_data_path("results_adult"),
             "hyperparam_tuning":
                 FCNN_PATHS.get_data_path("hyperparam_tuning_adult"),
+        },
+        "cifar10": {
+            "fcnn_saved_weights":
+                FCNN_PATHS.get_data_path("sw_cifar10"),
+            "logs":
+                FCNN_PATHS.get_data_path("logs_cifar10"),
+            "saved_results":
+                FCNN_PATHS.get_data_path("results_cifar10"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_cifar10"),
         },
         "connect4": {
             "fcnn_saved_weights":
@@ -745,6 +791,14 @@ def helm_paths_config(dataset_type) -> Dict:
                 HELM_PATHS.get_data_path("results_adult"),
             "hyperparam_tuning":
                 HELM_PATHS.get_data_path("hyperparam_tuning_adult")
+        },
+        "cifar10": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_cifar10"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_cifar10"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_cifar10")
         },
         "connect4": {
             "path_to_cm":

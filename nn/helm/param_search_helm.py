@@ -58,7 +58,6 @@ class HyperparameterSearchHELM(HELMBase):
         scheduler = ASHAScheduler(
             metric=self.cfg.get('hyperparamtuning').get("metric"),
             mode=self.cfg.get('hyperparamtuning').get("mode"),
-            max_t=self.cfg.get('hyperparamtuning').get('max_t'),
             grace_period=self.cfg.get('hyperparamtuning').get('grace_period'),
             reduction_factor=self.cfg.get('hyperparamtuning').get("reduction_factor")
         )

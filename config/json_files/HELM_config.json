@@ -1,9 +1,10 @@
 {
-  "dataset_name": "adult",
+  "dataset_name": "wall",
   "seed": false,
-  "num_tests": 10,
+  "num_tests": 1,
   "penalty": {
-    "adult": 3.665702124518219e-17,
+    "adult": 1.69038933283209e-24,
+    "cifar10": 0.15,
     "connect4": 3.665702124518219e-17,
     "isolete": 8.948176813872704e-12,
     "letter": 1.3214583874123556e-12,
@@ -17,11 +18,12 @@
     "shuttle": 4.9501035759603156e-29,
     "spambase": 4.0238638857332915e-13,
     "usps": 1.0410413967617076e-12,
-    "wall": 1.0601267257939107e-16,
+    "wall": 2.442187133157106e-30,
     "waveform": 7.514883372313729e-06
   },
   "scaling_factor": {
-    "adult": 3.665702124518219e-17,
+    "adult": 0.7735365538622208,
+    "cifar10": 0.15,
     "connect4": 0.6296642684522955,
     "isolete": 0.7130442990114634,
     "letter": 0.1722563334511953,
@@ -35,11 +37,12 @@
     "shuttle": 0.8145734922136045,
     "spambase": 0.12218852497271493,
     "usps": 0.9806451612903225,
-    "wall": 0.8783347904912766,
+    "wall": 0.25283872210285085,
     "waveform": 0.8746666666666667
   },
   "hidden_neurons": {
     "adult": [300, 100, 500],
+    "cifar10": [1000, 2000, 3000],
     "connect4": [400, 200, 2000],
     "isolete": [800, 400, 3000],
     "letter": [1000, 500, 5000],
@@ -59,10 +62,9 @@
   "hyperparamtuning": {
     "metric": "accuracy",
     "mode": "max",
-    "max_t": 30,
-    "grace_period": 4,
+    "grace_period": 1,
     "reduction_factor": 2,
-    "num_samples": 610,
+    "num_samples": 64,
     "num_resources": {
       "cpu": 2,
       "gpu": 1

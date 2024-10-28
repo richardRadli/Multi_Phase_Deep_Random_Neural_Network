@@ -13,7 +13,7 @@ from torchvision.datasets import MNIST, FashionMNIST, CIFAR10, SVHN
 from conv_mpdrinn_pruning.conv_slfn import ConvolutionalSLFN, SecondLayer, ThirdLayer
 from config.json_config import json_config_selector
 from config.dataset_config import drnn_paths_config, general_dataset_configs
-from utils.utils import load_config_json, setup_logger, create_timestamp
+from utils.utils import load_config_json, setup_logger, save_log_to_txt
 
 
 class TrainEval:
@@ -23,13 +23,6 @@ class TrainEval:
             load_config_json(
                 json_schema_filename=json_config_selector("cipmpdrnn").get("schema"),
                 json_filename=json_config_selector("cipmpdrnn").get("config")
-            )
-        )
-        timestamp = create_timestamp()
-        self.save_path = (
-            os.path.join(
-                drnn_paths_config(self.cfg["dataset_name"])["cipmpdrnn"]["path_to_results"],
-                f"{self.cfg['dataset_name']}_{timestamp}.xlsx"
             )
         )
 
@@ -81,6 +74,9 @@ class TrainEval:
             "rcond": tune.loguniform(1e-30, 1e-1),
             "penalty_term": tune.uniform(0.1, 45)
         }
+
+        self.save_path = drnn_paths_config(self.cfg.get("dataset_name")).get("hyperparam_tuning")
+        self.save_log_file = os.path.join(self.save_path, "hyperparam_search_best_results.txt")
 
     @staticmethod
     def select_dataset(dataset_type):
@@ -365,13 +361,17 @@ class TrainEval:
                 num_samples=16,
                 scheduler=scheduler,
                 progress_reporter=reporter,
-                storage_path="C:/Users/ricsi/Desktop/conv_slfn_hyper"
+                storage_path=self.save_path
             )
         )
 
         best_trial = result.get_best_trial("accuracy", "max", "last")
         print("Best trial config: {}".format(best_trial.config))
         print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+
+        save_log_to_txt(output_file=self.save_log_file,
+                        result=result,
+                        operation="accuracy")
 
 
 # ----------------------------------------------------------------------------------------------------------------------

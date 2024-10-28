@@ -1,5 +1,6 @@
 import os
 import logging
+import multiprocessing as mp
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -144,7 +145,7 @@ class HyperparameterSearch:
         scheduler = ASHAScheduler(
             metric="accuracy",
             mode="max",
-            max_t=self.cfg.get("epochs"),
+            max_t=10,
             grace_period=10,
             reduction_factor=2
         )
@@ -156,7 +157,7 @@ class HyperparameterSearch:
 
         result = tune.run(
             self.fit,
-            resources_per_trial={"cpu": 6, "gpu": 1},
+            resources_per_trial={"cpu": mp.cpu_count(), "gpu": 1},
             config=self.hyperparam_config,
             num_samples=25,
             scheduler=scheduler,
