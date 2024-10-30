@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FCNN Configuration",
+  "type": "object",
+  "properties": {
+    "dataset_name": {
+      "type": "string",
+      "enum": ["connect4", "isolete", "letter", "mnist", "mnist_fashion", "musk2", "optdigits", "page_blocks", "segment", "shuttle", "usps"],
+      "description": "The name of the dataset to be used."
+    },
+    "patience": {
+      "type": "integer",
+      "description": "The number of epochs after which the training should be stopped if the validation loss is not decreasing."
+    },
+    "seed": {
+      "type": "boolean",
+      "description": "Controls the way to generate random values. If set to True, the same values will be generated in every execution."
+    },
+    "learning_rate": {
+      "type": "object",
+      "description": "Learning rates for different datasets using ADAM.",
+      "properties": {
+        "connect4": { "type": "number" },
+        "isolete": { "type": "number" },
+         "letter": { "type": "number" },
+         "mnist": { "type": "number" },
+         "mnist_fashion": { "type": "number" },
+         "musk2": { "type": "number" },
+         "optdigits": { "type": "number" },
+         "page_blocks": { "type": "number" },
+         "segment": { "type": "number" },
+         "shuttle": { "type": "number" },
+         "usps": { "type": "number" }
+         }
+    },
+    "hidden_neurons": {
+      "type": "object",
+      "description": "Number of hidden nodes in the hidden layers for different datasets.",
+      "properties": {
+        "connect4": { "type": "integer" },
+        "isolete": { "type": "integer" },
+        "letter": { "type": "integer" },
+        "mnist": { "type": "integer" },
+        "mnist_fashion": { "type": "integer" },
+        "musk2": { "type": "integer" },
+        "optdigits": { "type": "integer" },
+        "page_blocks": { "type": "integer" },
+        "segment": { "type": "integer" },
+        "shuttle": { "type": "integer" },
+        "usps": { "type": "integer" }
+      }
+    },
+    "batch_size": {
+      "type": "object",
+      "description": "Batch sizes for different datasets.",
+      "properties": {
+        "connect4": { "type": "integer" },
+        "isolete": { "type": "integer" },
+        "letter": { "type": "integer" },
+        "mnist": { "type": "integer" },
+        "mnist_fashion": { "type": "integer" },
+        "musk2": { "type": "integer" },
+        "optdigits": { "type": "integer" },
+        "page_blocks": { "type": "integer" },
+        "segment": { "type": "integer" },
+        "shuttle": { "type": "integer" },
+        "usps": { "type": "integer" }
+      }
+    },
+    "epochs": {
+      "type": "integer",
+      "description": "Number of epochs."
+    },
+    "num_tests": {
+      "type": "integer",
+      "description": "How many times a test should be repeated."
+    },
+    "device": {
+      "type": "string",
+      "enum": ["gpu", "cuda", "cpu"],
+      "description": "The selected device where the computations will be executed."
+    }
+  },
+  "required": ["dataset_name", "patience", "seed", "hidden_neurons", "batch_size", "epochs"]
+}

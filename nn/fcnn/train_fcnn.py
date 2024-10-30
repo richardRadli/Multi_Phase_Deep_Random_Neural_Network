@@ -7,187 +7,212 @@ import torch.nn as nn
 import torch.optim as optim
 
 from tqdm import tqdm
+from torchinfo import summary
 from torch.utils.tensorboard import SummaryWriter
-from torchsummary import summary
 from typing import List
 
-from config.config import DatasetConfig, FCNNConfig
-from config.dataset_config import general_dataset_configs, fcnn_dataset_configs
-from dataset_operations.load_dataset import load_data_fcnn
-from model import CustomELMModel
-from utils.utils import create_timestamp, setup_logger, measure_execution_time_fcnn, use_gpu_if_available
+from config.data_paths import ConfigFilePaths
+from config.dataset_config import general_dataset_configs, fcnn_paths_configs
+from nn.models.fcnn_model import FullyConnectedNeuralNetwork
+from utils.utils import (create_timestamp, setup_logger, device_selector, load_config_json, measure_execution_time,
+                         create_train_valid_test_datasets)
 
 
-class FCNN:
+class TrainFCNN:
     def __init__(self):
-        # Create time stamp
-        self.timestamp = create_timestamp()
-
-        # Set up colorama
+        # Basic setup
+        timestamp = create_timestamp()
         colorama.init()
-
-        # Set up logger
         setup_logger()
 
-        # Set up config
-        dataset_cfg = DatasetConfig().parse()
-        self.fcnn_cfg = FCNNConfig().parse()
+        self.cfg = (
+            load_config_json(
+                json_schema_filename=ConfigFilePaths().get_data_path("config_schema_fcnn"),
+                json_filename=ConfigFilePaths().get_data_path("config_fcnn")
+            )
+        )
 
-        # Set up paths
-        gen_ds_cfg = general_dataset_configs(dataset_cfg)
-        fcnn_ds_cfg = fcnn_dataset_configs(dataset_cfg)
+        if self.cfg.get("seed"):
+            torch.manual_seed(1234)
 
-        # Set up device
-        self.device = use_gpu_if_available()
+        dataset_name = self.cfg.get("dataset_name")
+        device = self.cfg.get("device")
+        hidden_neurons = self.cfg.get("hidden_neurons")
+        batch_size = self.cfg.get("batch_size")
+        learning_rate = self.cfg.get("learning_rate")
 
-        # Load dataset
-        self.train_loader, self.valid_loader, _ = load_data_fcnn(gen_ds_cfg, self.fcnn_cfg)
+        gen_ds_cfg = (
+            general_dataset_configs(
+                dataset_type=dataset_name
+            )
+        )
 
-        # Set up model
-        self.model = CustomELMModel()
-        self.model = self.model.to(self.device)
-        summary(self.model, input_size=(gen_ds_cfg.get("num_features"),))
+        fcnn_ds_cfg = (
+            fcnn_paths_configs(
+                dataset_type=dataset_name
+            )
+        )
 
-        # Define your loss function
-        self.loss_fn = nn.MSELoss()
+        # Setup device
+        self.device = (
+            device_selector(
+                preferred_device=device
+            )
+        )
 
-        # Define your optimizer
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.fcnn_cfg.learning_rate)
+        # Load the model
+        self.model = (
+            FullyConnectedNeuralNetwork(
+                input_size=gen_ds_cfg.get("num_features"),
+                hidden_size=hidden_neurons,
+                output_size=gen_ds_cfg.get("num_classes")
+            )
+        ).to(self.device)
+        summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
+
+        # Load the dataset
+        file_path = (
+            general_dataset_configs(dataset_name).get("cached_dataset_file")
+        )
+        self.train_loader, self.valid_loader, self.test_loader = (
+            create_train_valid_test_datasets(
+                file_path=file_path,
+                batch_size=batch_size
+            )
+        )
+
+        # Define loss function
+        self.criterion = (
+            nn.CrossEntropyLoss()
+        )
+
+        self.optimizer = optim.Adam(
+            self.model.parameters(),
+            lr=learning_rate,
+        )
 
         # Tensorboard
-        tensorboard_log_dir = os.path.join(fcnn_ds_cfg.get("logs"), self.timestamp)
+        tensorboard_log_dir = os.path.join(fcnn_ds_cfg.get("logs"), timestamp)
         if not os.path.exists(tensorboard_log_dir):
             os.makedirs(tensorboard_log_dir)
         self.writer = SummaryWriter(log_dir=str(tensorboard_log_dir))
 
         # Create save directory
-        self.save_path = os.path.join(fcnn_ds_cfg.get("fcnn_saved_weights"), self.timestamp)
+        self.save_path = os.path.join(fcnn_ds_cfg.get("fcnn_saved_weights"), timestamp)
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
-        # Initialize aux variables
-        self.training_acc = []
-        self.testing_acc = []
-        self.training_time = []
-
-    def train_loop(self, batch_data: torch.Tensor, batch_labels: torch.Tensor, train_losses: List[float]) -> None:
+    def train_loop(self, batch_data: torch.Tensor, batch_labels: torch.Tensor, train_losses: List[float]):
         """
-        Training loop for the model.
+        Performs a single training iteration for the given batch of data.
 
         Args:
-            batch_data (torch.Tensor): Input data for the current batch.
-            batch_labels (torch.Tensor): Ground truth labels for the current batch.
-            train_losses (List[float]): List to store training losses.
+            batch_data: Tensor containing the input data for the batch.
+            batch_labels: Tensor containing the ground truth labels for the batch.
+            train_losses: List to accumulate the training losses.
 
         Returns:
-            None
+            None: The function updates the model weights and appends the loss to the list.
         """
 
+        batch_data, batch_labels = batch_data.to(self.device), batch_labels.to(self.device)
         self.optimizer.zero_grad()
-        batch_data = batch_data.to(self.device)
-        batch_labels = batch_labels.to(self.device)
+        output = self.model(batch_data)
 
-        outputs = self.model(batch_data)
-        t_loss = self.loss_fn(outputs, batch_labels)
-        t_loss.backward()
+        loss = self.criterion(output, batch_labels)
+        loss.backward()
         self.optimizer.step()
 
-        train_losses.append(t_loss.item())
+        train_losses.append(loss.item())
 
-    def valid_loop(self, batch_data: torch.Tensor, batch_labels: torch.Tensor, valid_losses: List[float]) -> None:
+    def valid_loop(self, batch_data: torch.Tensor, batch_labels: torch.Tensor, valid_losses: List[float]):
         """
-        Validation loop for the model
+        Performs a single validation iteration for the given batch of data.
+
         Args:
-            batch_data (torch.Tensor): Input data for the current batch.
-            batch_labels (torch.Tensor): Ground truth labels for the current batch.
-            valid_losses (List[float]): List to store validation losses.
+            batch_data: Tensor containing the input data for the batch.
+            batch_labels: Tensor containing the ground truth labels for the batch.
+            valid_losses: List to accumulate the validation losses.
 
         Returns:
-            None
+            None: The function calculates the loss and appends it to the list.
         """
 
         batch_data = batch_data.to(self.device)
         batch_labels = batch_labels.to(self.device)
 
-        outputs = self.model(batch_data)
-        v_loss = self.loss_fn(outputs, batch_labels)
+        output = self.model(batch_data)
 
-        valid_losses.append(v_loss.item())
+        t_loss = self.criterion(output, batch_labels)
+        valid_losses.append(t_loss.item())
 
-    @measure_execution_time_fcnn
-    def train(self) -> None:
+    @measure_execution_time
+    def fit(self) -> None:
         """
-        Executes the training and validation loops for the model.
+        Trains the model over multiple epochs, performs validation, and handles early stopping.
+
+        This method includes:
+        - Training the model for each epoch.
+        - Evaluating the model on the validation set.
+        - Logging training and validation losses.
+        - Saving the best model based on validation loss.
+        - Implementing early stopping if no improvement in validation loss.
+
         Returns:
-            None
+            None: The function performs training, validation, and model saving but does not return any value.
         """
 
-        best_valid_loss = float('inf')
+        best_valid_loss = float("inf")
         best_model_path = None
-        epochs_without_improvement = 0
+        epoch_without_improvement = 0
 
-        # To track the training loss as the model trains
         train_losses = []
-
-        # To track the validation loss as the model trains
         valid_losses = []
 
-        for epoch in tqdm(range(self.fcnn_cfg.epochs),
-                          desc=colorama.Fore.LIGHTYELLOW_EX + "Epochs",
-                          total=self.fcnn_cfg.epochs):
+        for epoch in tqdm(range(self.cfg.get("epochs"))):
+
             self.model.train()
             for batch_data, batch_labels in self.train_loader:
                 self.train_loop(batch_data, batch_labels, train_losses)
 
+            self.model.eval()
             for batch_data, batch_labels in self.valid_loader:
                 self.valid_loop(batch_data, batch_labels, valid_losses)
 
-            train_loss = np.average(train_losses)
-            valid_loss = np.average(valid_losses)
+            train_loss = np.mean(train_losses)
+            valid_loss = np.mean(valid_losses)
 
             logging.info(f'\ntrain_loss: {train_loss:.4f} ' + f'valid_loss: {valid_loss:.4f}')
 
-            # Record to tensorboard
             self.writer.add_scalars("Loss", {"train": train_loss, "validation": valid_loss}, epoch)
 
-            # Clear lists to track next epoch
             train_losses.clear()
             valid_losses.clear()
 
-            # Early stopping check
             if valid_loss < best_valid_loss:
                 best_valid_loss = valid_loss
-                epochs_without_improvement = 0
+                epoch_without_improvement = 0
                 if best_model_path is not None:
                     os.remove(best_model_path)
-                best_model_path = os.path.join(self.save_path, "epoch_" + str(epoch) + ".pt")
+                best_model_path = os.path.join(self.save_path, f"best_model_epoch_{epoch}.pt")
                 torch.save(self.model.state_dict(), best_model_path)
-                logging.info(f"New weights have been saved at epoch {epoch} with value of {valid_loss:.5f}")
+                logging.info(f'New weights have been saved at epoch {epoch} with value of {best_valid_loss:.4f}')
             else:
                 logging.warning(f"No new weights have been saved. Best valid loss was {best_valid_loss:.5f},\n "
                                 f"current valid loss is {valid_loss:.5f}")
-                epochs_without_improvement += 1
-                if epochs_without_improvement >= self.fcnn_cfg.patience:
-                    logging.info("Early stopping: No improvement for {} epochs".format(self.fcnn_cfg.patience))
+                epoch_without_improvement += 1
+                if epoch_without_improvement >= self.cfg.get("patience"):
+                    logging.warning(f"Early stopping counter: {epoch_without_improvement}")
+                    logging.info(f"Early stopping at epoch {epoch}")
                     break
 
-        # Close and flush SummaryWriter
         self.writer.close()
         self.writer.flush()
 
-    def main(self) -> None:
-        """
-        Main function of the program.
-        Returns:
-            None
-        """
 
-        self.train()
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
-        fcnn = FCNN()
-        fcnn.main()
+        train_fcnn = TrainFCNN()
+        train_fcnn.fit()
     except KeyboardInterrupt as kie:
         logging.error(f'{kie}')

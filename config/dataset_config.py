@@ -1,431 +1,212 @@
-import logging
 import os
 
 from typing import Dict
 
-from config.const import DATASET_FCNN_PATHS, DATASET_FILES_PATHS, DATASET_MPDRNN_PATHS
+from config.data_paths import DATASET_FILES_PATHS, MPDRNN_PATHS, FCNN_PATHS, HELM_PATHS
 
 
-def general_dataset_configs(cfg) -> Dict:
-    dataset_type = cfg.dataset_name
+def general_dataset_configs(dataset_type) -> Dict:
     dataset_config = {
         "connect4": {
             "dataset_name":
                 "connect4",
+            "dataset_size":
+                67557,
             "num_train_data":
-                49980,
-            "num_test_data":
-                17577,
+                47290,
             "num_features":
                 42,
             "num_classes":
                 3,
-            "eq_neurons":
-                [866, 866, 866],
-            "exp_neurons":
-                [2049, 452, 100],
-            "helm_neurons":
-                [400, 200, 2000],
             "class_labels":
                 ["x", "o", "b"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "connect4.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_connect4"),
-        },
-        "forest": {
-            "dataset_name":
-                "forest",
-            "num_train_data":
-                15120,
-            "num_test_data":
-                565892,
-            "num_features":
-                54,
-            "num_classes":
-                7,
-            "eq_neurons":
-                [1000, 1000, 1000],
-            "exp_neurons":
-                [100, 40, 10],
-            "helm_neurons":
-                [50, 50, 51],
-            "class_labels":
-                [],
-            "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_forest"), "forest.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_forest"),
-        },
-        "iris": {
-            "dataset_name":
-                "iris",
-            "num_train_data":
-                105,
-            "num_test_data":
-                45,
-            "num_features":
-                4,
-            "num_classes":
-                3,
-            "eq_neurons":
-                [100, 100, 100],
-            "exp_neurons":
-                [100, 40, 10],
-            "helm_neurons":
-                [50, 50, 51],
-            "class_labels":
-                ['iris-setosa', 'iris-versicolor', 'iris-virginica'],
-            "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_iris"), "iris.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_iris"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_connect4"), "connect4.npz")
         },
         "isolete": {
             "dataset_name":
                 "isolete",
+            "dataset_size":
+                7797,
             "num_train_data":
-                6238,
-            "num_test_data":
-                1559,
+                5458,
             "num_features":
                 617,
             "num_classes":
                 26,
-            "eq_neurons":
-                [1300, 1300, 1300],
-            "exp_neurons":
-                [2000, 1500, 600],
-            "helm_neurons":
-                [800, 400, 3000],
             "class_labels":
-                [],
+                ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17",
+                 "18", "19", "20", "21", "22", "23", "24", "25", "26"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "isolete.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_isolete"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_isolete"), "isolete.npz")
         },
         "letter": {
             "dataset_name":
                 "letter",
+            "dataset_size":
+                20000,
             "num_train_data":
-                10500,
-            "num_test_data":
-                9500,
+                14000,
             "num_features":
                 16,
             "num_classes":
                 26,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
-            "helm_neurons":
-                [100, 50, 500],
             "class_labels":
                 ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
                  'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "letter.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_letter"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_letter"), "letter.npz"),
         },
         "mnist": {
             "dataset_name":
                 "mnist",
+            "dataset_size":
+                70000,
             "num_train_data":
-                60000,
-            "num_test_data":
-                10000,
+                49000,
             "num_features":
                 784,
             "num_classes":
                 10,
-            "eq_neurons":
-                [5333, 5333, 5333],
-            "exp_neurons":
-                [8000, 5000, 3000],
-            "helm_neurons":
-                [1000, 5000, 10000],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_mnist"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
         },
         "mnist_fashion": {
             "dataset_name":
                 "mnist_fashion",
+            "dataset_size":
+                70000,
             "num_train_data":
-                60000,
-            "num_test_data":
-                10000,
+                49000,
             "num_features":
                 784,
             "num_classes":
                 10,
-            "eq_neurons":
-                [5333, 5333, 5333],
-            "exp_neurons":
-                [8000, 5000, 3000],
-            "helm_neurons":
-                [1000, 5000, 10000],
             "class_labels":
                 ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt",
                  "Sneaker", "Bag", "Ankle boot"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_mnist_fashion"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npz"),
         },
         "musk2": {
             "dataset_name":
                 "musk2",
+            "dataset_size":
+                6598,
             "num_train_data":
-                3000,
-            "num_test_data":
-                3598,
+                4619,
             "num_features":
                 168,
             "num_classes":
                 2,
-            "eq_neurons":
-                [866, 866, 866],
-            "exp_neurons":
-                [1500, 750, 350],
-            "helm_neurons":
-                [400, 200, 2000],
             "class_labels":
                 ["Musks", "Non musks"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "musk2.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_musk2"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_musk2"), "musk2.npz")
         },
         "optdigits": {
             "dataset_name":
                 "optdigits",
+            "dataset_size":
+                5620,
             "num_train_data":
-                3823,
-            "num_test_data":
-                1797,
+                3934,
             "num_features":
                 64,
             "num_classes":
                 10,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [325, 325, 325],
-            "helm_neurons":
-                [100, 50, 500],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "optdigits.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_optdigits"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_optdigits"), "optdigits.npz")
         },
         "page_blocks": {
             "dataset_name":
                 "page_blocks",
+            "dataset_size":
+                5473,
             "num_train_data":
-                4373,
-            "num_test_data":
-                1100,
+                4925,
             "num_features":
                 10,
             "num_classes":
                 5,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
-            "helm_neurons":
-                [100, 50, 500],
             "class_labels":
                 ["text", "horiz. line", "graphic", "vert. line ", "picture"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "page_blocks.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_page_blocks"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_page_blocks"), "page_blocks.npz")
         },
         "segment": {
             "dataset_name":
                 "segment",
+            "dataset_size":
+                2310,
             "num_train_data":
-                1732,
-            "num_test_data":
-                577,
+                1617,
             "num_features":
                 19,
             "num_classes":
                 7,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
-            "helm_neurons":
-                [100, 50, 500],
             "class_labels":
                 ["brickface", "sky", "foliage", "cement", "window", "path", "grass"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "segment.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_segment"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_segment"), "segment.npz")
         },
         "shuttle": {
             "dataset_name":
                 "shuttle",
+            "dataset_size":
+                58000,
             "num_train_data":
                 40600,
-            "num_test_data":
-                17400,
             "num_features":
                 9,
             "num_classes":
                 7,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
-            "helm_neurons":
-                [100, 50, 500],
             "class_labels":
                 ["Rad Flow", "Fpv Close", "Fpv Open", "High", "Bypass", "Bpv Close", "Bpv Open"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_shuttle"),
-        },
-        "spambase": {
-            "dataset_name":
-                "spambase",
-            "num_train_data":
-                3681,
-            "num_test_data":
-                920,
-            "num_features":
-                57,
-            "num_classes":
-                2,
-            "eq_neurons":
-                [216, 216, 216],
-            "exp_neurons":
-                [400, 200, 50],
-            "helm_neurons":
-                [100, 50, 500],
-            "class_labels":
-                ["0", "1"],
-            "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_spambase"),
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_shuttle"), "shuttle.npz")
         },
         "usps": {
             "dataset_name":
                 "usps",
+            "dataset_size":
+                9298,
             "num_train_data":
-                7291,
-            "num_test_data":
-                2007,
+                6509,
             "num_features":
                 256,
             "num_classes":
                 10,
-            "eq_neurons":
-                [866, 866, 866],
-            "exp_neurons":
-                [2049, 452, 100],
-            "helm_neurons":
-                [400, 200, 2000],
             "class_labels":
                 ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "usps.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_usps")
-        },
-        "yaleb": {
-            "dataset_name":
-                "yaleb",
-            "num_train_data":
-                1680,
-            "num_test_data":
-                734,
-            "num_features":
-                1024,
-            "num_classes":
-                40,
-            "eq_neurons":
-                [1400, 1400, 1400],
-            "exp_neurons":
-                [1050, 1050, 1050, 1050],
-            "helm_neurons":
-                [800, 400, 3000],
-            "class_labels":
-                [],
-            "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_yaleb"), "yaleb.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_yaleb")
-        },
-        "satimages": {
-            "dataset_name":
-                "satimages",
-            "num_train_data":
-                4435,
-            "num_test_data":
-                2000,
-            "num_features":
-                36,
-            "num_classes":
-                6,
-            "eq_neurons":
-                [1000, 1000, 1000],
-            "exp_neurons":
-                [100, 40, 10],
-            "helm_neurons":
-                [50, 50, 51],
-            "class_labels":
-                [],
-            "dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "data.txt"),
-            "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_satimages"), "satimages.npy"),
-            "path_to_cm":
-                DATASET_MPDRNN_PATHS.get_data_path("cm_satimages")
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_usps"), "usps.npz")
         }
     }
 
@@ -435,142 +216,317 @@ def general_dataset_configs(cfg) -> Dict:
     return dataset_config[dataset_type]
 
 
-def fcnn_dataset_configs(cfg) -> Dict:
-    dataset_type = cfg.dataset_name
-    logging.info(dataset_type)
+def drnn_paths_config(dataset_type) -> Dict:
+    dataset_config = {
+        "connect4": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_connect4"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_connect4"),
+            }
+        },
+        "isolete": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_isolete"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_isolete"),
+            }
+        },
+        "letter": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_letter"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_letter"),
+            }
+        },
+        "mnist": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_mnist"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_mnist"),
+            }
+        },
+        "mnist_fashion": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_mnist_fashion"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_mnist_fashion"),
+            }
+        },
+        "musk2": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_musk2"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_musk2"),
+            }
+        },
+        "optdigits": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_optdigits"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_optdigits"),
+            }
+        },
+        "page_blocks": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_page_blocks"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_page_blocks"),
+            }
+        },
+        "segment": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_segment"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_segment"),
+            }
+        },
+        "shuttle": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_shuttle"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_shuttle"),
+            }
+        },
+        "usps": {
+            "mpdrnn": {
+                "path_to_results":
+                    MPDRNN_PATHS.get_data_path("results_usps"),
+                "hyperparam_tuning":
+                    MPDRNN_PATHS.get_data_path("hyperparam_usps"),
+            }
+        }
+    }
 
+    if dataset_type not in dataset_config:
+        raise ValueError(f'Invalid dataset name: {dataset_type}')
+
+    return dataset_config[dataset_type]
+
+
+def fcnn_paths_configs(dataset_type) -> Dict:
     dataset_config = {
         "connect4": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_connect4"),
+                FCNN_PATHS.get_data_path("sw_connect4"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_connect4"),
+                FCNN_PATHS.get_data_path("logs_connect4"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_connect4")
-        },
-        "forest": {
-            "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_forest"),
-            "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_forest"),
-            "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_forest")
-        },
-        "iris": {
-            "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_iris"),
-            "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_iris"),
-            "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_iris")
+                FCNN_PATHS.get_data_path("results_connect4"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_connect4"),
         },
         "isolete": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_isolete"),
+                FCNN_PATHS.get_data_path("sw_isolete"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_isolete"),
+                FCNN_PATHS.get_data_path("logs_isolete"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_isolete")
+                FCNN_PATHS.get_data_path("results_isolete"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_isolete"),
         },
         "letter": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_letter"),
+                FCNN_PATHS.get_data_path("sw_letter"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_letter"),
+                FCNN_PATHS.get_data_path("logs_letter"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_letter")
+                FCNN_PATHS.get_data_path("results_letter"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_letter"),
         },
         "mnist": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_mnist"),
+                FCNN_PATHS.get_data_path("sw_mnist"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_mnist"),
+                FCNN_PATHS.get_data_path("logs_mnist"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_mnist")
+                FCNN_PATHS.get_data_path("results_mnist"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_mnist"),
         },
         "mnist_fashion": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_mnist_fashion"),
+                FCNN_PATHS.get_data_path("sw_mnist_fashion"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_mnist_fashion"),
+                FCNN_PATHS.get_data_path("logs_mnist_fashion"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_mnist_fashion")
+                FCNN_PATHS.get_data_path("results_mnist_fashion"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_mnist_fashion"),
         },
         "musk2": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_musk2"),
+                FCNN_PATHS.get_data_path("sw_musk2"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_musk2"),
+                FCNN_PATHS.get_data_path("logs_musk2"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_musk2")
+                FCNN_PATHS.get_data_path("results_musk2"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_musk2"),
         },
         "optdigits": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_optdigits"),
+                FCNN_PATHS.get_data_path("sw_optdigits"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_optdigits"),
+                FCNN_PATHS.get_data_path("logs_optdigits"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_optdigits")
+                FCNN_PATHS.get_data_path("results_optdigits"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_optdigits"),
         },
         "page_blocks": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_page_blocks"),
+                FCNN_PATHS.get_data_path("sw_page_blocks"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_page_blocks"),
+                FCNN_PATHS.get_data_path("logs_page_blocks"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_page_blocks")
-        },
-        "satimages": {
-            "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_satimages"),
-            "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_satimages"),
-            "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_satimages")
+                FCNN_PATHS.get_data_path("results_page_blocks"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_page_blocks"),
         },
         "segment": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_segment"),
+                FCNN_PATHS.get_data_path("sw_segment"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_segment"),
+                FCNN_PATHS.get_data_path("logs_segment"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_segment")
+                FCNN_PATHS.get_data_path("results_segment"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_segment"),
         },
         "shuttle": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_shuttle"),
+                FCNN_PATHS.get_data_path("sw_shuttle"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_shuttle"),
+                FCNN_PATHS.get_data_path("logs_shuttle"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_shuttle")
-        },
-        "spambase": {
-            "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_spambase"),
-            "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_spambase"),
-            "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_spambase")
+                FCNN_PATHS.get_data_path("results_shuttle"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_shuttle"),
         },
         "usps": {
             "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_usps"),
+                FCNN_PATHS.get_data_path("sw_usps"),
             "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_usps"),
+                FCNN_PATHS.get_data_path("logs_usps"),
             "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_usps")
-        },
-        "yaleb": {
-            "fcnn_saved_weights":
-                DATASET_FCNN_PATHS.get_data_path("sw_yaleb"),
-            "logs":
-                DATASET_FCNN_PATHS.get_data_path("logs_yaleb"),
-            "saved_results":
-                DATASET_FCNN_PATHS.get_data_path("results_yaleb")
+                FCNN_PATHS.get_data_path("results_usps"),
+            "hyperparam_tuning":
+                FCNN_PATHS.get_data_path("hyperparam_tuning_usps"),
         }
     }
 
     if dataset_type not in dataset_config:
         raise ValueError(f"Invalid dataset name: {dataset_type}")
+
+    return dataset_config[dataset_type]
+
+
+def helm_paths_config(dataset_type) -> Dict:
+    dataset_config = {
+        "connect4": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_connect4"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_connect4"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_connect4")
+        },
+        "isolete": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_isolete"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_isolete"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_isolete")
+        },
+        "letter": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_letter"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_letter"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_letter")
+        },
+        "mnist": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_mnist"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_mnist"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_mnist")
+        },
+        "mnist_fashion": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_mnist_fashion"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_mnist_fashion"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_mnist_fashion")
+        },
+        "musk2": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_musk2"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_musk2"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_musk2")
+        },
+        "optdigits": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_optdigits"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_optdigits"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_optdigits")
+        },
+        "page_blocks": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_page_blocks"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_page_blocks"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_page_blocks")
+        },
+        "segment": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_segment"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_segment"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_segment")
+        },
+        "shuttle": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_shuttle"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_shuttle"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_shuttle")
+        },
+        "usps": {
+            "path_to_cm":
+                HELM_PATHS.get_data_path("cm_usps"),
+            "path_to_results":
+                HELM_PATHS.get_data_path("results_usps"),
+            "hyperparam_tuning":
+                HELM_PATHS.get_data_path("hyperparam_tuning_usps")
+        }
+    }
+
+    if dataset_type not in dataset_config:
+        raise ValueError(f'Invalid dataset name: {dataset_type}')
 
     return dataset_config[dataset_type]
