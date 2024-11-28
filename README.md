@@ -11,6 +11,14 @@
 
 # Overview
 
+## 🚨 Repository Status
+As of 2024.11.28.:
+
+| Branch Name  | Status         | Description |
+|--------------|----------------|---|
+| `lion17` | Up-to-date     |  Deep Randomized Networks for Fast Learning  |   
+| `journal`   | Under development     |  Can Randomized Networks be Competitive to Gradient Optimization for Feed-forward Networks? |  
+
 ## ✨ Features
 - Multiple network types (FCNN, HELM, MPDRNN)
 - Hyperparameter tuning for optimal performance
