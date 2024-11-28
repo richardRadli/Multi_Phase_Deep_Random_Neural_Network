@@ -13,17 +13,16 @@ class NpzDataset(Dataset):
         Args:
             file_path (str): Path to the .npz file containing the dataset.
             operation (str): The operation type which determines which subset of data to load. Should be one of
-                ["train", "valid", "test"].
+                ["train", "test"].
 
         Raises:
-            ValueError: If the provided operation is not one of ["train", "valid", "test"].
+            ValueError: If the provided operation is not one of ["train", "test"].
         """
 
         data = np.load(file_path, allow_pickle=True)
 
         data_keys = {
             "train": ("train_x", "train_y"),
-            "valid": ("valid_x", "valid_y"),
             "test": ("test_x", "test_y")
         }
 

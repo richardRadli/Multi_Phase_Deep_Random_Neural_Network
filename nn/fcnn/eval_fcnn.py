@@ -10,7 +10,7 @@ from tqdm import tqdm
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
-from utils.utils import (setup_logger, device_selector, create_train_valid_test_datasets, load_config_json,
+from utils.utils import (setup_logger, device_selector, create_train_test_datasets, load_config_json,
                          find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
 
 
@@ -39,8 +39,8 @@ class EvalFCNN:
         file_path = (
             general_dataset_configs(self.cfg.get('dataset_name')).get("cached_dataset_file")
         )
-        self.train_loader, _, self.test_loader = (
-            create_train_valid_test_datasets(
+        self.train_loader, self.test_loader = (
+            create_train_test_datasets(
                 file_path,
                 batch_size=self.cfg.get("batch_size")
             )

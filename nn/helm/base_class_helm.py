@@ -8,7 +8,7 @@ from typing import List, Tuple
 
 from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs
-from utils.utils import load_config_json, setup_logger, measure_execution_time, create_train_valid_test_datasets
+from utils.utils import load_config_json, setup_logger, measure_execution_time, create_train_test_datasets
 
 
 class HELMBase:
@@ -24,8 +24,8 @@ class HELMBase:
             np.random.seed(self.cfg.get("seed"))
 
         file_path = general_dataset_configs(self.cfg.get("dataset_name")).get("cached_dataset_file")
-        self.train_loader, self.valid_loader, self.test_loader = (
-            create_train_valid_test_datasets(file_path)
+        self.train_loader, self.test_loader = (
+            create_train_test_datasets(file_path)
         )
 
         self.num_features = general_dataset_configs(self.cfg.get("dataset_name")).get("num_features")
@@ -226,7 +226,7 @@ class HELMBase:
     def evaluation(self, beta: np.ndarray, beta1: np.ndarray, beta2: np.ndarray, l3: float, ps1: list, ps2: list,
                    dataloader) -> list:
         """
-        Calculate and log the validation/testing accuracy.
+        Calculate and log the testing accuracy.
 
         Args:
             beta: Weight matrix.

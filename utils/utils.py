@@ -95,7 +95,7 @@ def create_timestamp() -> str:
     return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 
-def create_train_valid_test_datasets(file_path, batch_size=None) -> Tuple[DataLoader, DataLoader, DataLoader]:
+def create_train_test_datasets(file_path, batch_size=None) -> Tuple[DataLoader, DataLoader]:
     """
     Creates DataLoader instances for training, validation, and testing datasets from a given file path.
 
@@ -106,22 +106,15 @@ def create_train_valid_test_datasets(file_path, batch_size=None) -> Tuple[DataLo
     Returns:
         tuple: A tuple containing three DataLoader instances:
             - `train_loader`: DataLoader for the training dataset.
-            - `valid_loader`: DataLoader for the validation dataset.
             - `test_loader`: DataLoader for the testing dataset.
     """
 
     train_dataset = NpzDataset(file_path, operation="train")
-    valid_dataset = NpzDataset(file_path, operation="valid")
     test_dataset = NpzDataset(file_path, operation="test")
 
     train_loader = (
         DataLoader(
             dataset=train_dataset, batch_size=len(train_dataset) if batch_size is None else batch_size, shuffle=False
-        )
-    )
-    valid_loader = (
-        DataLoader(
-            dataset=valid_dataset, batch_size=len(valid_dataset) if batch_size is None else batch_size, shuffle=False
         )
     )
     test_loader = (
@@ -132,7 +125,7 @@ def create_train_valid_test_datasets(file_path, batch_size=None) -> Tuple[DataLo
 
     logging.info(f"Size of train dataset: {len(train_dataset)}, Size of test dataset: {len(test_dataset)}")
 
-    return train_loader, valid_loader, test_loader
+    return train_loader, test_loader
 
 
 def device_selector(preferred_device: str) -> torch.device:

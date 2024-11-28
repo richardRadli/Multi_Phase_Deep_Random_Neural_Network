@@ -4,7 +4,7 @@ from typing import Dict
 
 from config.json_config import json_config_selector
 from config.dataset_config import general_dataset_configs
-from utils.utils import create_train_valid_test_datasets, load_config_json, setup_logger
+from utils.utils import create_train_test_datasets, load_config_json, setup_logger
 
 
 class BaseMPDRNN:
@@ -31,7 +31,7 @@ class BaseMPDRNN:
         self.subsequent_model = None
 
         file_path = general_dataset_configs(self.dataset_name).get("cached_dataset_file")
-        self.train_loader, self.valid_loader, self.test_loader = create_train_valid_test_datasets(file_path)
+        self.train_loader, self.test_loader = create_train_test_datasets(file_path)
 
     def get_network_config(self, network_type, config):
         """

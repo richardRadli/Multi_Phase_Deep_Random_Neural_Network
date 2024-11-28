@@ -15,9 +15,9 @@ class _Const(object):
     root_mapping = {
         "ricsi": {
             "STORAGE_ROOT":
-                "D:/storage/Journal2",
+                "D:/storage/lion17",
             "DATASET_ROOT":
-                "D:/storage/Journal2/datasets",
+                "D:/storage/lion17/datasets",
             "PROJECT_ROOT":
                 "C:/Users/ricsi/Documents/research/Multi_Phase_Deep_Random_Neural_Network",
         }
@@ -90,7 +90,7 @@ class ConfigFilePaths(_Const):
 
 
 class MPDRNNPaths(_Const):
-    dirs_dataset_paths = {
+    dirs_data_paths = {
         "results_connect4":
             "networks/mpdrnn/data/results/connect4",
         "results_isolete":
@@ -143,17 +143,17 @@ class MPDRNNPaths(_Const):
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "STORAGE")
+        self.create_directories(self.dirs_data_paths, "STORAGE")
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def get_data_path(self, key):
-        return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
+        return os.path.join(self.STORAGE_ROOT, self.dirs_data_paths.get(key, ""))
 
 
 class FCNNPaths(_Const):
-    dirs_dataset_paths = {
+    dirs_data_paths = {
         # FCNN saved weights
         "sw_connect4":
             "networks/fcnn/saved_weights_fcnn/connect4",
@@ -254,17 +254,17 @@ class FCNNPaths(_Const):
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "STORAGE")
+        self.create_directories(self.dirs_data_paths, "STORAGE")
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def get_data_path(self, key):
-        return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
+        return os.path.join(self.STORAGE_ROOT, self.dirs_data_paths.get(key, ""))
 
 
 class HELMPaths(_Const):
-    dirs_dataset_paths = {
+    dirs_data_paths = {
         "helm_connect4":
             "networks/helm/images/confusion_matrix/connect4",
         "helm_isolete":
@@ -340,13 +340,13 @@ class HELMPaths(_Const):
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "STORAGE")
+        self.create_directories(self.dirs_data_paths, "STORAGE")
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def get_data_path(self, key):
-        return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
+        return os.path.join(self.STORAGE_ROOT, self.dirs_data_paths.get(key, ""))
 
 
 class DatasetFilesPaths(_Const):

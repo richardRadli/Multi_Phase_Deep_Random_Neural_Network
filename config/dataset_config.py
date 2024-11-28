@@ -13,7 +13,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 67557,
             "num_train_data":
-                47290,
+                50000,
+            "num_test_data":
+                17557,
             "num_features":
                 42,
             "num_classes":
@@ -31,7 +33,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 7797,
             "num_train_data":
-                5458,
+                6238,
+            "num_test_data":
+                1559,
             "num_features":
                 617,
             "num_classes":
@@ -50,7 +54,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 20000,
             "num_train_data":
-                14000,
+                10500,
+            "num_test_data":
+                9500,
             "num_features":
                 16,
             "num_classes":
@@ -69,7 +75,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 70000,
             "num_train_data":
-                49000,
+                60000,
+            "num_test_data":
+                10000,
             "num_features":
                 784,
             "num_classes":
@@ -87,7 +95,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 70000,
             "num_train_data":
-                49000,
+                60000,
+            "num_test_data":
+                10000,
             "num_features":
                 784,
             "num_classes":
@@ -106,7 +116,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 6598,
             "num_train_data":
-                4619,
+                3000,
+            "num_test_data":
+                3598,
             "num_features":
                 168,
             "num_classes":
@@ -124,7 +136,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 5620,
             "num_train_data":
-                3934,
+                3822,
+            "num_test_data":
+                1798,
             "num_features":
                 64,
             "num_classes":
@@ -142,7 +156,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 5473,
             "num_train_data":
-                4925,
+                4373,
+            "num_test_data":
+                1100,
             "num_features":
                 10,
             "num_classes":
@@ -160,7 +176,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 2310,
             "num_train_data":
-                1617,
+                1733,
+            "num_test_data":
+                577,
             "num_features":
                 19,
             "num_classes":
@@ -178,7 +196,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 58000,
             "num_train_data":
-                40600,
+                29834,
+            "num_test_data":
+                28166,
             "num_features":
                 9,
             "num_classes":
@@ -196,7 +216,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_size":
                 9298,
             "num_train_data":
-                6509,
+                7291,
+            "num_test_data":
+                2007,
             "num_features":
                 256,
             "num_classes":

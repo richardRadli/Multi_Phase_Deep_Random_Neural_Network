@@ -1,5 +1,5 @@
 {
-  "dataset_name": "page_blocks",
+  "dataset_name": "connect4",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
