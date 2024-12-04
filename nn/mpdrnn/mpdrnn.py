@@ -24,11 +24,12 @@ class MPDRNN(BaseMPDRNN):
         self.gen_ds_cfg = general_dataset_configs(self.cfg.get("dataset_name"))
         drnn_config = drnn_paths_config(self.dataset_name)
 
+        rcond_str = f"{rcond:.4f}" if rcond is not None else "none"
         self.filename = (
             os.path.join(
                 drnn_config.get("mpdrnn").get("path_to_results"),
                 f"{timestamp}_{self.dataset_name}_dataset_{self.method}_method_{penalty_term}"
-                f"_penalty_{rcond:.4f}_rcond.xlsx"
+                f"_penalty_{rcond_str}_rcond.xlsx"
             )
         )
 

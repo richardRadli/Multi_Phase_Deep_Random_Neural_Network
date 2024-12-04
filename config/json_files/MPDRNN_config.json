@@ -1,9 +1,9 @@
 {
-  "dataset_name": "connect4",
+  "dataset_name": "letter",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
-  "method": "EXP_ORT_C",
+  "method": "BASE",
   "mu": 0,
   "sigma": 0.1,
   "eq_neurons": {

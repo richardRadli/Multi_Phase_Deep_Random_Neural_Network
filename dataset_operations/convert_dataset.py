@@ -131,7 +131,8 @@ def split_dataset(dataset_name):
 
 
 def main():
-    datasets = ["shuttle"]
+    datasets = ["connect4", "isolete", "letter", "mnist", "mnist_fashion", "musk2", "optdigits", "page_blocks",
+                "segment", "shuttle", "usps"]
     for dataset in datasets:
         split_dataset(dataset)
 
