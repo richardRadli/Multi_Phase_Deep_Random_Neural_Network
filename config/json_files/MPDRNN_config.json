@@ -1,5 +1,5 @@
 {
-  "dataset_name": "letter",
+  "dataset_name": "isolete",
   "activation": "LeakyReLU",
   "number_of_tests": 20,
   "seed": true,
@@ -8,20 +8,20 @@
   "sigma": 0.1,
   "eq_neurons": {
     "connect4": [866, 866, 866],
-    "isolete": [1300, 1300, 1300],
-    "letter": [1500, 1500, 1500],
-    "mnist": [2000, 2000, 2000],
-    "mnist_fashion": [2000, 2000, 2000],
-    "musk2": [866, 866, 866],
-    "optdigits": [216, 216, 216],
-    "page_blocks": [216, 216, 216],
-    "segment": [300, 300, 300],
+    "isolete": [1050, 1050, 1050],
+    "letter": [130, 130, 130],
+    "mnist": [5333, 5333, 5333],
+    "mnist_fashion": [5333, 5333, 5333],
+    "musk2": [520, 520, 520],
+    "optdigits": [162, 162, 162],
+    "page_blocks": [130, 130, 130],
+    "segment": [216, 216, 216],
     "shuttle": [216, 216, 216],
-    "usps": [1000, 1000, 1000]
+    "usps": [1300, 1300, 1300]
   },
   "exp_neurons": {
     "connect4": [2049, 452, 100],
-    "isolete": [1400, 1300, 1200],
+    "isolete": [2000, 1500, 600],
     "letter": [3000, 1000, 500],
     "mnist": [4000, 1500, 500],
     "mnist_fashion": [4000, 1500, 500],

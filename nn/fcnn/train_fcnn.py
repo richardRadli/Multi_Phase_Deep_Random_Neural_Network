@@ -86,6 +86,7 @@ class TrainFCNN:
             nn.CrossEntropyLoss()
         )
 
+        # Define optimizer
         self.optimizer = optim.Adam(
             self.model.parameters(),
             lr=learning_rate,
