@@ -11,7 +11,7 @@ from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (setup_logger, device_selector, create_train_valid_test_datasets, load_config_json,
-                         find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
+                         find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn_helm)
 
 
 class EvalFCNN:
@@ -118,7 +118,7 @@ class EvalFCNN:
         setattr(self, f"{operation}_f1sore", f1sore)
         setattr(self, f"{operation}_cm", cm)
 
-        plot_confusion_matrix_fcnn(cm, operation, self.class_labels, self.cfg.get("dataset_name"))
+        plot_confusion_matrix_fcnn_helm(cm, operation, self.class_labels, self.cfg.get("dataset_name"))
         logging.info(f"{operation} accuracy: {accuracy:.4f}")
         logging.info(f"{operation} precision: {precision:.4f}")
         logging.info(f"{operation} recall: {recall:.4f}")

@@ -465,39 +465,39 @@ class FCNNPaths(_Const):
 
 class HELMPaths(_Const):
     dirs_dataset_paths = {
-        "helm_adult":
+        "cm_adult":
             "networks/helm/images/confusion_matrix/adult",
-        "helm_cifar10":
+        "cm_cifar10":
             "networks/helm/images/confusion_matrix/cifar10",
-        "helm_connect4":
+        "cm_connect4":
             "networks/helm/images/confusion_matrix/connect4",
-        "helm_isolete":
+        "cm_isolete":
             "networks/helm/images/confusion_matrix/isolete",
-        "helm_letter":
+        "cm_letter":
             "networks/helm/images/confusion_matrix/letter",
-        "helm_mnist":
+        "cm_mnist":
             "networks/helm/images/confusion_matrix/mnist",
-        "helm_mnist_fashion":
+        "cm_mnist_fashion":
             "networks/helm/images/confusion_matrix/mnist_fashion",
-        "helm_musk2":
+        "cm_musk2":
             "networks/helm/images/confusion_matrix/musk2",
-        "helm_optdigits":
+        "cm_optdigits":
             "networks/helm/images/confusion_matrix/optdigits",
-        "helm_page_blocks":
+        "cm_page_blocks":
             "networks/helm/images/confusion_matrix/page_blocks",
-        "helm_segment":
+        "cm_segment":
             "networks/helm/images/confusion_matrix/segment",
-        "helm_shuttle":
+        "cm_shuttle":
             "networks/helm/images/confusion_matrix/shuttle",
-        "helm_spambase":
+        "cm_spambase":
             "networks/helm/images/confusion_matrix/spambase",
-        "helm_usps":
+        "cm_usps":
             "networks/helm/images/confusion_matrix/usps",
-        "helm_satimages":
+        "cm_satimages":
             "networks/helm/images/confusion_matrix/satimages",
-        "helm_wall":
+        "cm_wall":
             "networks/helm/images/confusion_matrix/wall",
-        "helm_waveform":
+        "cm_waveform":
             "networks/helm/images/confusion_matrix/waveform",
 
         "results_adult":

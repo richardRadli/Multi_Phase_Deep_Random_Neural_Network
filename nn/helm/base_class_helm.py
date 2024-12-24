@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import scipy.linalg as linalg
 
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from typing import List, Tuple
 
 from config.data_paths import JSON_FILES_PATHS
@@ -34,6 +34,8 @@ class HELMBase:
             (2 * np.random.rand(self.cfg.get("hidden_neurons")[1] + 1,
                                 self.cfg.get("hidden_neurons")[2]) - 1).T
         )
+
+        self.labels = general_dataset_configs(self.cfg.get("dataset_name")).get("class_labels")
 
         colorama.init()
 
@@ -213,6 +215,7 @@ class HELMBase:
             precision = precision_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
             recall = recall_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
             f1sore = f1_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
+            cm = confusion_matrix(y_true_argmax, y_predicted_argmax)
             training_time = self.train.execution_time
 
             logging.info(f"Training Accuracy is: {accuracy:.4f}%")
@@ -221,7 +224,7 @@ class HELMBase:
             logging.info(f"Training f1sore is: {f1sore:.4f}%")
             logging.info(f"Training time is: {training_time:.4f} seconds")
 
-            return [accuracy, precision, recall, f1sore, training_time]
+            return [accuracy, precision, recall, f1sore, training_time, cm]
 
     def evaluation(self, beta: np.ndarray, beta1: np.ndarray, beta2: np.ndarray, l3: float, ps1: list, ps2: list,
                    dataloader) -> list:
@@ -268,10 +271,11 @@ class HELMBase:
             precision = precision_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
             recall = recall_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
             f1sore = f1_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
+            cm = confusion_matrix(y_true_argmax, y_predicted_argmax)
 
             logging.info(f"Testing Accuracy is: {accuracy:.4f}%")
             logging.info(f"Testing precision is: {precision:.4f}%")
             logging.info(f"Testing recall is: {recall:.4f}%")
             logging.info(f"Testing f1sore is: {f1sore:.4f}%")
 
-            return [accuracy, precision, recall, f1sore]
+            return [accuracy, precision, recall, f1sore, cm]

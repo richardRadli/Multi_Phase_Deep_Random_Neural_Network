@@ -426,28 +426,43 @@ def measure_execution_time(func: Callable) -> Callable:
     return wrapper
 
 
-def plot_confusion_matrix_fcnn(cm: np.ndarray, operation: str, class_labels: List[str], dataset_name: str) -> None:
+def plot_confusion_matrices_fcnn_helm(cm_train: np.ndarray, cm_test: np.ndarray, class_labels: List[str],
+                                      dataset_name: str, path_to_plot: str, index: int) -> None:
     """
-    Plots a confusion matrix as a heatmap for a given dataset and operation.
+    Plots two confusion matrices (training and testing) as heatmaps side by side for a given dataset and operation.
 
     Args:
-        cm (np.ndarray): A 2D NumPy array representing the confusion matrix.
-        operation (str): A string indicating the operation or task (e.g., "training", "validation", "testing").
+        cm_train (np.ndarray): A 2D NumPy array representing the training confusion matrix.
+        cm_test (np.ndarray): A 2D NumPy array representing the testing confusion matrix.
         class_labels (List[str]): A list of class labels for the confusion matrix axes.
-        dataset_name (str): The name of the dataset for which the confusion matrix is plotted.
+        dataset_name (str): The name of the dataset for which the confusion matrices are plotted.
+        path_to_plot (str): The path to the plot file to be saved.
+        index (int): The index of the current test iteration.
 
     Returns:
         None: The function displays the plot and does not return any value.
     """
 
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt=".0f", cmap="Blues",
-                xticklabels=class_labels, yticklabels=class_labels)
-    plt.xlabel("Predicted labels")
-    plt.ylabel("Actual labels")
-    plt.title(f"Confusion matrix of {dataset_name} on the {operation} set.")
+    filename = os.path.join(path_to_plot, f"{dataset_name}_{index}.png")
+
+    fig, axes = plt.subplots(1, 2, figsize=(24, 8))
+
+    sns.heatmap(cm_train, annot=True, fmt=".0f", cmap="Blues",
+                xticklabels=class_labels, yticklabels=class_labels, ax=axes[0])
+    axes[0].set_xlabel("Predicted labels")
+    axes[0].set_ylabel("Actual labels")
+    axes[0].set_title(f"Training Confusion Matrix of {dataset_name} on the train set")
+
+    sns.heatmap(cm_test, annot=True, fmt=".0f", cmap="Blues",
+                xticklabels=class_labels, yticklabels=class_labels, ax=axes[1])
+    axes[1].set_xlabel("Predicted labels")
+    axes[1].set_ylabel("Actual labels")
+    axes[1].set_title(f"Testing Confusion Matrix of {dataset_name} on the test set")
+
     plt.tight_layout()
-    plt.show()
+    plt.savefig(filename, dpi=300)
+    plt.close()
+    gc.collect()
 
 
 def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_dataset: str, operation: str, method: str,
