@@ -131,3 +131,7 @@ Once your configuration files are set up, run the Python scripts to train and te
 ## 📰 Link to paper
 
 For detailed insights, check out our [research paper](https://link.springer.com/chapter/10.1007/978-3-031-44505-7_9).
+
+## References
+Link to the original [H-ELM code](https://www.extreme-learning-machines.org/elm_codes.html).  
+
