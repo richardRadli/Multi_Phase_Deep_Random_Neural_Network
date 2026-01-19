@@ -8,7 +8,7 @@ from nn.models.model_selector import ModelFactory
 from utils.utils import (setup_logger, load_config_json, create_train_valid_test_datasets, measure_execution_time)
 
 
-class BaseIPMPDRNN:
+class BaseDEVDRNN:
     def __init__(self):
         # Setup logger and colour
         setup_logger()
@@ -16,8 +16,8 @@ class BaseIPMPDRNN:
         # Initialize paths and settings
         self.cfg = (
             load_config_json(
-                json_schema_filename=json_config_selector("ipmpdrnn").get("schema"),
-                json_filename=json_config_selector("ipmpdrnn").get("config")
+                json_schema_filename=json_config_selector("dev_drnn").get("schema"),
+                json_filename=json_config_selector("dev_drnn").get("config")
             )
         )
 

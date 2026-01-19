@@ -7,12 +7,12 @@ from ray.tune.schedulers import ASHAScheduler
 from ray.air import session
 
 from config.dataset_config import drnn_paths_config
-from nn.mpdrnn_pruning.base_class_ipmpdrnn import BaseIPMPDRNN
+from nn.dev_drnn.base_class_dev_drnn import BaseDEVDRNN
 from nn.models.model_selector import ModelFactory
 from utils.utils import setup_logger
 
 
-class ParamSearchIPMPDRNN(BaseIPMPDRNN):
+class ParamSearchDEVDRNN(BaseDEVDRNN):
     # ------------------------------------------------------------------------------------------------------------------
     # -------------------------------------------------- __I N I T__ ---------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ class ParamSearchIPMPDRNN(BaseIPMPDRNN):
         setup_logger()
         colorama.init()
 
-        self.save_path = drnn_paths_config(self.cfg.get("dataset_name")).get("ipmpdrnn").get("hyperparam_tuning")
+        self.save_path = drnn_paths_config(self.cfg.get("dataset_name")).get("dev_drnn").get("hyperparam_tuning")
         self.save_log_file = os.path.join(self.save_path, "hyperparam_search_best_results.txt")
 
         self.hyperparam_config = {
@@ -207,5 +207,5 @@ class ParamSearchIPMPDRNN(BaseIPMPDRNN):
 
 
 if __name__ == '__main__':
-    param_searh = ParamSearchIPMPDRNN()
+    param_searh = ParamSearchDEVDRNN()
     param_searh.tune_params()

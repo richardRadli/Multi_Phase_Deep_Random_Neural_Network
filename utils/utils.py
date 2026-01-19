@@ -1,14 +1,9 @@
 import colorlog
-import gc
 import json
 import jsonschema
 import logging
-import matplotlib.pyplot as plt
-import numpy as np
 import openpyxl
-import os
 import pandas as pd
-import seaborn as sns
 import time
 import torch
 import sys
@@ -57,51 +52,6 @@ def average_columns_in_excel(filename: str) -> None:
             cell.fill = fill
 
     workbook.save(filename)
-
-
-def calc_exp_neurons(total_neurons: int, n_layers: int) -> List[int]:
-    """
-    Distributes a total number of neurons across a specified number of layers
-    using an exponential growth distribution.
-
-    Args:
-        total_neurons (int): The total number of neurons to distribute.
-        n_layers (int): The number of layers across which to distribute the neurons.
-
-    Returns:
-        List[int]: A list of integers representing the number of neurons in each layer,
-                   sorted in descending order.
-    """
-
-    geom_mean = total_neurons ** (1 / n_layers)
-    neurons_per_layer = [int(geom_mean ** i) for i in range(n_layers)]
-    neurons_per_layer[0] += total_neurons - sum(neurons_per_layer)
-
-    if neurons_per_layer[-1] <= 1:
-        neurons_per_layer[-2] += neurons_per_layer[-1] - 1
-        neurons_per_layer.pop()
-
-    return sorted(neurons_per_layer, reverse=True)
-
-
-def create_dir(root_dir: str, method: str) -> str:
-    """
-    Creates a new directory with a timestamp and a specified method as its name
-    within a given root directory.
-
-    Args:
-        root_dir (str): The path to the root directory where the new directory will be created.
-        method (str): The method name or identifier to include in the new directory's name.
-
-    Returns:
-        str: The path to the newly created directory.
-    """
-
-    timestamp = create_timestamp()
-    output_dir = os.path.join(root_dir, f"{timestamp}_{method}")
-    os.makedirs(output_dir, exist_ok=True)
-
-    return output_dir
 
 
 def create_timestamp() -> str:
@@ -155,7 +105,7 @@ def create_train_valid_test_datasets(file_path, batch_size=None) -> Tuple[DataLo
     return train_loader, valid_loader, test_loader
 
 
-def device_selector(preferred_device: str) -> torch.device:
+def device_selector(preferred_device: str) -> torch.device | None:
     """
     Provides information about the currently available GPUs and returns a torch device for training and inference.
 
@@ -189,64 +139,6 @@ def device_selector(preferred_device: str) -> torch.device:
     if preferred_device == "cpu":
         logging.info("Selected CPU device")
         return torch.device("cpu")
-
-
-def exponential_neurons(num_of_layers, num_of_neurons, decay_rate=0.5):
-    if num_of_layers <= 0:
-        raise ValueError("Number of layers must be greater than zero.")
-    if num_of_neurons <= 0:
-        raise ValueError("Number of neurons must be greater than zero.")
-
-    layers = np.arange(num_of_layers)
-    neuron_distribution = np.exp(-decay_rate * layers)
-
-    neuron_distribution /= neuron_distribution.sum()
-    neuron_distribution *= num_of_neurons
-
-    neuron_distribution = np.round(neuron_distribution).astype(int)
-
-    while neuron_distribution.sum() < num_of_neurons:
-        for i in range(len(neuron_distribution)):
-            if neuron_distribution[i] > 0:
-                neuron_distribution[i] += 1
-                if neuron_distribution.sum() >= num_of_neurons:
-                    break
-
-    return neuron_distribution.tolist()
-
-
-def find_latest_file_in_latest_directory(path: str) -> str:
-    """
-    Finds and returns the path of the latest file in the most recently modified directory within a given path.
-
-    Args:
-        path (str): The path to the parent directory containing subdirectories with files.
-
-    Returns:
-        str: The path to the latest file in the most recently modified directory.
-
-    Raises:
-        ValueError: If no directories are found within the given path or if no files are found in the latest directory.
-    """
-
-    dirs = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-
-    if not dirs:
-        raise ValueError(f"No directories found in {path}")
-
-    dirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    latest_dir = dirs[0]
-    files = [os.path.join(latest_dir, f) for f in os.listdir(latest_dir) if
-             os.path.isfile(os.path.join(latest_dir, f))]
-
-    if not files:
-        raise ValueError(f"No files found in {latest_dir}")
-
-    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    latest_file = files[0]
-    logging.info(f"Latest file found: {latest_file}")
-
-    return latest_file
 
 
 def get_num_of_neurons(cfg: dict, method: str) -> list:
@@ -409,64 +301,6 @@ def measure_execution_time(func: Callable) -> Callable:
 
     wrapper.execution_time = None
     return wrapper
-
-
-def plot_confusion_matrix_fcnn(cm: np.ndarray, operation: str, class_labels: List[str], dataset_name: str) -> None:
-    """
-    Plots a confusion matrix as a heatmap for a given dataset and operation.
-
-    Args:
-        cm (np.ndarray): A 2D NumPy array representing the confusion matrix.
-        operation (str): A string indicating the operation or task (e.g., "training", "validation", "testing").
-        class_labels (List[str]): A list of class labels for the confusion matrix axes.
-        dataset_name (str): The name of the dataset for which the confusion matrix is plotted.
-
-    Returns:
-        None: The function displays the plot and does not return any value.
-    """
-
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt=".0f", cmap="Blues",
-                xticklabels=class_labels, yticklabels=class_labels)
-    plt.xlabel("Predicted labels")
-    plt.ylabel("Actual labels")
-    plt.title(f"Confusion matrix of {dataset_name} on the {operation} set.")
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_dataset: str, operation: str, method: str,
-                                 labels=None) -> None:
-    """
-    Plots multiple confusion matrices side by side and saves the plot as a PNG file.
-
-    Args:
-        cm (List[np.ndarray]): A list of 2D NumPy arrays representing confusion matrices to be plotted.
-        path_to_plot (str): The directory path where the plot image will be saved.
-        name_of_dataset (str): The name of the dataset for which the confusion matrices are plotted.
-        operation (str): A string indicating the operation or task (e.g., "training", "validation", "testing").
-        method (str): A string indicating the method or model used.
-        labels (Optional[List[str]]): A list of class labels for the confusion matrix axes. If None, labels will not be
-        set.
-
-    Returns:
-        None: The function saves the plot to the specified path and does not return any value.
-    """
-
-    fig, axis = plt.subplots(1, 3, figsize=(15, 5))
-
-    for i, cm in enumerate(cm):
-        ax = axis[i]
-        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=ax)
-        ax.set_title('%s, %s, %s, %s' % (f"Phase {i + 1}", name_of_dataset, method, operation))
-        ax.set_xlabel('Predicted')
-        ax.set_ylabel('Actual')
-
-    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
-    gc.collect()
 
 
 def reorder_metrics_lists(train_metrics, test_metrics, training_time_list: Optional = None) -> List:

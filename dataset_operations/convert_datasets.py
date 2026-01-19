@@ -40,8 +40,8 @@ def main(split_ratio):
 
     cfg = (
         load_config_json(
-            json_schema_filename=ConfigFilePaths().get_data_path("config_schema_ipmpdrnn"),
-            json_filename=ConfigFilePaths().get_data_path("config_ipmpdrnn")
+            json_schema_filename=ConfigFilePaths().get_data_path("config_schema_dev_drnn"),
+            json_filename=ConfigFilePaths().get_data_path("config_dev_drnn")
         )
     )
 

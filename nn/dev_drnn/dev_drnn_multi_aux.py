@@ -5,13 +5,13 @@ import logging
 from tqdm import tqdm
 
 from config.dataset_config import drnn_paths_config
-from nn.mpdrnn_pruning.base_class_ipmpdrnn import BaseIPMPDRNN
+from nn.dev_drnn.base_class_dev_drnn import BaseDEVDRNN
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, insert_data_to_excel, setup_logger,
                          reorder_metrics_lists, get_num_of_neurons)
 
 
-class IPMPDRNN(BaseIPMPDRNN):
+class DEVDRNN(BaseDEVDRNN):
     # ------------------------------------------------------------------------------------------------------------------
     # -------------------------------------------------- __I N I T__ ---------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -44,8 +44,8 @@ class IPMPDRNN(BaseIPMPDRNN):
         # Save path
         self.save_filename = (
             os.path.join(
-                drnn_config.get("ipmpdrnn").get("path_to_results"),
-                f"{timestamp}_ipmpdrnn_{self.dataset_name}_{self.method}_sp_{sp}_rcond_{rcond}.xlsx")
+                drnn_config.get("dev_drnn").get("path_to_results"),
+                f"{timestamp}_dev_drnn_{self.dataset_name}_{self.method}_sp_{sp}_rcond_{rcond}.xlsx")
         )
 
     def main(self):
@@ -237,7 +237,7 @@ class IPMPDRNN(BaseIPMPDRNN):
 
 if __name__ == "__main__":
     try:
-        ipmpdrnn = IPMPDRNN()
-        ipmpdrnn.main()
+        dev_drnn = DEVDRNN()
+        dev_drnn.main()
     except KeyboardInterrupt as kie:
         logging.error(f"Keyboard interrupt received: {kie}")
