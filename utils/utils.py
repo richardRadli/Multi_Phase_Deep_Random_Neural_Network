@@ -1,9 +1,14 @@
 import colorlog
+import gc
 import json
 import jsonschema
 import logging
+import matplotlib.pyplot as plt
+import numpy as np
 import openpyxl
+import os
 import pandas as pd
+import seaborn as sns
 import time
 import torch
 import sys
@@ -103,65 +108,6 @@ def create_train_valid_test_datasets(file_path, batch_size=None) -> Tuple[DataLo
     logging.info(f"Size of train dataset: {len(train_dataset)}, Size of test dataset: {len(test_dataset)}")
 
     return train_loader, valid_loader, test_loader
-
-
-def device_selector(preferred_device: str) -> torch.device | None:
-    """
-    Provides information about the currently available GPUs and returns a torch device for training and inference.
-
-    Args:
-        preferred_device: A torch device for either "cuda" or "cpu".
-
-    Returns:
-        torch.device: A torch.device object representing the selected device for training and inference.
-    """
-
-    if preferred_device not in ["cuda", "cpu"]:
-        logging.warning("Preferred device is not valid. Using CPU instead.")
-        return torch.device("cpu")
-
-    if preferred_device == "cuda" and torch.cuda.is_available():
-        cuda_info = {
-            'CUDA Available': [torch.cuda.is_available()],
-            'CUDA Device Count': [torch.cuda.device_count()],
-            'Current CUDA Device': [torch.cuda.current_device()],
-            'CUDA Device Name': [torch.cuda.get_device_name(0)]
-        }
-
-        df = pd.DataFrame(cuda_info)
-        logging.info(df)
-        return torch.device("cuda")
-
-    if preferred_device in ["cuda"] and not torch.cuda.is_available():
-        logging.info("Only CPU is available!")
-        return torch.device("cpu")
-
-    if preferred_device == "cpu":
-        logging.info("Selected CPU device")
-        return torch.device("cpu")
-
-
-def get_num_of_neurons(cfg: dict, method: str) -> list:
-    """
-    Retrieves the number of neurons for a given method from a configuration dictionary.
-
-    Args:
-        cfg (dict): A dictionary containing configuration settings, including neuron counts for different methods.
-        method (str): The method for which the number of neurons is requested (e.g., "BASE", "EXP_ORT").
-
-    Returns:
-        int: The number of neurons associated with the specified method.
-
-    Raises:
-        KeyError: If the provided method is not found in the configuration.
-    """
-
-    num_neurons = {
-        "BASE": cfg.get("eq_neurons"),
-        "EXP_ORT": cfg.get("exp_neurons"),
-        "EXP_ORT_C": cfg.get("exp_neurons"),
-    }
-    return num_neurons[method]
 
 
 def insert_data_to_excel(filename: str, dataset_name: str, row: int, data: list) -> None:
@@ -303,7 +249,7 @@ def measure_execution_time(func: Callable) -> Callable:
     return wrapper
 
 
-def reorder_metrics_lists(train_metrics, test_metrics, training_time_list: Optional = None) -> List:
+def reorder_metrics_lists(train_metrics, test_metrics, training_time_list = None) -> List:
     """
     Reorders and combines training and testing metrics into a single list of metrics.
 

@@ -2,6 +2,7 @@ import logging
 import os
 
 from pathlib import Path
+
 from utils.utils import setup_logger
 
 
@@ -39,192 +40,110 @@ class _Const(object):
                 logging.info(f"Directory {dir_path} has been created")
 
 
+
 class ConfigFilePaths(_Const):
     dirs_config_paths = {
-        "config_mpdrnn":
-            "config/json_files/MPDRNN_config.json",
-        "config_schema_mpdrnn":
-            "config/json_files/MPDRNN_config_schema.json",
-
+        
         "config_dev_drnn":
             "config/json_files/DEV_DRNN_config.json",
         "config_schema_dev_drnn":
             "config/json_files/DEV_DRNN_config_schema.json"
     }
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # ---------------------------------------------------- I N I T -----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
     def get_data_path(self, key):
         return os.path.join(self.PROJECT_ROOT, self.dirs_config_paths.get(key, ""))
 
 
-class MPDRNNPaths(_Const):
+class DevDRNNPaths(_Const):
     dirs_dataset_paths = {
+        "results_adult":
+            "networks/dev_drnn/data/results/adult",
+        "results_cifar10":
+            "networks/dev_drnn/data/results/cifar10",
         "results_connect4":
-            "mpdrnn/data/results/connect4",
+            "networks/dev_drnn/data/results/connect4",
         "results_isolete":
-            "mpdrnn/data/results/isolete",
+            "networks/dev_drnn/data/results/isolete",
         "results_letter":
-            "mpdrnn/data/results/letter",
+            "networks/dev_drnn/data/results/letter",
         "results_mnist":
-            "mpdrnn/data/results/mnist",
+            "networks/dev_drnn/data/results/mnist",
         "results_mnist_fashion":
-            "mpdrnn/data/results/mnist_fashion",
+            "networks/dev_drnn/data/results/mnist_fashion",
         "results_musk2":
-            "mpdrnn/data/results/musk2",
+            "networks/dev_drnn/data/results/musk2",
         "results_optdigits":
-            "mpdrnn/data/results/optdigits",
+            "networks/dev_drnn/data/results/optdigits",
         "results_page_blocks":
-            "mpdrnn/data/results/page_blocks",
+            "networks/dev_drnn/data/results/page_blocks",
         "results_segment":
-            "mpdrnn/data/results/segment",
+            "networks/dev_drnn/data/results/segment",
         "results_shuttle":
-            "mpdrnn/data/results/shuttle",
+            "networks/dev_drnn/data/results/shuttle",
         "results_spambase":
-            "mpdrnn/data/results/spambase",
+            "networks/dev_drnn/data/results/spambase",
         "results_usps":
-            "mpdrnn/data/results/usps",
+            "networks/dev_drnn/data/results/usps",
         "results_satimages":
-            "mpdrnn/data/results/satimages",
+            "networks/dev_drnn/data/results/satimages",
         "results_wall":
-            "mpdrnn/data/results/wall",
+            "networks/dev_drnn/data/results/wall",
         "results_waveform":
-            "mpdrnn/data/results/waveform",
+            "networks/dev_drnn/data/results/waveform",
 
+        "hyperparam_adult":
+            "networks/dev_drnn/data/hyperparam/adult",
+        "hyperparam_cifar10":
+            "networks/dev_drnn/data/hyperparam/cifar10",
         "hyperparam_connect4":
-            "mpdrnn/data/hyperparam/connect4",
+            "networks/dev_drnn/data/hyperparam/connect4",
         "hyperparam_isolete":
-            "mpdrnn/data/hyperparam/isolete",
+            "networks/dev_drnn/data/hyperparam/isolete",
         "hyperparam_letter":
-            "mpdrnn/data/hyperparam/letter",
+            "networks/dev_drnn/data/hyperparam/letter",
         "hyperparam_mnist":
-            "mpdrnn/data/hyperparam/mnist",
+            "networks/dev_drnn/data/hyperparam/mnist",
         "hyperparam_mnist_fashion":
-            "mpdrnn/data/hyperparam/mnist_fashion",
+            "networks/dev_drnn/data/hyperparam/mnist_fashion",
         "hyperparam_musk2":
-            "mpdrnn/data/hyperparam/musk2",
+            "networks/dev_drnn/data/hyperparam/musk2",
         "hyperparam_optdigits":
-            "mpdrnn/data/hyperparam/optdigits",
+            "networks/dev_drnn/data/hyperparam/optdigits",
         "hyperparam_page_blocks":
-            "mpdrnn/data/hyperparam/page_blocks",
+            "networks/dev_drnn/data/hyperparam/page_blocks",
         "hyperparam_segment":
-            "mpdrnn/data/hyperparam/segment",
+            "networks/dev_drnn/data/hyperparam/segment",
         "hyperparam_shuttle":
-            "mpdrnn/data/hyperparam/shuttle",
+            "networks/dev_drnn/data/hyperparam/shuttle",
         "hyperparam_spambase":
-            "mpdrnn/data/hyperparam/spambase",
+            "networks/dev_drnn/data/hyperparam/spambase",
         "hyperparam_usps":
-            "mpdrnn/data/hyperparam/usps",
+            "networks/dev_drnn/data/hyperparam/usps",
         "hyperparam_satimages":
-            "mpdrnn/data/hyperparam/satimages",
+            "networks/dev_drnn/data/hyperparam/satimages",
         "hyperparam_wall":
-            "mpdrnn/data/hyperparam/wall",
+            "networks/dev_drnn/data/hyperparam/wall",
         "hyperparam_waveform":
-            "mpdrnn/data/hyperparam/waveform"
+            "networks/dev_drnn/data/hyperparam/waveform"
     }
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # ---------------------------------------------------- I N I T -----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
         self.create_directories(self.dirs_dataset_paths, "STORAGE")
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def get_data_path(self, key):
-        return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
-
-
-class DEVDRNNPaths(_Const):
-    dirs_dataset_paths = {
-        "results_connect4":
-            "dev_drnn/data/results/connect4",
-        "results_isolete":
-            "dev_drnn/data/results/isolete",
-        "results_letter":
-            "dev_drnn/data/results/letter",
-        "results_mnist":
-            "dev_drnn/data/results/mnist",
-        "results_mnist_fashion":
-            "dev_drnn/data/results/mnist_fashion",
-        "results_musk2":
-            "dev_drnn/data/results/musk2",
-        "results_optdigits":
-            "dev_drnn/data/results/optdigits",
-        "results_page_blocks":
-            "dev_drnn/data/results/page_blocks",
-        "results_segment":
-            "dev_drnn/data/results/segment",
-        "results_shuttle":
-            "dev_drnn/data/results/shuttle",
-        "results_spambase":
-            "dev_drnn/data/results/spambase",
-        "results_usps":
-            "dev_drnn/data/results/usps",
-        "results_satimages":
-            "dev_drnn/data/results/satimages",
-        "results_wall":
-            "dev_drnn/data/results/wall",
-        "results_waveform":
-            "dev_drnn/data/results/waveform",
-
-        "hyperparam_connect4":
-            "dev_drnn/data/hyperparam_tuning/connect4",
-        "hyperparam_isolete":
-            "dev_drnn/data/hyperparam_tuning/isolete",
-        "hyperparam_letter":
-            "dev_drnn/data/hyperparam_tuning/letter",
-        "hyperparam_mnist":
-            "dev_drnn/data/hyperparam_tuning/mnist",
-        "hyperparam_mnist_fashion":
-            "dev_drnn/data/hyperparam_tuning/mnist_fashion",
-        "hyperparam_musk2":
-            "dev_drnn/data/hyperparam_tuning/musk2",
-        "hyperparam_optdigits":
-            "dev_drnn/data/hyperparam_tuning/optdigits",
-        "hyperparam_page_blocks":
-            "dev_drnn/data/hyperparam_tuning/page_blocks",
-        "hyperparam_segment":
-            "dev_drnn/data/hyperparam_tuning/segment",
-        "hyperparam_satimages":
-            "dev_drnn/data/hyperparam_tuning/satimages",
-        "hyperparam_shuttle":
-            "dev_drnn/data/hyperparam_tuning/shuttle",
-        "hyperparam_spambase":
-            "dev_drnn/data/hyperparam_tuning/spambase",
-        "hyperparam_usps":
-            "dev_drnn/data/hyperparam_tuning/usps",
-        "hyperparam_wall":
-            "dev_drnn/data/hyperparam_tuning/wall",
-        "hyperparam_waveform":
-            "dev_drnn/data/hyperparam_tuning/waveform"
-    }
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ---------------------------------------------------- I N I T -----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-    def __init__(self):
-        super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "STORAGE")
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
     def get_data_path(self, key):
         return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
 
 
 class DatasetFilesPaths(_Const):
     dirs_dataset_paths = {
+        "dataset_path_adult":
+            "adult",
+        "dataset_path_cifar10":
+            "cifar10",
         "dataset_path_connect4":
             "connect4",
         "dataset_path_isolete":
@@ -257,16 +176,10 @@ class DatasetFilesPaths(_Const):
             "waveform",
     }
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # ---------------------------------------------------- I N I T -----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
     def __init__(self):
         super().__init__()
         self.create_directories(self.dirs_dataset_paths, "DATASET")
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
     def get_data_path(self, key):
         return os.path.join(self.DATASET_ROOT, self.dirs_dataset_paths.get(key, ""))
 
@@ -274,6 +187,5 @@ class DatasetFilesPaths(_Const):
 CONST: _Const = _Const()
 
 JSON_FILES_PATHS: ConfigFilePaths = ConfigFilePaths()
-MPDRNN_PATHS: MPDRNNPaths = MPDRNNPaths()
-DEV_DRNN_PATHS: DEVDRNNPaths = DEVDRNNPaths()
+DEV_DRNN_PATHS: DevDRNNPaths = DevDRNNPaths()
 DATASET_FILES_PATHS: DatasetFilesPaths = DatasetFilesPaths()

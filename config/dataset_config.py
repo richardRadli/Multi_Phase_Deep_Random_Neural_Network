@@ -2,11 +2,47 @@ import os
 
 from typing import Dict
 
-from config.data_paths import DATASET_FILES_PATHS, MPDRNN_PATHS, DEV_DRNN_PATHS
+from config.data_paths import (DATASET_FILES_PATHS, DEV_DRNN_PATHS)
 
 
 def general_dataset_configs(dataset_type) -> Dict:
     dataset_config = {
+        "adult": {
+            "dataset_name":
+                "adult",
+            "dataset_size":
+                32561,
+            "num_train_data":
+                22792,
+            "num_features":
+                13,
+            "num_classes":
+                2,
+            "class_labels":
+                ["<=50K", ">50K"],
+            "dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_adult"), "adult.data"),
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_adult"), "adult.npz")
+        },
+        "cifar10": {
+            "dataset_name":
+                "cifar10",
+            "dataset_size":
+                60000,
+            "num_train_data":
+                42000,
+            "num_features":
+                3072,
+            "num_classes":
+                10,
+            "class_labels":
+                ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"],
+            "cached_dataset_file":
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_cifar10"), "cifar10.npz"),
+            "original_dataset":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_cifar10")
+        },
         "connect4": {
             "dataset_name":
                 "connect4",
@@ -79,7 +115,9 @@ def general_dataset_configs(dataset_type) -> Dict:
             "dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "data.txt"),
             "cached_dataset_file":
-                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz")
+                os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist"), "mnist.npz"),
+            "original_dataset":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist")
         },
         "mnist_fashion": {
             "dataset_name":
@@ -99,7 +137,8 @@ def general_dataset_configs(dataset_type) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "data.txt"),
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion"), "mnist_fashion.npz"),
-
+            "original_dataset":
+                DATASET_FILES_PATHS.get_data_path("dataset_path_mnist_fashion")
         },
         "musk2": {
             "dataset_name":
@@ -226,7 +265,6 @@ def general_dataset_configs(dataset_type) -> Dict:
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "data.txt"),
             "cached_dataset_file":
                 os.path.join(DATASET_FILES_PATHS.get_data_path("dataset_path_spambase"), "spambase.npz"),
-
         },
         "usps": {
             "dataset_name":
@@ -294,13 +332,15 @@ def general_dataset_configs(dataset_type) -> Dict:
 
 def drnn_paths_config(dataset_type) -> Dict:
     dataset_config = {
-        "connect4": {
-            "mpdrnn": {
+        "adult": {
+            "dev_drnn": {
                 "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_connect4"),
+                    DEV_DRNN_PATHS.get_data_path("results_adult"),
                 "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_connect4"),
-            },
+                    DEV_DRNN_PATHS.get_data_path("hyperparam_adult"),
+            }
+        },
+        "connect4": {
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_connect4"),
@@ -308,13 +348,15 @@ def drnn_paths_config(dataset_type) -> Dict:
                     DEV_DRNN_PATHS.get_data_path("hyperparam_connect4"),
             }
         },
-        "isolete": {
-            "mpdrnn": {
+        "cifar10": {
+            "dev_drnn": {
                 "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_isolete"),
+                    DEV_DRNN_PATHS.get_data_path("results_cifar10"),
                 "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_isolete"),
-            },
+                    DEV_DRNN_PATHS.get_data_path("hyperparam_cifar10"),
+            }
+        },
+        "isolete": {
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_isolete"),
@@ -323,186 +365,108 @@ def drnn_paths_config(dataset_type) -> Dict:
             }
         },
         "letter": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_letter"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_letter"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_letter"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_letter"),
-            }
+            },
         },
         "mnist": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_mnist"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_mnist"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_mnist"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_mnist"),
-            }
+            },
         },
         "mnist_fashion": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_mnist_fashion"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_mnist_fashion"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_mnist_fashion"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_mnist_fashion"),
-            }
+            },
         },
         "musk2": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_musk2"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_musk2"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_musk2"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_musk2"),
-            }
+            },
         },
         "optdigits": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_optdigits"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_optdigits"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_optdigits"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_optdigits"),
-            }
+            },
         },
         "page_blocks": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_page_blocks"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_page_blocks"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_page_blocks"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_page_blocks"),
-            }
+            },
         },
         "satimages": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_satimages"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_satimages")
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_satimages"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_satimages")
-            }
+            },
         },
         "segment": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_segment"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_segment"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_segment"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_segment")
-            }
+                    DEV_DRNN_PATHS.get_data_path("hyperparam_segment"),
+            },
         },
         "shuttle": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_shuttle"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_shuttle"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_shuttle"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_shuttle"),
-            }
+            },
         },
         "spambase": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_spambase"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_spambase"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_spambase"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_spambase"),
-            }
+            },
         },
         "usps": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_usps"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_usps"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_usps"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_usps"),
-            }
+            },
         },
         "wall": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_wall"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_wall"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_wall"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_wall"),
-            }
+            },
         },
         "waveform": {
-            "mpdrnn": {
-                "path_to_results":
-                    MPDRNN_PATHS.get_data_path("results_waveform"),
-                "hyperparam_tuning":
-                    MPDRNN_PATHS.get_data_path("hyperparam_waveform"),
-            },
             "dev_drnn": {
                 "path_to_results":
                     DEV_DRNN_PATHS.get_data_path("results_waveform"),
                 "hyperparam_tuning":
                     DEV_DRNN_PATHS.get_data_path("hyperparam_waveform"),
-            }
+            },
         }
     }
 
@@ -510,3 +474,4 @@ def drnn_paths_config(dataset_type) -> Dict:
         raise ValueError(f'Invalid dataset name: {dataset_type}')
 
     return dataset_config[dataset_type]
+
