@@ -1,5 +1,5 @@
 {
-  "dataset_name": "shuttle",
+  "dataset_name": "isolete",
   "activation": "LeakyReLU",
   "number_of_tests": 10,
   "seed": true,

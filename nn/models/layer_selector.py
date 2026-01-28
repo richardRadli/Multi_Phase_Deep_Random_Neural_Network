@@ -41,7 +41,7 @@ class SecondLayerWrapper(LayerSelector):
         self.layer = DevDeepRandomizedNeuralNetworkSecondLayer(
             first_layer_instance=network_cfg.get("first_layer_instance"),
             mu=network_cfg.get("mu"),
-            sigma=network_cfg.get("sigma")
+            sigma=network_cfg.get("sigma"),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
