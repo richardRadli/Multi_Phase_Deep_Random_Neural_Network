@@ -188,30 +188,30 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
 
         return class_mean_vectors
 
-    def compute_class_error_vectors(self) -> dict:
-        """
-        Compute class-wise average error vectors based on model predictions.
+    # def compute_class_error_vectors(self) -> dict:
+    #     """
+    #     Compute class-wise average error vectors based on model predictions.
 
-        For each class, this method computes the mean prediction error vector
-        (prediction minus ground truth) over all samples belonging to that class.
+    #     For each class, this method computes the mean prediction error vector
+    #     (prediction minus ground truth) over all samples belonging to that class.
 
-        Returns:
-            dict:
-                A dictionary mapping class labels (int) to their corresponding
-                mean error vectors (torch.Tensor of shape [num_classes]).
-        """
+    #     Returns:
+    #         dict:
+    #             A dictionary mapping class labels (int) to their corresponding
+    #             mean error vectors (torch.Tensor of shape [num_classes]).
+    #     """
 
-        _, y = next(iter(self.train_loader))
+    #     _, y = next(iter(self.train_loader))
 
-        errors = self.predictions - y
-        y_true = torch.argmax(y, dim=-1)
+    #     errors = self.predictions - y
+    #     y_true = torch.argmax(y, dim=-1)
 
-        class_error_vectors = {}
-        for class_name in torch.unique(y_true, sorted=True):
-            mask = y_true == class_name
-            class_error_vectors[int(class_name)] = errors[mask].mean(dim=0)
+    #     class_error_vectors = {}
+    #     for class_name in torch.unique(y_true, sorted=True):
+    #         mask = y_true == class_name
+    #         class_error_vectors[int(class_name)] = errors[mask].mean(dim=0)
 
-        return class_error_vectors
+    #     return class_error_vectors
 
     @staticmethod
     def compute_class_distance_matrix(class_mean_vectors: dict):
@@ -222,31 +222,46 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
 
         return distance_matrix
 
+    # @staticmethod
+    # def compute_class_error_distance_matrix(class_error_vectors: dict):
+    #     """
+    #     Compute a pairwise distance matrix between classes based on their error vectors.
+
+    #     The distance between two classes is defined as the L2 (Euclidean) norm
+    #     of the difference between their corresponding class error vectors.
+
+    #     Args:
+    #         class_error_vectors (dict):
+    #             A dictionary mapping class labels to error vectors.
+
+    #     Returns:
+    #         torch.Tensor:
+    #             A square matrix of shape (C, C), where C is the number of classes,
+    #             containing pairwise class distances.
+    #     """
+
+    #     classes = sorted(class_error_vectors.keys())
+    #     error_matrix = torch.stack([class_error_vectors[c] for c in classes])
+
+    #     diff = error_matrix.unsqueeze(1) - error_matrix.unsqueeze(0)
+    #     distance_matrix = torch.norm(diff, dim=-1, p=2)
+
+    #     return distance_matrix
+
     @staticmethod
-    def compute_class_error_distance_matrix(class_error_vectors: dict):
+    def compute_class_geometry(class_mean_vectors: dict):
         """
-        Compute a pairwise distance matrix between classes based on their error vectors.
-
-        The distance between two classes is defined as the L2 (Euclidean) norm
-        of the difference between their corresponding class error vectors.
-
-        Args:
-            class_error_vectors (dict):
-                A dictionary mapping class labels to error vectors.
-
         Returns:
-            torch.Tensor:
-                A square matrix of shape (C, C), where C is the number of classes,
-                containing pairwise class distances.
+            distance_matrix: (C, C) scalar distances
+            direction_tensor: (C, C, D) direction vectors (unnormalized)
         """
+        classes = sorted(class_mean_vectors.keys())
+        mean_matrix = torch.stack([class_mean_vectors[c] for c in classes])  # (C, D)
 
-        classes = sorted(class_error_vectors.keys())
-        error_matrix = torch.stack([class_error_vectors[c] for c in classes])
+        direction_tensor = mean_matrix.unsqueeze(1) - mean_matrix.unsqueeze(0)  # (C, C, D)
+        distance_matrix = torch.norm(direction_tensor, dim=-1, p=2)             # (C, C)
 
-        diff = error_matrix.unsqueeze(1) - error_matrix.unsqueeze(0)
-        distance_matrix = torch.norm(diff, dim=-1, p=2)
-
-        return distance_matrix
+        return distance_matrix, direction_tensor
 
     @staticmethod
     def get_sorted_class_pairs(distance_matrix: torch.Tensor):
@@ -302,46 +317,53 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
                 If total_neurons is smaller than the number of class pairs.
         """
 
-        class_mean_vector = self.compute_class_mean(hidden_layer)
-        distance_matrix = self.compute_class_distance_matrix(class_mean_vectors=class_mean_vector)
+        # Class mean vectors in hidden the hidden layer
+        class_mean_vectors = self.compute_class_mean(hidden_layer)
 
-        class_error_vectors = self.compute_class_error_vectors()
-        distance_error_matrix = self.compute_class_error_distance_matrix(class_error_vectors)
-        d_min = torch.min(distance_error_matrix)
-        d_max = torch.max(distance_error_matrix)
-        distance_error_matrix = (distance_error_matrix - d_min) / (d_max - d_min)
+        # Pairwise distance matrix between class means
+        distance_matrix, direction_tensor = self.compute_class_geometry(class_mean_vectors)
 
-        sorted_class_pairs = self.get_sorted_class_pairs(distance_error_matrix)
+        # class_error_vectors = self.compute_class_error_vectors()
+        # distance_error_matrix = self.compute_class_error_distance_matrix(class_error_vectors)
+        # d_min = torch.min(distance_error_matrix)
+        # d_max = torch.max(distance_error_matrix)
+        # distance_error_matrix = (distance_error_matrix - d_min) / (d_max - d_min)
 
-        unique_class_pair = len(sorted_class_pairs)
-        if total_neurons < unique_class_pair:
+        # Extract and sort unique class pairs (ascending distance)
+        sorted_class_pairs = self.get_sorted_class_pairs(distance_matrix)
+
+        num_pairs  = len(sorted_class_pairs)
+        if total_neurons < num_pairs :
             raise ValueError("Total neurons must be >= number of class pairs")
 
+        # Each pair gets at least one neuron
         allocation = {(c1, c2): 1 for (c1, c2, _) in sorted_class_pairs}
-        remaining = total_neurons - unique_class_pair
+        remaining = total_neurons - num_pairs 
 
+        # Inverse-distance–based allocation of remaining neurons
         distances = torch.tensor([d for _, _, d in sorted_class_pairs])
-        # Inverse distance -> smaller distance greater weight
         inverse_distance = 1.0 / (distances + eps)
-        # Normalization
-        norm_inverse_distance = inverse_distance / inverse_distance.sum()
-        # sort number of inverse_distance to each classes
-        extra = torch.floor(norm_inverse_distance * remaining).int()
+        weights  = inverse_distance / inverse_distance.sum()
+       
+        extra = torch.floor(weights  * remaining).int()
 
         for (c1, c2, _), n in zip(sorted_class_pairs, extra):
             allocation[(c1, c2)] += int(n)
 
+        # Fix rounding
         diff = total_neurons - sum(allocation.values())
+
         if diff > 0:
             for i in range(diff):
                 c1, c2, _ = sorted_class_pairs[i]
                 allocation[(c1, c2)] += 1
+
         elif diff < 0:
             for i in range(-diff):
                 c1, c2, _ = sorted_class_pairs[-(i + 1)]
                 allocation[(c1, c2)] -= 1
 
-        return allocation, distance_matrix
+        return allocation, distance_matrix, direction_tensor
 
     def allocate_neurons_per_class_pair(self, hidden_layer, total_neurons: int, eps: float = 1e-8):
         """
@@ -414,7 +436,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         self.beta_weights.data = first_layer_instance.beta_weights.data.clone()
         self.h1.data = first_layer_instance.h1.data.clone()
         self.n_hidden_nodes = first_layer_instance.hidden_nodes
-        self.allocation, self.distance_mtx = (
+        self.allocation, self.class_distance_mtx, self.class_direction_tensor = (
             first_layer_instance.allocate_neurons_per_class_pair(
                 hidden_layer=self.h1.data,
                 total_neurons=self.n_hidden_nodes[1]
@@ -447,33 +469,36 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
 
         return self._create_hidden_layer(weights)
 
-    def _create_hidden_layer(self, weights):
+    def _create_hidden_layer(self, weights: torch.Tensor, eps: float = 1e-8):
         dimension, _ = weights.shape
 
         noise = torch.normal(mean=self.mu, std=self.sigma, size=weights.shape)
         w_rnd_out_i = weights + noise
-        hidden_layer_i_a = torch.hstack((weights, w_rnd_out_i))
+        hidden_layer = torch.hstack((weights, w_rnd_out_i))
 
         new_columns = []
 
-        for (class_1, class_2), neuron_per_class in self.allocation.items():
-            base_vec = self.distance_mtx[class_1, class_2]
-            base_vec = base_vec / (base_vec.norm() + 1e-8)
+        for (c1, c2), n_neurons in self.allocation.items():
+            # base direction from class means
+            v = self.class_direction_tensor[c1, c2]
+            v = v / (v.norm() + 1e-8)
 
-            new_columns.append(base_vec.view(dimension, 1))
+            # first neuron: clean direction
+            new_columns.append(v.view(dimension, 1))
 
-            for _ in range(max(neuron_per_class - 1, 0)):
+            # remaining neurons: noisy refinements
+            for _ in range(n_neurons - 1):
                 noise = torch.normal(mean=0.0, std=self.sigma, size=(dimension,))
-                new_vec = base_vec + noise
-                new_columns.append(new_vec.view(dimension, 1))
+                v_noisy = v + noise
+                v_noisy = v_noisy / (v_noisy.norm() + 1e-8)
+                new_columns.append(v_noisy.view(dimension, 1))
 
-        if new_columns:
-            hidden_new = torch.cat(new_columns, dim=1)
-            hidden_layer_i = torch.cat((hidden_layer_i_a, hidden_new), dim=1)
-        else:
-            hidden_layer_i = hidden_layer_i_a
+        if not new_columns:
+            raise ValueError("new_columns is empty!")
+        
+        hidden_layer = torch.cat((hidden_layer, torch.cat(new_columns, dim=1)), dim=1)
 
-        return hidden_layer_i
+        return hidden_layer
 
     def train_layer(self):
         """
@@ -546,7 +571,7 @@ class DevDeepRandomizedNeuralNetworkThirdLayer(DevDeepRandomizedNeuralNetworkSec
 
         self.n_hidden_nodes = second_layer_instance.hidden_nodes
 
-        self.allocation, self.distance_mtx = second_layer_instance.allocate_neurons_per_class_pair(
+        self.allocation, self.class_distance_mtx, self.class_direction_tensor = second_layer_instance.allocate_neurons_per_class_pair(
             hidden_layer=self.h2.data,
             total_neurons=self.n_hidden_nodes[2]
         )

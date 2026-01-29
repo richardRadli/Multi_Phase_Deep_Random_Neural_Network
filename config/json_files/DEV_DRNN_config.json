@@ -1,7 +1,7 @@
 {
-  "dataset_name": "connect4",
+  "dataset_name": "page_blocks",
   "activation": "LeakyReLU",
-  "number_of_tests": 10,
+  "number_of_tests": 1,
   "seed": true,
   "mu": 0,
   "sigma": 0.1,

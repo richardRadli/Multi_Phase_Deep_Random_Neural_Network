@@ -69,7 +69,6 @@ class DevDRNN(BaseDevDRNN):
             training_time.append(self.first_layer.train_ith_layer.execution_time)
 
             # Second layer
-
             second_layer_cfg = (
                 self.get_network_config(
                     network_type="DevDeepRandomizedNeuralNetworkSecondLayer",
