@@ -1,5 +1,5 @@
 {
-  "dataset_name": "isolete",
+  "dataset_name": "connect4",
   "activation": "LeakyReLU",
   "number_of_tests": 10,
   "seed": true,
