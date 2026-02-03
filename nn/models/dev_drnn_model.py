@@ -85,15 +85,18 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
             else:
                 hi.data = self.activation_function(hi_prev @ weights1)
 
-            identity_matrix = torch.eye(hi.shape[1], device=hi.device)
             if hi.shape[0] > hi.shape[1]:
-                pseudo_inv_input = hi.T @ hi + identity_matrix / self.penalty_term
+                identity_l = torch.eye(hi.shape[1])
+                pseudo_inv_input = hi.T @ hi + identity_l / self.penalty_term
+
                 if self.rcond is not None:
                     weights2.data = torch.linalg.pinv(pseudo_inv_input, rcond=self.rcond) @ (hi.T @ train_y)
                 else:
                     weights2.data = torch.linalg.pinv(pseudo_inv_input) @ (hi.T @ train_y)
             else:
-                pseudo_inv_input = hi @ hi.T + identity_matrix / self.penalty_term
+                identity_n = torch.eye(hi.shape[0])
+                pseudo_inv_input = hi @ hi.T + identity_n / self.penalty_term
+
                 if self.rcond is not None:
                     weights2.data = hi.T @ torch.linalg.pinv(pseudo_inv_input, rcond=self.rcond) @ train_y
                 else:
@@ -232,6 +235,11 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
             train_loader=first_layer_instance.train_loader,
         )
 
+        self.h2 = None
+        self.extended_beta_weights = None
+        self.class_direction_tensor = None
+        self.allocation = None
+        self.gamma_weights = None
         self.alpha_weights.data = first_layer_instance.alpha_weights.data.clone()
         self.beta_weights.data = first_layer_instance.beta_weights.data.clone()
         self.h1.data = first_layer_instance.h1.data.clone()
@@ -256,156 +264,80 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         self.extended_beta_weights = self.create_hidden_layer(self.beta_weights)
 
         self.h2 = nn.Parameter(
-            torch.zeros(self.n_hidden_nodes[1], self.extended_beta_weights.size(1)), requires_grad=False
+            torch.zeros(
+                self.n_hidden_nodes[1],
+                self.extended_beta_weights.size(1)
+            ),
+            requires_grad=False
         )
         self.gamma_weights = nn.Parameter(
-            torch.zeros(self.extended_beta_weights.size(1), self.beta_weights.size(1)), requires_grad=False
+            torch.zeros(
+                self.extended_beta_weights.size(1),
+                self.beta_weights.size(1)
+            ),
+            requires_grad=False
         )
 
-    def compute_class_mean(self, hidden_layer):
-        _, y = next(iter(self.train_loader))
-        y_true = torch.argmax(y, dim=1)
-
-        classes = torch.unique(y_true)
-
-        # mean vector per class (vector)
-        # which row contains which class
-        class_mean_vectors = {}
-        for c in classes:
-            mask = y_true == c
-            class_mean_vectors[int(c)] = hidden_layer[mask].mean(dim=0)
-
-        return class_mean_vectors
-
-    @staticmethod
-    def compute_class_geometry(class_mean_vectors: dict):
-        # sorting into matrix
-        classes = sorted(class_mean_vectors.keys())
-        mean_matrix = torch.stack([class_mean_vectors[c] for c in classes])     # (class, dim)
-
-        # broadcasting, calculates distances between class pairs
-        direction_tensor = mean_matrix.unsqueeze(1) - mean_matrix.unsqueeze(0)  # (class, class, dim)
-
-        # distance measure, Euclidean norm
-        distance_matrix = torch.norm(direction_tensor, dim=-1, p=2)             # (class, class)
-
-        return distance_matrix, direction_tensor
-
-    def compute_class_error_vectors(self) -> dict:
-        _, y = next(iter(self.train_loader))
-
-        errors = self.predictions - y
-        y_true = torch.argmax(y, dim=-1)
-
-        # errors vektor hosszát kell venni
-        class_error_vectors = {}
-        for class_name in torch.unique(y_true, sorted=True):
-            mask = y_true == class_name
-            class_error_vectors[int(class_name)] = errors[mask].mean(dim=0)
-
-        return class_error_vectors
-
-    # @staticmethod
-    # def compute_class_error_distance_matrix(class_error_vectors: dict):
-    #     classes = sorted(class_error_vectors.keys())
-    #     error_matrix = torch.stack([class_error_vectors[c] for c in classes])
-    #     # főátlóba nem szabad nulláknak lennie, a ground truthot és a predicted akarjuk megtudni
-    #     diff = error_matrix.unsqueeze(1) - error_matrix.unsqueeze(0)
-    #     distance_matrix = torch.norm(diff, dim=-1, p=2)
-    #
-    #     return distance_matrix
-
-    @staticmethod
-    def compute_class_error_distance_matrix(class_error_vectors: dict):
-        classes = sorted(class_error_vectors.keys())
-        error_matrix = torch.stack([class_error_vectors[c] for c in classes])
-
-        distance_matrix = torch.abs(error_matrix)
-
-        return distance_matrix
-
-    def compute_class_confusion_based_errors(self):
-        _, y = next(iter(self.train_loader))
-        y_true = torch.argmax(y, dim=-1)
+    def _get_class_stats(self, hidden_layer):
+        _, y_one_hot = next(iter(self.train_loader))
+        y_true = torch.argmax(y_one_hot, dim=-1)
         y_pred = torch.argmax(self.predictions, dim=-1)
+        num_classes = y_one_hot.size(1)
 
-        num_classes = y.size(1)
-        conf_matrix = torch.zeros((num_classes, num_classes))
+        # class means in the hidden layer
+        classes = torch.unique(y_true).sort()[0]
+        means = torch.stack([hidden_layer[y_true == c].mean(dim=0) for c in classes])
 
+        # direction vectors and Euc. dist.
+        direction_tensor = means.unsqueeze(1) - means.unsqueeze(0)
+        dist_matrix = torch.norm(direction_tensor, dim=-1, p=2)
+
+        # confusion matrix
+        conf = torch.zeros((num_classes, num_classes))
         for t, p in zip(y_true, y_pred):
-            conf_matrix[t, p] += 1
+            conf[t, p] += 1
 
-        conf_matrix_norm = conf_matrix / (conf_matrix.sum(dim=1, keepdim=True) + 1e-8)
+        # Normalized error matrix
+        error_matrix = conf / (conf.sum(dim=1, keepdim=True) + 1e-8)
 
-        return conf_matrix_norm
-
-    @staticmethod
-    def get_sorted_class_pairs(distance_matrix: torch.Tensor):
-        C = distance_matrix.shape[0]
-
-        # Upper triangle of the matrix
-        triu_indices = torch.triu_indices(C, C, offset=1)
-        distances = distance_matrix[triu_indices[0], triu_indices[1]]
-
-        sorted_idx = torch.argsort(distances, descending=False)
-
-        # form pairs
-        pairs = [
-            (triu_indices[0][idx].item(), triu_indices[1][idx].item(), distances[idx].item()) for idx in sorted_idx
-        ]
-
-        return pairs
+        return direction_tensor, dist_matrix, error_matrix
 
     def _allocate_neurons_per_class_pair(self, hidden_layer, total_neurons: int, eps: float = 1e-8):
-        # Class mean vectors in the hidden layer
-        class_mean_vectors = self.compute_class_mean(hidden_layer)
+        dir_tensor, dist_mtx, err_mtx = self._get_class_stats(hidden_layer)
 
-        # Pairwise distance matrix between class means
-        _, direction_tensor = self.compute_class_geometry(class_mean_vectors)
+        difficulty_score = (err_mtx + err_mtx.T) / (dist_mtx + eps)
 
-        # Prediction error
-        class_error_vectors = self.compute_class_error_vectors()
-        distance_error_matrix = self.compute_class_error_distance_matrix(class_error_vectors)
-        d_min = torch.min(distance_error_matrix)
-        d_max = torch.max(distance_error_matrix)
-        distance_error_matrix = (distance_error_matrix - d_min) / (d_max - d_min)
+        C = difficulty_score.shape[0]
+        triu_idx = torch.triu_indices(C, C, offset=1)
+        scores = difficulty_score[triu_idx[0], triu_idx[1]]
 
-        # Extract and sort unique class pairs (ascending distance)
-        sorted_class_pairs = self.get_sorted_class_pairs(distance_error_matrix)
+        # Sorting, most difficult ones first
+        sorted_indices = torch.argsort(scores, descending=True)
+        num_pairs = len(sorted_indices)
+        allocation = {}
 
-        num_pairs = len(sorted_class_pairs)
-        # if total_neurons < num_pairs:
-        #     raise ValueError("Total neurons must be >= number of class pairs")
+        # Allocation
+        for i in range(num_pairs):
+            c1, c2 = triu_idx[0][i].item(), triu_idx[1][i].item()
+            allocation[(int(c1), int(c2))] =1
 
-        # Each pair gets at least one neuron
-        allocation = {(c1, c2): 1 for (c1, c2, _) in sorted_class_pairs}
         remaining = total_neurons - num_pairs
+        if remaining > 0:
+            weights = scores / (scores.sum() + eps)
+            extra_neurons = torch.floor(weights * remaining).int()
 
-        # Inverse-distance–based allocation of remaining neurons
-        # Small distance -> more neurons
-        distances = torch.tensor([d for _, _, d in sorted_class_pairs])
-        inverse_distance = 1.0 / (distances + eps)
-        weights = inverse_distance / inverse_distance.sum()
-
-        extra = torch.floor(weights * remaining).int()
-
-        for (c1, c2, _), n in zip(sorted_class_pairs, extra):
-            allocation[(c1, c2)] += int(n)
+            for i, idx in enumerate(sorted_indices):
+                c1, c2 = triu_idx[0][idx].item(), triu_idx[1][idx].item()
+                allocation[(int(c1), int(c2))] += extra_neurons[idx].item()
 
         # Fix rounding
         diff = total_neurons - sum(allocation.values())
+        for i in range(abs(diff)):
+            idx = sorted_indices[i % num_pairs]
+            pair = int(triu_idx[0][idx]), int(triu_idx[1][idx])
+            allocation[pair] += 1 if diff > 0 else -1
 
-        if diff > 0:
-            for i in range(diff):
-                c1, c2, _ = sorted_class_pairs[i]
-                allocation[(c1, c2)] += 1
-
-        elif diff < 0:
-            for i in range(-diff):
-                c1, c2, _ = sorted_class_pairs[-(i + 1)]
-                allocation[(c1, c2)] -= 1
-
-        return allocation, direction_tensor
+        return allocation, dir_tensor
 
     def allocate_neurons_per_class_pair(self, hidden_layer, total_neurons: int, eps: float = 1e-8):
         """
@@ -429,6 +361,36 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
 
         return self._allocate_neurons_per_class_pair(hidden_layer, total_neurons, eps)
 
+    def _create_hidden_layer(self, weights: torch.Tensor, eps: float = 1e-8):
+        dimension, _ = weights.shape
+
+        noise = torch.normal(mean=self.mu, std=self.sigma, size=weights.shape)
+        w_rnd_out_i = weights + noise
+
+        new_columns = []
+
+        for (c1, c2), n_neurons in self.allocation.items():
+            # base direction from class means
+            v_base = self.class_direction_tensor[c1, c2]
+            v_unit = v_base / (v_base.norm() + eps)
+
+            for i in range(n_neurons):
+                if i == 0:
+                    v = v_unit
+                else:
+                    v_noise = torch.normal(mean=0.0, std=self.sigma, size=(dimension,))
+                    v = v_unit + v_noise
+                    v = v / (v.norm() + eps)
+
+                new_columns.append(v.view(dimension, 1))
+
+        if not new_columns:
+            raise ValueError("new_columns is empty!")
+
+        hidden_layer = torch.cat([weights, w_rnd_out_i, torch.cat(new_columns, dim=1)], dim=1)
+
+        return hidden_layer
+
     def create_hidden_layer(self, weights: torch.Tensor) -> torch.Tensor:
         """
         Create a hidden layer with added noise based on the given weights.
@@ -441,43 +403,6 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         """
 
         return self._create_hidden_layer(weights)
-
-    def _create_hidden_layer(self, weights: torch.Tensor, eps: float = 1e-8):
-        dimension, _ = weights.shape
-
-        noise = torch.normal(mean=self.mu, std=self.sigma, size=weights.shape)
-        w_rnd_out_i = weights + noise
-        hidden_layer = torch.hstack((weights, w_rnd_out_i))
-
-        new_columns = []
-
-        for (c1, c2), n_neurons in self.allocation.items():
-            # base direction from class means
-            v = self.class_direction_tensor[c1, c2]
-            v = v / (v.norm() + eps)
-
-            # first neuron: clean
-            new_columns.append(v.view(dimension, 1))
-
-            # remaining neurons: noisy
-            for _ in range(n_neurons - 1):
-                noise = torch.normal(mean=0.0, std=self.sigma, size=(dimension,))
-                v_noisy = v + noise
-                v_noisy = v_noisy / (v_noisy.norm() + 1e-8)
-                new_columns.append(v_noisy.view(dimension, 1))
-
-        if not new_columns:
-            raise ValueError("new_columns is empty!")
-
-        hidden_layer = torch.cat(
-            (
-                hidden_layer,
-                torch.cat(new_columns, dim=1)
-            ),
-            dim=1
-        )
-
-        return hidden_layer
 
     def train_layer(self):
         """
@@ -517,36 +442,69 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
 
 
 class DevDeepRandomizedNeuralNetworkThirdLayer(DevDeepRandomizedNeuralNetworkSecondLayer):
-    def __init__(self, second_layer_instance: DevDeepRandomizedNeuralNetworkSecondLayer, mu: float, sigma: float):
+    def __init__(
+            self,
+            second_layer_instance: DevDeepRandomizedNeuralNetworkSecondLayer,
+            mu: float,
+            sigma: float):
         super(DevDeepRandomizedNeuralNetworkThirdLayer, self).__init__(
-            second_layer_instance, mu, sigma, run_init=False
+            second_layer_instance,
+            mu,
+            sigma,
+            run_init=False
         )
 
-        self.alpha_weights = nn.Parameter(second_layer_instance.alpha_weights.data.clone(), requires_grad=False)
-        self.beta_weights = nn.Parameter(second_layer_instance.beta_weights.data.clone(), requires_grad=False)
-        self.extended_beta_weights = nn.Parameter(second_layer_instance.extended_beta_weights.data.clone(),
-                                                  requires_grad=False)
-        self.gamma_weights = nn.Parameter(second_layer_instance.gamma_weights.data.clone(), requires_grad=False)
+        self.alpha_weights = nn.Parameter(
+            second_layer_instance.alpha_weights.data.clone(),
+            requires_grad=False
+        )
+        self.beta_weights = nn.Parameter(
+            second_layer_instance.beta_weights.data.clone(),
+            requires_grad=False
+        )
+        self.extended_beta_weights = nn.Parameter(
+            second_layer_instance.extended_beta_weights.data.clone(),
+            requires_grad=False
+        )
+        self.gamma_weights = nn.Parameter(
+            second_layer_instance.gamma_weights.data.clone(),
+            requires_grad=False
+        )
 
-        self.h1 = nn.Parameter(second_layer_instance.h1.data.clone(), requires_grad=False)
-        self.h2 = nn.Parameter(second_layer_instance.h2.data.clone(), requires_grad=False)
+        self.h1 = nn.Parameter(
+            second_layer_instance.h1.data.clone(),
+            requires_grad=False
+        )
+        self.h2 = nn.Parameter(
+            second_layer_instance.h2.data.clone(),
+            requires_grad=False
+        )
 
         self.allocation, self.class_direction_tensor = self.allocate_neurons_per_class_pair(
             hidden_layer=self.h2.data,
             total_neurons=self.n_hidden_nodes[2]
         )
 
-        self.extended_gamma_weights = self.create_hidden_layer(self.gamma_weights)
+        self.extended_gamma_weights = self.create_hidden_layer(
+            self.gamma_weights
+        )
 
         self.h3 = nn.Parameter(
-            torch.zeros(self.n_hidden_nodes[2], self.extended_gamma_weights.size(1)),
+            torch.zeros(
+                self.n_hidden_nodes[2],
+                self.extended_gamma_weights.size(1)
+            ),
             requires_grad=False
         )
 
         self.delta_weights = nn.Parameter(
-            torch.zeros(self.extended_gamma_weights.size(1), self.beta_weights.size(1)),
+            torch.zeros(
+                self.extended_gamma_weights.size(1),
+                self.beta_weights.size(1)
+            ),
             requires_grad=False
         )
+
     def create_hidden_layer(self, weights: torch.Tensor) -> torch.Tensor:
         """
         Create a hidden layer with added noise based on the given weights.
@@ -558,7 +516,17 @@ class DevDeepRandomizedNeuralNetworkThirdLayer(DevDeepRandomizedNeuralNetworkSec
             torch.Tensor: The created hidden layer with added noise.
         """
 
-        return self._create_hidden_layer(weights)
+        noise = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], weights.shape[1]))
+        w_rnd_out_i = weights + noise
+        hidden_layer_i_a = torch.hstack((weights, w_rnd_out_i))
+
+        w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], self.n_hidden_nodes[2] // 2))
+        q, _ = torch.linalg.qr(w_rnd)
+        # orthogonal_matrix = torch.mm(q, q.t())
+        hidden_layer_i = torch.cat((hidden_layer_i_a, q), dim=1)
+
+        return hidden_layer_i
+
 
     def train_layer(self):
         """
