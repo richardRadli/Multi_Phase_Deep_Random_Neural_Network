@@ -1,3 +1,5 @@
+# 2026.02.03.
+
 ```
 identity_matrix = torch.eye(hi.shape[1], device=hi.device)
 if hi.shape[0] > hi.shape[1]:
@@ -22,66 +24,230 @@ else:
         )
 ```
 
-# A képlet és a kód összhangban van egymással? Az lett implementálva ami a képletben szerepel?
+Ha a minták száma ($N$) nagyobb, mint a jellemzőké ($L$)
 
-Igen, a kódod matematikailag összhangban van a képpel, de van egy apró implementációs különbség a regularizációs tag ($C$) kezelésében, amire érdemes figyelned. Nézzük meg részletesen:
+1. Pszeudoinverz bemeneti mátrix kiszámítása:
+    
+    ```
+    psuedo_inv_input = torch.linalg.pinv(
+	    hi.T @ hi + identity_matrix / self.penalty_term
+	)
+    ```
+    $$pseudo_{inv\_input} = \mathbf{H}^\top \mathbf{H} + \frac{\mathbf{I}}{C}$$
+    
+    _Dimenziókkal behelyettesítve:_
+    
+    $$(2049, 47290) \times (47290, 2049) + (2049, 2049) = \mathbf{(2049, 2049)}$$
+    
+2. **Súlyok meghatározása:**
+    ```
+    weights2 = psuedo_inv_input @ (hi.T @ train_y)
+    ```
+    $$\mathbf{W}_2 = (pseudo_{inv\_input})^{-1} \times (\mathbf{H}^\top \mathbf{Y})$$
+    
+    _Dimenziókkal:_
+    
+    $$(2049, 2049) \times ((2049, 47290) \times (47290, 3)) = \mathbf{(2049, 3)}$$
 
-A képlet vs. kód elemzése
 
-A képen látható képlet az Extreme Learning Machine (ELM) regularizált pszeudoinverzét ($\mathbf{H}^{\dagger}$) határozza meg két esetre:
+## Új algoritmus
 
-Ha $N > L$ (több adat, mint neuron): $$\mathbf{H}^{\dagger} = (C^{-1}\mathbf{I} + \mathbf{H}^{\top}\mathbf{H})^{-1}\mathbf{H}^{\top}$$
+```
+def _get_class_stats(self, hidden_layer):  
+    _, y_one_hot = next(iter(self.train_loader))  
+    y_true = torch.argmax(y_one_hot, dim=-1)  
+    y_pred = torch.argmax(self.predictions, dim=-1)  
+    num_classes = y_one_hot.size(1)  
+```
 
-A kódodban: torch.linalg.pinv(hi.T @ hi + identity_matrix / self.penalty_term) @ (hi.T @ train_y)Megfeleltetés: Itt a self.penalty_term felel meg a $C$ paraméternek. Mivel a képletben $C^{-1}$ szerepel, a kódban használt 1 / self.penalty_term matematikailag pontosan ugyanaz.
+Kinyerem a tanító adatok közül a GT címkéket, valamint a hálózat által predikáltakat.
 
-Ha $N < L$ (több neuron, mint adat):$$\mathbf{H}^{\dagger} = \mathbf{H}^{\top}(C^{-1}\mathbf{I} + \mathbf{H}\mathbf{H}^{\top})^{-1}$$A kódodban: hi.T @ torch.linalg.pinv(hi @ hi.T + identity_matrix / self.penalty_term) @ train_y
+```
+    # class means in the hidden layer  
+    classes = torch.unique(y_true).sort()[0]  
+    means = torch.stack([hidden_layer[y_true == c].mean(dim=0) for c in classes])  
 
-Megfeleltetés: Ez is pontosan követi a képlet szerkezetét.
+    # direction vectors and Euc. dist.  
+    direction_tensor = means.unsqueeze(1) - means.unsqueeze(0)  
+    dist_matrix = torch.norm(direction_tensor, dim=-1, p=2)  
+```
+Kiszámítom az osztályok átlagvektorait a rejtett rétegben, amiből előáll az osztálypárok közötti **irányvektorok** és **távolságmátrix**.
 
-Összegzés Igen, az lett implementálva, ami a képletben szerepel. A kódod hűen követi mind a dimenzióváltás (N vs L), mind a regularizációs tag elhelyezésének szabályait.
+```  
+    # confusion matrix  
+    conf = torch.zeros((num_classes, num_classes))  
+    for t, p in zip(y_true, y_pred):  
+        conf[t, p] += 1  
+  
+    # Normalized error matrix  
+    error_matrix = conf / (conf.sum(dim=1, keepdim=True) + 1e-8)  
+  
+    return direction_tensor, dist_matrix, error_matrix
+```
+Kiszámolom a **normalizált keveredési mátrixot**, amely megmutatja az osztályok közötti tévesztési arányokat.
 
-# Jól értelmezem hogy nem a teljes méretű H-val számolunk?
+```
+def _allocate_neurons_per_class_pair(self, hidden_layer, total_neurons: int, eps: float = 1e-8):  
+    dir_tensor, dist_mtx, err_mtx = self._get_class_stats(hidden_layer)  
+  
+    difficulty_score = (err_mtx + err_mtx.T) / (dist_mtx + eps)  
+  
+    C = difficulty_score.shape[0]  
+    triu_idx = torch.triu_indices(C, C, offset=1)  
+    scores = difficulty_score[triu_idx[0], triu_idx[1]]  
+```
+Első lépésben a  meghatározom, melyik osztálypár minősül nehéz esetnek. Egy pontszámot rendelek hozzájuk: minél többször keveri őket össze a hálózat (hiba) és minél közelebb vannak egymáshoz (távolság), annál magasabb ez a pontszám.
 
-Igen, pontosan jól értelmezed, és ez az ELM (Extreme Learning Machine) egyik legfontosabb matematikai trükkje a hatékonyság érdekében.A kódodban és a képletben is látható szétválasztás ($N > L$ vagy $N < L$) azt szolgálja, hogy mindig a kisebb dimenziójú mátrixot kelljen invertálni.
+```
+    # Sorting, most difficult ones first  
+    sorted_indices = torch.argsort(scores, descending=True)  
+```
+Az osztálypárokat a nehézségi pontszám alapján sorba rendezem.
 
-Miért nem a "teljes" $\mathbf{H}$-val számolunk?
+```
+    num_pairs = len(sorted_indices)  
+    allocation = {}  
+  
+    # Allocation  
+    for i in range(num_pairs):  
+        c1, c2 = triu_idx[0][i].item(), triu_idx[1][i].item()  
+        allocation[(int(c1), int(c2))] =1  
+  
+    remaining = total_neurons - num_pairs  
+    if remaining > 0:  
+        weights = scores / (scores.sum() + eps)  
+        extra_neurons = torch.floor(weights * remaining).int()  
+  
+        for i, idx in enumerate(sorted_indices):  
+            c1, c2 = triu_idx[0][idx].item(), triu_idx[1][idx].item()  
+            allocation[(int(c1), int(c2))] += extra_neurons[idx].item()  
+```
 
-A $\mathbf{H}$ mátrix mérete $N \times L$, ahol:$N$: a tanító adatok száma (minták).$L$: a rejtett neuronok száma (hidden nodes).
-Ha közvetlenül a $\mathbf{H}$ pszeudoinverzét akarnád kiszámolni, az egy $N \times L$ méretű művelet lenne, ami hatalmas memóriaigénnyel járna. Ehelyett a kódod a következő két négyzetes mátrix egyikét használja:
-Ha $N > L$ (Sok adat, kevés neuron):
+Elkezdem kiosztani a foglalást. Minden osztálypár kap legalább egy neuront, a maradék szabad helyeket (neuronokat) a nehézségi pontszámok arányában osztom szét. Minél nehezebb egy pár szétválasztása, annál több új neuront kap majd.
 
-A $\mathbf{H}^\top \mathbf{H}$ mátrixszal számolsz.Ennek mérete $L \times L$.
-Ez azért jó, mert ha van 1 millió adatod ($N$), de csak 1000 neuronod ($L$), akkor egy $1000 \times 1000$-es mátrixot sokkal könnyebb invertálni, mint az 1 milliósat.
+```
+# Fix rounding  
+    diff = total_neurons - sum(allocation.values())  
+    for i in range(abs(diff)):  
+        idx = sorted_indices[i % num_pairs]  
+        pair = int(triu_idx[0][idx]), int(triu_idx[1][idx])  
+        allocation[pair] += 1 if diff > 0 else -1  
+  
+    return allocation, dir_tensor
+```
 
-Ha $N < L$ (Kevés adat, sok neuron):A $\mathbf{H} \mathbf{H}^\top$ mátrixszal számolsz.
+Itt csak a kerekítési hibákat javítom.
 
-Ennek mérete $N \times N$.
-Ez akkor fordul elő, ha extrém sok neuront használsz kis adathalmazon.
+```
+def _create_hidden_layer(self, weights: torch.Tensor, eps: float = 1e-8):  
+    dimension, _ = weights.shape  
+  
+    noise = torch.normal(mean=self.mu, std=self.sigma, size=weights.shape)  
+    w_rnd_out_i = weights + noise  
+```
+Az előző rétegből megtartom a kimeneti súlyokat, ezeket lemásolom és zajt adok hozzájuk.
 
-Itt a minták száma határozza meg a számítási költséget.
+```  
+    new_columns = []  
+  
+    for (c1, c2), n_neurons in self.allocation.items():  
+        # base direction from class means  
+        v_base = self.class_direction_tensor[c1, c2]  
+        v_unit = v_base / (v_base.norm() + eps)  
+  
+        for i in range(n_neurons):  
+            if i == 0:  
+                v = v_unit  
+            else:  
+                v_noise = torch.normal(mean=0.0, std=self.sigma, size=(dimension,))  
+                v = v_unit + v_noise  
+                v = v / (v.norm() + eps)  
+  
+            new_columns.append(v.view(dimension, 1))  
+  
+    if not new_columns:  
+        raise ValueError("new_columns is empty!")  
+```
+Minden problémás párhoz készítek egy tiszta, módosítatlan irányvektort, a többit enyhe zajjal módosítva adom hozzá. (Az irányvektorok az előző rejtett rétegben kiszámolt osztályátlagok  közötti különbségvektorok.)
 
-Összegezve a kódban: Az if hi.shape[0] > hi.shape[1]: feltétel pontosan ezt ellenőrzi:hi.shape[0]: ez az $N$ (sorok száma).hi.shape[1]: ez az $L$ (oszlopok/neuronok száma).
+```  
+    hidden_layer = torch.cat([weights, w_rnd_out_i, torch.cat(new_columns, dim=1)], dim=1)  
+  
+    return hidden_layer
+```
 
-A válasz tehát: Igen. Nem a teljes $N \times L$ mátrixot invertálod közvetlenül, hanem a transzponálttal való visszaszorzás után kapott kisebb, négyzetes mátrixot, így spórolsz rengeteg memóriát és számítási időt. Ez teszi lehetővé, hogy az ELM nagyságrendekkel gyorsabb legyen, mint a hagyományos backpropagation.
+Itt a végén pedig csak összefűzöm egy réteggé a három építő elemet.
 
-# De így nem számol az összes bemeneti adattal, nem?
+## Megjegyzések, észrevételek
 
-Ez egy nagyon gyakori és jogos kérdés, amikor először látja valaki ezt a matematikai trükköt! A válasz az, hogy de, a hálózat minden egyes bemeneti adatot figyelembe vesz, egyetlen mintát sem hagy ki a számításból.
+- Alapvető problémánk, hogy a 3. rétegben elkezd csökkeni a pontosság (jobb esetben csak a teszt).
+- Visszaírtam az eredeti _create_hidden_layer függvényt (ahol ortogonális súlyokat készítettünk), úgy, hogy bent hagytam az eddig megírt, új függvényeket. Az történt ami várható volt; úgy működött minden mint eddig.
+- Próbálkoztam azzal, hogy a sigma minden réteg esetén csökkenjen;
+```
+noise = torch.normal(mean=self.mu, std=self.sigma, size=weights.shape)
+```
+	illetve
+```
+v_noise = torch.normal(mean=0.0, std=self.sigma, size=(dimension,))
+```
+	de alapvetően nem igazán hozott változást.
+- Gondoltam arra, hogy kiszámolom a súlymátrixok kondícióját. Három évvel ezelőtt, mikor tovább akartuk fejleszteni a módszert, egy ilyen problémába belefutottunk; instabilak lettek a mátrixok, ezért elkezdett csökkeni a pontosság. 
+	- Jelen esetben ez nem áll fent. Bár lehet, hogy valami plotot rajzolnom kéne.
+- Volt egy ilyen ötletem, hogy mi lenne, ha a második rétegben alkalmaznám az új megközelítést, míg a harmadikban vissza állnék az eredetire (tehát ortogonális random súlyok). 
+	- Ekkor megszűnt a probléma, nem csökkent, hanem nőtt a pontosság.
+- Ellenőriztem minden függvényhívást, paraméter átadást, stb; minden rendben van, akkor és az hívódik meg aminek és amikor kell.
 
-A titok abban rejlik, hogy a mátrixszorzás ($\mathbf{H}^\top \mathbf{H}$ vagy $\mathbf{H} \mathbf{H}^\top$) "összetömöríti" az információt, de nem vész el belőle semmi, ami a súlyok kiszámításához kell.Hogyan marad benne az összes adat?
+Bemásolok ide egy példa futtatást, most ezzel a legutóbbi megoldással (második réteg új módszer, harmadik a régivel):
+(A hosszabb futásidő azért van mert az itthoni laptopomról dolgozom)
+```
+INFO     JSON data is valid.
+INFO     Config DataFrame:
+                             Value
+dataset_name                letter
+activation               LeakyReLU
+number_of_tests                  1
+seed                          True
+mu                               0
+sigma                          0.1
+exp_neurons      [3000, 1000, 500]
+penalty                         11
+rcond                          0.0
+INFO     Size of train dataset: 14000, Size of test dataset: 3000
+Process:   0%|          | 0/1 [00:00<?, ?it/s]
+Training:   0%|          | 0/1 [00:00<?, ?it/s]
+Training: 100%|██████████| 1/1 [00:07<00:00,  7.50s/it]
+INFO     Execution time of train_ith_layer: 7.5030 seconds
+INFO     train accuracy: 0.9638
+INFO     train precision: 0.9644
+INFO     train recall: 0.9635
+INFO     train F1-score: 0.9637
+INFO     test accuracy: 0.9373
+INFO     test precision: 0.9385
+INFO     test recall: 0.9366
+INFO     test F1-score: 0.9367
 
-Gondolj a $\mathbf{H}^\top \mathbf{H}$ műveletre úgy, mint egy összegzésre:
+Training:   0%|          | 0/1 [00:00<?, ?it/s]
+Training: 100%|██████████| 1/1 [00:01<00:00,  1.76s/it]
+INFO     Execution time of train_ith_layer: 1.7599 seconds
+INFO     train accuracy: 0.9714
+INFO     train precision: 0.9717
+INFO     train recall: 0.9712
+INFO     train F1-score: 0.9713
+INFO     test accuracy: 0.9433
+INFO     test precision: 0.9433
+INFO     test recall: 0.9425
+INFO     test F1-score: 0.9423
 
-A teljes mátrix: $\mathbf{H}$ tartalmazza az összes $N$ darab adatsort. A szorzás eredménye: Amikor a $\mathbf{H}^\top$-t megszorzod $\mathbf{H}$-val, valójában minden egyes adatsornak kiszámolod az önmagával vett szorzatát, és ezeket a szorzatokat összeadod. 
-
-Az eredmény: A kapott $L \times L$ mátrix minden egyes eleme az összes $N$ darab minta hozzájárulását tartalmazza.Egy egyszerű példa (Szemléltetés)Képzeld el, hogy az átlagot akarod kiszámolni 1 millió számból ($N=1.000.000$). 
-
-A "teljes" módszer: Minden számot elmentesz egy listába, majd a végén összeadod őket.
-
-Az "összegzős" módszer: 
-Csak egyetlen változót tartasz fent (sum), és minden beérkező számot hozzáadsz.A végén mindkét módszerrel ugyanazt az átlagot kapod. Az ELM mátrixművelete is ilyen: a $\mathbf{H}^\top \mathbf{H}$ egy olyan "összegző mátrix" (úgynevezett Gram-mátrix), ami sűrítve tartalmazza az összes adat statisztikai jellemzőjét.Miért nem baj, hogy a mátrix kisebb lesz?
-
-Az ELM célja, hogy megtalálja az optimális kimeneti súlyokat ($\beta$). Ehhez nem kell minden adatot külön-külön "látnia" az invertálás pillanatában, csak azt kell tudnia, hogy az adatok összessége milyen összefüggéseket (korrelációkat) mutat.
-
-Összegezve:
-A bemeneti rétegen és a rejtett rétegen minden adat átmegy.A $\mathbf{H}$ mátrixba minden adat bekerül.A szorzás során az összes adat információja összegződik a kisebb négyzetes mátrixba.Az invertálás már ezen az "összesített tudáson" alapul.Tehát semmilyen adatvesztés nem történik, a matematikai végeredmény (a kiszámolt súlyok értéke) pontosan ugyanaz lesz, mintha egy elképzelhetetlenül nagy mátrixszal számolnál.
+Training:   0%|          | 0/1 [00:00<?, ?it/s]
+Training: 100%|██████████| 1/1 [00:00<00:00,  2.67it/s]
+INFO     Execution time of train_ith_layer: 0.3739 seconds
+INFO     train accuracy: 0.9726
+INFO     train precision: 0.9729
+INFO     train recall: 0.9725
+INFO     train F1-score: 0.9726
+INFO     test accuracy: 0.9463
+INFO     test precision: 0.9466
+INFO     test recall: 0.9455
+INFO     test F1-score: 0.9455
+Process: 100%|██████████| 1/1 [00:14<00:00, 14.68s/it]
+```
