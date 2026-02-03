@@ -85,8 +85,10 @@ class DevDRNN(BaseDevDRNN):
             self.second_layer, _, _ = (
                 self.model_training_and_evaluation(
                     model=self.second_layer,
-                    weights=[self.second_layer.extended_beta_weights,
-                             self.second_layer.gamma_weights],
+                    weights=[
+                        self.second_layer.extended_beta_weights,
+                        self.second_layer.gamma_weights
+                    ],
                     num_hidden_layers=2,
                     verbose=True
                 )
@@ -112,9 +114,11 @@ class DevDRNN(BaseDevDRNN):
             third_layer, training_metrics, testing_metrics = (
                 self.model_training_and_evaluation(
                     model=third_layer,
-                    weights=[third_layer.extended_beta_weights,
-                             third_layer.extended_gamma_weights,
-                             third_layer.delta_weights],
+                    weights=[
+                        third_layer.extended_beta_weights,
+                        third_layer.extended_gamma_weights,
+                        third_layer.delta_weights
+                    ],
                     num_hidden_layers=3,
                     verbose=True
                 )
