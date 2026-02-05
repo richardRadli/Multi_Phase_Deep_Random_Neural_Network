@@ -1,5 +1,5 @@
 {
-  "dataset_name": "wall",
+  "dataset_name": "letter",
   "activation": "LeakyReLU",
   "number_of_tests": 1,
   "seed": true,

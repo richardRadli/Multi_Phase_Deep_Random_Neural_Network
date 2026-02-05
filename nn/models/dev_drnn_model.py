@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from tqdm import tqdm
 from typing import Any
 
-from utils.utils import measure_execution_time
+from utils.utils import measure_execution_time, plot_vector_diversity, plot_neuron_vectors_3d
 
 
 class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
@@ -443,7 +443,13 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         if not new_columns:
             raise ValueError("new_columns is empty!")
 
-        hidden_layer = torch.cat([weights, w_rnd_out_i, torch.cat(new_columns, dim=1)], dim=1)
+        plot_vector_diversity(new_columns, "New method")
+        plot_neuron_vectors_3d(new_columns)
+
+        new_columns_matrix = torch.cat(new_columns, dim=1)
+        # new_columns_decomp, _ = torch.linalg.qr(new_columns_matrix)
+
+        hidden_layer = torch.cat([weights, w_rnd_out_i, new_columns_matrix], dim=1)
 
         print(f"Condition: {torch.linalg.cond(hidden_layer)}")
 
@@ -456,7 +462,10 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
 
         w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes))
         q, _ = torch.linalg.qr(w_rnd)
-        # new_neurons = torch.cat((w_rnd, q), dim=1)
+
+        plot_vector_diversity([q], "Old method")
+        plot_neuron_vectors_3d([q])
+
         hidden_layer_i = torch.cat((hidden_layer_i_a, q), dim=1)
 
         print(f"Condition: {torch.linalg.cond(hidden_layer_i)}")
@@ -581,8 +590,45 @@ class DevDeepRandomizedNeuralNetworkThirdLayer(DevDeepRandomizedNeuralNetworkSec
             torch.Tensor: The created hidden layer with added noise.
         """
 
-        return self._create_hidden_layer_old(weights, n_hidden_nodes=self.hidden_nodes[2])
+        # return self._create_hidden_layer_old(weights, n_hidden_nodes=self.hidden_nodes[2])
         # return self._create_hidden_layer_new(weights)
+
+        dimension, _ = weights.shape
+
+        noise = torch.normal(mean=self.mu, std=self.sigma, size=weights.shape)
+        w_rnd_out_i = weights + noise
+
+        new_columns = []
+
+        for (c1, c2), n_neurons in self.allocation.items():
+            # base direction from class means
+            v_base = self.class_direction_tensor[c1, c2]
+            v_unit = v_base / (v_base.norm() + 1e-8)
+
+            for i in range(n_neurons):
+                if i == 0:
+                    v = v_unit
+                else:
+                    v_noise = torch.normal(mean=0.0, std=self.sigma, size=(dimension,))
+                    v = v_unit + v_noise
+                    v = v / (v.norm() + 1e-8)
+
+                new_columns.append(v.view(dimension, 1))
+
+        if not new_columns:
+            raise ValueError("new_columns is empty!")
+
+        plot_vector_diversity(new_columns, "New method")
+        plot_neuron_vectors_3d(new_columns)
+
+        new_columns_matrix = torch.cat(new_columns, dim=1)
+        new_columns_decomp, _ = torch.linalg.qr(new_columns_matrix)
+
+        hidden_layer = torch.cat([weights, w_rnd_out_i, new_columns_matrix, new_columns_decomp], dim=1)
+
+        print(f"Condition: {torch.linalg.cond(hidden_layer)}")
+
+        return hidden_layer
 
     def train_layer(self):
         """

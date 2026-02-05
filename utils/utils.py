@@ -1,14 +1,10 @@
 import colorlog
-import gc
 import json
 import jsonschema
 import logging
 import matplotlib.pyplot as plt
-import numpy as np
 import openpyxl
-import os
 import pandas as pd
-import seaborn as sns
 import time
 import torch
 import sys
@@ -17,9 +13,10 @@ from datetime import datetime
 from functools import wraps
 from jsonschema import validate
 from nn.dataloaders.npz_dataloader import NpzDataset
+from sklearn.decomposition import PCA
 from openpyxl.styles import PatternFill
 from torch.utils.data import DataLoader
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Tuple, Union
 
 
 def average_columns_in_excel(filename: str) -> None:
@@ -247,6 +244,43 @@ def measure_execution_time(func: Callable) -> Callable:
 
     wrapper.execution_time = None
     return wrapper
+
+
+def plot_vector_diversity(weights, title):
+    if isinstance(weights, (list, tuple)):
+        weights = torch.cat(weights, dim=1)
+
+    normed_weights = weights / (torch.linalg.norm(weights, dim=0, keepdim=True) + 1e-8)
+
+    sim = (normed_weights.T @ normed_weights).detach().cpu().numpy()
+
+    plt.figure(figsize=(12, 12))
+    plt.imshow(sim, cmap="viridis", vmin=-1, vmax=1)
+    plt.colorbar()
+    plt.title(title)
+    plt.plot()
+    plt.show()
+
+
+def plot_neuron_vectors_3d(vectors, title="Neuron directions", color='blue', size=50):
+    if isinstance(vectors, (list, tuple)):
+        vectors = torch.cat(vectors, dim=1)
+
+    W = vectors.T.detach().cpu().numpy()
+
+    if W.shape[1] > 3:
+        W_3d = PCA(n_components=3).fit_transform(W)
+    else:
+        W_3d = W
+
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(W_3d[:,0], W_3d[:,1], W_3d[:,2], c=color, s=size)
+    ax.set_title(title)
+    ax.set_xlabel("PC1")
+    ax.set_ylabel("PC2")
+    ax.set_zlabel("PC3")
+    plt.show()
 
 
 def reorder_metrics_lists(train_metrics, test_metrics, training_time_list = None) -> List:
