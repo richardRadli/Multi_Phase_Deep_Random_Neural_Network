@@ -1,7 +1,7 @@
 {
   "dataset_name": "letter",
   "activation": "LeakyReLU",
-  "number_of_tests": 1,
+  "number_of_tests": 10,
   "seed": true,
   "mu": 0,
   "sigma": 0.1,

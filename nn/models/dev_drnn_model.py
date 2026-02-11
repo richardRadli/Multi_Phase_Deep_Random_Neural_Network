@@ -90,11 +90,11 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
         ):
             if hi_prev is None:
                 hi.data = self.activation_function(train_x @ weights1)
-                self.plot_histogram(hi.data)
+                # self.plot_histogram(hi.data)
                 logging.info(f"Condition number of h1: {torch.linalg.cond(hi.data)}")
             else:
                 hi.data = self.activation_function(hi_prev @ weights1)
-                self.plot_histogram(hi.data)
+                # self.plot_histogram(hi.data)
                 logging.info(f"Condition number of h2/h3: {torch.linalg.cond(hi.data)}")
 
             if hi.shape[0] > hi.shape[1]:
@@ -476,13 +476,14 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         if orthogonal:
             ort = new_columns_matrix.clone()
             torch.nn.init.orthogonal_(ort)
+            ort = ort @ ort.t()
             hidden_layer = torch.cat([weights, w_rnd_out_i, ort], dim=1)
         else:
            hidden_layer = torch.cat([weights, w_rnd_out_i, new_columns_matrix], dim=1)
 
         return hidden_layer
 
-    def _create_hidden_layer_old(self, weights, n_hidden_nodes):
+    def _create_hidden_layer_baseline(self, weights, n_hidden_nodes):
         noise = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], weights.shape[1]))
         w_rnd_out_i = weights + noise
         hidden_layer_i_a = torch.hstack((weights, w_rnd_out_i))
@@ -490,7 +491,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes))
         q = w_rnd.clone()
         torch.nn.init.orthogonal_(q)
-        # q = q @ q.t()
+        q = q @ q.t()
 
         # plot_vector_diversity([q], "Old method")
         # plot_neuron_vectors_3d([q])
@@ -551,6 +552,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
                 new_columns.append(q_random[:, i].view(dimension, 1))
 
         new_columns_matrix = torch.cat(new_columns, dim=1)
+        # new_columns_matrix = new_columns_matrix @ new_columns_matrix.t()
         hidden_layer = torch.cat([weights, new_columns_matrix], dim=1)
 
         return hidden_layer
@@ -593,10 +595,10 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
             torch.Tensor: The created hidden layer with added noise.
         """
 
-        # return self._create_hidden_layer_old(weights, n_hidden_nodes=self.hidden_nodes[1])
-        # return self._create_hidden_layer_new(weights, orthogonal=True)
-        return self._create_hidden_layer_threshold(weights, 1e-8)
-        # return self._create_hidden_layer_residual(weights, self.h1.data, self.hidden_nodes[1])
+        # return self._create_hidden_layer_baseline(weights, n_hidden_nodes=self.hidden_nodes[1])
+        # return self._create_hidden_layer_new(weights, orthogonal=False, alpha=True)
+        # return self._create_hidden_layer_threshold(weights, 1e-8)
+        return self._create_hidden_layer_residual(weights, self.h1.data, self.hidden_nodes[1])
 
     def train_layer(self):
         """
@@ -702,13 +704,10 @@ class DevDeepRandomizedNeuralNetworkThirdLayer(DevDeepRandomizedNeuralNetworkSec
             torch.Tensor: The created hidden layer with added noise.
         """
 
-        # return self._create_hidden_layer_old(weights, n_hidden_nodes=self.hidden_nodes[2])
-        # return self._create_hidden_layer_new(weights, orthogonal=True)
-        return self._create_hidden_layer_threshold(weights, 1e-8)
-        # return self._create_hidden_layer_residual(
-        #     weights, hidden_layer=self.h2.data,
-        #     n_hidden_nodes=self.hidden_nodes[2]
-        # )
+        # return self._create_hidden_layer_baseline(weights, n_hidden_nodes=self.hidden_nodes[2])
+        # return self._create_hidden_layer_new(weights, orthogonal=False, alpha=True)
+        # return self._create_hidden_layer_threshold(weights, 1e-8)
+        return self._create_hidden_layer_residual(weights, self.h2.data, self.hidden_nodes[2])
 
     def train_layer(self):
         """
