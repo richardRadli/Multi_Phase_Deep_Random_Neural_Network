@@ -20,14 +20,14 @@ class BaseDevDRNN:
         if self.cfg.get("seed"):
             torch.manual_seed(1234)
 
-        self.dataset_name = self.cfg.get("dataset_name")
+        dataset_name = self.cfg.get("dataset_name")
         self.activation = self.cfg.get('activation')
         self.gen_ds_cfg = general_dataset_configs(self.cfg.get("dataset_name"))
 
         self.first_layer = None
         self.second_layer = None
 
-        file_path = general_dataset_configs(self.dataset_name).get("cached_dataset_file")
+        file_path = general_dataset_configs(dataset_name).get("cached_dataset_file")
         self.train_loader, self.valid_loader, self.test_loader = create_train_valid_test_datasets(file_path)
 
     def get_network_config(self, network_type, config):
@@ -55,7 +55,7 @@ class BaseDevDRNN:
                 "first_layer_output_nodes": self.gen_ds_cfg.get("num_classes"),
                 "activation": self.activation,
                 "rcond": config.get("rcond"),
-                "penalty_term": config.get("penalty_term"),
+                "penalty_term": config.get("penalty_term")
             },
             "DevDeepRandomizedNeuralNetworkSecondLayer": {
                 "first_layer_instance": self.first_layer,
@@ -64,8 +64,6 @@ class BaseDevDRNN:
             },
             "DevDeepRandomizedNeuralNetworkThirdLayer": {
                 "second_layer_instance": self.second_layer,
-                "sigma": self.cfg.get('sigma'),
-                "mu": self.cfg.get('mu')
             }
         }
 
@@ -84,7 +82,6 @@ class BaseDevDRNN:
         Args:
             model: The model to be trained and evaluated. It should have methods
                    `train_layer` and `predict_and_evaluate`.
-            eval_set: The evaluation set to use for training the model.
             weights: The weights to be used in the model's evaluation. This may
                      be used to initialize or modify the model.
             num_hidden_layers: The number of hidden layers in the model. This

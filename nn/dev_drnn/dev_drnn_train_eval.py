@@ -3,11 +3,20 @@ import os
 import logging
 
 from tqdm import tqdm
+
 from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.dev_drnn.base_class_dev_drnn import BaseDevDRNN
 from nn.models.layer_selector import LayerFactory
-from utils.utils import (average_columns_in_excel, create_timestamp, 
-                         insert_data_to_excel, reorder_metrics_lists)
+from utils.utils import (
+    average_columns_in_excel,
+    create_timestamp,
+    insert_data_to_excel,
+    reorder_metrics_lists,
+    plot_condition_number,
+    plot_weights_histogram,
+    plot_vector_diversity,
+    plot_neuron_vectors_3d
+)
 
 
 class DevDRNN(BaseDevDRNN):
@@ -20,14 +29,43 @@ class DevDRNN(BaseDevDRNN):
         penalty_term = self.cfg.get('penalty')
         rcond = self.cfg.get("rcond")
         self.activation = self.cfg.get('activation')
-        self.gen_ds_cfg = general_dataset_configs(self.cfg.get("dataset_name"))
+        self.dataset_name = self.cfg.get("dataset_name")
+        self.gen_ds_cfg = general_dataset_configs(self.dataset_name)
         drnn_config = drnn_paths_config(self.dataset_name)
 
-        self.filename = (
+        self.results_filename = (
             os.path.join(
                 drnn_config.get("dev_drnn").get("path_to_results"),
                 f"{timestamp}_{self.dataset_name}_dataset_{penalty_term}"
                 f"_penalty_{rcond:.4f}_rcond.xlsx"
+            )
+        )
+
+        self.vector_diversity_filename = (
+            os.path.join(
+                drnn_config.get("dev_drnn").get("vector_diversity"),
+                f"{timestamp}_{self.dataset_name}_dataset.jpg"
+            )
+        )
+
+        self.neuron_vectors_3d_filename = (
+            os.path.join(
+                drnn_config.get("dev_drnn").get("neuron_vectors_3d"),
+                f"{timestamp}_{self.dataset_name}_dataset.jpg"
+            )
+        )
+
+        self.histogram_filename = (
+            os.path.join(
+                drnn_config.get("dev_drnn").get("histogram"),
+                f"{timestamp}_{self.dataset_name}_dataset.jpg"
+            )
+        )
+
+        self.condition_filename = (
+            os.path.join(
+                drnn_config.get("dev_drnn").get("condition"),
+                f"{timestamp}_{self.dataset_name}_dataset.jpg"
             )
         )
 
@@ -43,11 +81,11 @@ class DevDRNN(BaseDevDRNN):
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
             # First layer
             first_layer_cfg = (
-            self.get_network_config(
-                network_type="DevDeepRandomizedNeuralNetworkFirstLayer",
-                config=self.hyperparam_config
+                self.get_network_config(
+                    network_type="DevDeepRandomizedNeuralNetworkFirstLayer",
+                    config=self.hyperparam_config
+                )
             )
-        )
 
             self.first_layer = (
                 LayerFactory.create(
@@ -133,10 +171,44 @@ class DevDRNN(BaseDevDRNN):
                     training_time_list=training_time
                 )
             )
-            insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), i + 2, metrics)
+
+            plot_condition_number(
+                cond_list=third_layer.condition_number_list,
+                save_path=self.condition_filename
+            )
+
+            plot_weights_histogram(
+                hidden_layers=[
+                    third_layer.h1,
+                    third_layer.extended_beta_weights,
+                    third_layer.extended_gamma_weights
+                ],
+                save_path=self.histogram_filename
+            )
+
+            plot_vector_diversity(
+                weights_list=[
+                    third_layer.h1,
+                    third_layer.extended_beta_weights,
+                    third_layer.extended_gamma_weights
+                ],
+                save_path=self.vector_diversity_filename
+            )
+
+            plot_neuron_vectors_3d(
+                vectors_list=[
+                    third_layer.h1,
+                    third_layer.extended_beta_weights,
+                    third_layer.extended_gamma_weights
+                ],
+                save_path=self.neuron_vectors_3d_filename
+            )
+
+            insert_data_to_excel(self.results_filename, self.dataset_name, i + 2, metrics)
+
             training_time.clear()
 
-        average_columns_in_excel(self.filename)
+        average_columns_in_excel(self.results_filename)
 
 
 if __name__ == "__main__":

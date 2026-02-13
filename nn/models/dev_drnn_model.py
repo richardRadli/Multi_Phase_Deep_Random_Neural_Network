@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from tqdm import tqdm
 from typing import Any
 
-from utils.utils import measure_execution_time, plot_vector_diversity, plot_neuron_vectors_3d
+from utils.utils import measure_execution_time
 
 
 class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
@@ -20,7 +20,7 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
         activation_function: str,
         rcond: float,
         penalty_term: float = None,
-        train_loader=None,
+        train_loader=None
     ):
         """
         Initialize the DevDeepRandomizedNeuralNetworkFirstLayer class.
@@ -36,6 +36,8 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
 
         super(DevDeepRandomizedNeuralNetworkFirstLayer, self).__init__()
 
+        colorama.init()
+
         self.activation_function = self.get_activation(activation_function)
         self.train_loader = train_loader
 
@@ -50,20 +52,10 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
         self.rcond = rcond
         self.penalty_term = penalty_term
 
-        colorama.init()
+        self.condition_number_list = []
 
     def set_train_predictions(self, prediction):
         self.predictions = prediction
-
-    @staticmethod
-    def plot_histogram(tensor):
-        import matplotlib.pyplot as plt
-        values = tensor.numpy().flatten()
-        plt.hist(values, bins=50)
-        plt.xlabel("Activation value")
-        plt.ylabel("Frequency")
-        plt.title("Histogram of hidden layer activations")
-        plt.show()
 
     @measure_execution_time
     def train_ith_layer(
@@ -90,12 +82,10 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
         ):
             if hi_prev is None:
                 hi.data = self.activation_function(train_x @ weights1)
-                # self.plot_histogram(hi.data)
-                logging.info(f"Condition number of h1: {torch.linalg.cond(hi.data)}")
+                self.condition_number_list.append(torch.linalg.cond(hi.data))
             else:
                 hi.data = self.activation_function(hi_prev @ weights1)
-                # self.plot_histogram(hi.data)
-                logging.info(f"Condition number of h2/h3: {torch.linalg.cond(hi.data)}")
+                self.condition_number_list.append(torch.linalg.cond(hi.data))
 
             if hi.shape[0] > hi.shape[1]:
                 identity_l = torch.eye(hi.shape[1])
@@ -103,20 +93,20 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
 
                 if self.rcond is not None:
                     weights2.data = torch.linalg.pinv(pseudo_inv_input, rcond=self.rcond) @ (hi.T @ train_y)
-                    logging.info(f"Condition number of weights2: {torch.linalg.cond(weights2.data)}\n")
+                    self.condition_number_list.append(torch.linalg.cond(weights2.data))
                 else:
                     weights2.data = torch.linalg.pinv(pseudo_inv_input) @ (hi.T @ train_y)
-                    logging.info(f"Condition number of weights2: {torch.linalg.cond(weights2.data)}\n")
+                    self.condition_number_list.append(torch.linalg.cond(weights2.data))
             else:
                 identity_n = torch.eye(hi.shape[0])
                 pseudo_inv_input = hi @ hi.T + identity_n / self.penalty_term
 
                 if self.rcond is not None:
                     weights2.data = hi.T @ torch.linalg.pinv(pseudo_inv_input, rcond=self.rcond) @ train_y
-                    logging.info(f"Condition number of weights2: {torch.linalg.cond(weights2.data)}\n")
+                    self.condition_number_list.append(torch.linalg.cond(weights2.data))
                 else:
                     weights2.data = hi.T @ torch.linalg.pinv(pseudo_inv_input) @ train_y
-                    logging.info(f"Condition number of weights2: {torch.linalg.cond(weights2.data)}\n")
+                    self.condition_number_list.append(torch.linalg.cond(weights2.data))
 
     def train_layer(self):
         """
@@ -264,6 +254,8 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         self.predictions = first_layer_instance.predictions
         self.rcond = first_layer_instance.rcond
 
+        self.condition_number_list = first_layer_instance.condition_number_list
+
         self.mu = mu
         self.sigma = sigma
 
@@ -324,48 +316,6 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         error_matrix = conf / (conf.sum(dim=1, keepdim=True) + 1e-8)
 
         return direction_tensor, dist_matrix, error_matrix
-
-    # def _allocate_neurons_per_class_pair(
-    #     self,
-    #     hidden_layer,
-    #     total_neurons: int,
-    #     eps: float = 1e-8
-    # ):
-    #     dir_tensor, dist_mtx, err_mtx = self._get_class_stats(hidden_layer)
-    #
-    #     difficulty_score = (err_mtx + err_mtx.T) / (dist_mtx + eps)
-    #
-    #     C = difficulty_score.shape[0]
-    #     triu_idx = torch.triu_indices(C, C, offset=1)
-    #     scores = difficulty_score[triu_idx[0], triu_idx[1]]
-    #
-    #     # Sorting, most difficult ones first
-    #     sorted_indices = torch.argsort(scores, descending=True)
-    #     num_pairs = len(sorted_indices)
-    #     allocation = {}
-    #
-    #     # Allocation
-    #     for i in range(num_pairs):
-    #         c1, c2 = triu_idx[0][i].item(), triu_idx[1][i].item()
-    #         allocation[(int(c1), int(c2))] =1
-    #
-    #     remaining = total_neurons - num_pairs
-    #     if remaining > 0:
-    #         weights = scores / (scores.sum() + eps)
-    #         extra_neurons = torch.floor(weights * remaining).int()
-    #
-    #         for i, idx in enumerate(sorted_indices):
-    #             c1, c2 = triu_idx[0][idx].item(), triu_idx[1][idx].item()
-    #             allocation[(int(c1), int(c2))] += extra_neurons[idx].item()
-    #
-    #     # Fix rounding
-    #     diff = total_neurons - sum(allocation.values())
-    #     for i in range(abs(diff)):
-    #         idx = sorted_indices[i % num_pairs]
-    #         pair = int(triu_idx[0][idx]), int(triu_idx[1][idx])
-    #         allocation[pair] += 1 if diff > 0 else -1
-    #
-    #     return allocation, dir_tensor
 
     def _allocate_neurons_per_class_pair(self, hidden_layer, total_neurons: int, eps: float = 1e-8):
         dir_tensor, dist_mtx, err_mtx = self._get_class_stats(hidden_layer)
@@ -438,7 +388,8 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
             self,
             weights: torch.Tensor,
             eps: float = 1e-8,
-            alpha: bool = False,
+            scaling_factor: bool = False,
+            alpha: float = 0.1,
             orthogonal=False
     ):
         dimension, _ = weights.shape
@@ -466,12 +417,10 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         if not new_columns:
             raise ValueError("new_columns is empty!")
 
-        # plot_vector_diversity(new_columns, "New method")
-        # plot_neuron_vectors_3d(new_columns)
-
         new_columns_matrix = torch.cat(new_columns, dim=1)
-        if alpha:
-            new_columns_matrix = new_columns_matrix * 0.1
+
+        if scaling_factor:
+            new_columns_matrix = new_columns_matrix * alpha
 
         if orthogonal:
             ort = new_columns_matrix.clone()
@@ -500,7 +449,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
 
         return hidden_layer_i
 
-    def _create_hidden_layer_threshold(self, weights, threshold):
+    def _create_hidden_layer_threshold(self, weights, error_threshold: float, similarity_threshold: float):
         dimension, _ = weights.shape
         new_columns = []
 
@@ -515,7 +464,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         for (c1, c2), n_neurons in self.allocation.items():
             error_rate = self.error_matrix[c1, c2]
 
-            if error_rate > threshold:
+            if error_rate > error_threshold:
                 mask_c1_c2 = (y_true == c1) & (y_pred == c2) & misclassified_mask
 
                 if mask_c1_c2.any():
@@ -536,7 +485,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
                             current_pool = torch.cat(new_columns, dim=1)
                             similarities = torch.mm(current_pool.T, v_reshaped).view(-1)
 
-                            if torch.any(similarities > 0.1):
+                            if torch.any(similarities > similarity_threshold):
                                 is_redundant = True
 
                         if not is_redundant:
@@ -557,7 +506,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
 
         return hidden_layer
 
-    def _create_hidden_layer_residual(self, weights, hidden_layer, n_hidden_nodes):
+    def _create_hidden_layer_residual(self, weights, hidden_layer, n_hidden_nodes, rcond):
         noise = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], weights.shape[1]))
         w_rnd_out_i = weights + noise
 
@@ -570,7 +519,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         residual_misclassified = (y_one_hot - self.predictions)[misclassified_mask]
 
         if hidden_misclassified.size(0) > 0:
-            beta_res = torch.linalg.pinv(hidden_misclassified) @ residual_misclassified
+            beta_res = torch.linalg.pinv(hidden_misclassified, rcond=rcond) @ residual_misclassified
         else:
             beta_res = torch.zeros((hidden_layer.size(1), y_one_hot.size(1)), device=hidden_layer.device)
 
@@ -598,7 +547,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         # return self._create_hidden_layer_baseline(weights, n_hidden_nodes=self.hidden_nodes[1])
         # return self._create_hidden_layer_new(weights, orthogonal=False, alpha=True)
         # return self._create_hidden_layer_threshold(weights, 1e-8)
-        return self._create_hidden_layer_residual(weights, self.h1.data, self.hidden_nodes[1])
+        return self._create_hidden_layer_residual(weights, self.h1.data, self.hidden_nodes[1], self.rcond)
 
     def train_layer(self):
         """
@@ -640,13 +589,12 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
 class DevDeepRandomizedNeuralNetworkThirdLayer(DevDeepRandomizedNeuralNetworkSecondLayer):
     def __init__(
             self,
-            second_layer_instance: DevDeepRandomizedNeuralNetworkSecondLayer,
-            mu: float,
-            sigma: float):
+            second_layer_instance: DevDeepRandomizedNeuralNetworkSecondLayer
+    ):
         super(DevDeepRandomizedNeuralNetworkThirdLayer, self).__init__(
             second_layer_instance,
-            mu,
-            sigma,
+            second_layer_instance.mu,
+            second_layer_instance.sigma,
             run_init=False
         )
 
@@ -707,7 +655,7 @@ class DevDeepRandomizedNeuralNetworkThirdLayer(DevDeepRandomizedNeuralNetworkSec
         # return self._create_hidden_layer_baseline(weights, n_hidden_nodes=self.hidden_nodes[2])
         # return self._create_hidden_layer_new(weights, orthogonal=False, alpha=True)
         # return self._create_hidden_layer_threshold(weights, 1e-8)
-        return self._create_hidden_layer_residual(weights, self.h2.data, self.hidden_nodes[2])
+        return self._create_hidden_layer_residual(weights, self.h2.data, self.hidden_nodes[2], rcond=self.rcond)
 
     def train_layer(self):
         """

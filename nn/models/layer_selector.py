@@ -29,7 +29,7 @@ class FirstLayerWrapper(LayerSelector):
             activation_function=network_cfg.get("activation"),
             rcond=network_cfg.get("rcond"),
             penalty_term=network_cfg.get("penalty_term"),
-            train_loader=train_loader,
+            train_loader=train_loader
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -52,8 +52,6 @@ class ThirdLayer(LayerSelector):
     def __init__(self, network_cfg: dict):
         self.layer = DevDeepRandomizedNeuralNetworkThirdLayer(
             second_layer_instance=network_cfg.get("second_layer_instance"),
-            mu=network_cfg.get("mu"),
-            sigma=network_cfg.get("sigma"),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

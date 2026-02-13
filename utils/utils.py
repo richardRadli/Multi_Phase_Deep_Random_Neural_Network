@@ -5,6 +5,7 @@ import logging
 import matplotlib.pyplot as plt
 import openpyxl
 import pandas as pd
+import numpy as np
 import time
 import torch
 import sys
@@ -246,40 +247,89 @@ def measure_execution_time(func: Callable) -> Callable:
     return wrapper
 
 
-def plot_vector_diversity(weights, title):
-    if isinstance(weights, (list, tuple)):
-        weights = torch.cat(weights, dim=1)
+def plot_condition_number(cond_list, save_path):
+    layers = ('beta', 'gamma', 'delta')
+    cond_number_counts = {
+        'cond_number': np.array([cond_list[0+1], cond_list[2+1], cond_list[4+1]]),
+    }
+    width = 0.6
 
-    normed_weights = weights / (torch.linalg.norm(weights, dim=0, keepdim=True) + 1e-8)
+    fig, ax = plt.subplots()
+    bottom = np.zeros(3)
 
-    sim = (normed_weights.T @ normed_weights).detach().cpu().numpy()
+    for cn, condition_num_count in cond_number_counts.items():
+        p = ax.bar(layers, condition_num_count, width, label=cn, bottom=bottom)
+        bottom += condition_num_count
 
-    plt.figure(figsize=(12, 12))
-    plt.imshow(sim, cmap="viridis", vmin=-1, vmax=1)
-    plt.colorbar()
-    plt.title(title)
-    plt.plot()
-    plt.show()
+        ax.bar_label(p, label_type='center')
+
+    ax.set_title('Condition number of each output layer')
+    ax.legend()
+
+    plt.savefig(save_path, dpi=200)
+
+def plot_weights_histogram(hidden_layers, save_path):
+    values = []
+    for hidden_layer in hidden_layers:
+        value = hidden_layer.numpy().flatten()
+        values.append([value])
+
+    plt.figure(figsize=(16, 6))
+    for idx, value in enumerate(values, start=1):
+        plt.subplot(1, 3, idx)
+        plt.hist(value, bins=50)
+        plt.xlabel("Activation value")
+        plt.ylabel("Frequency")
+        plt.title(f"Histogram of hidden layer {idx}")
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=200)
 
 
-def plot_neuron_vectors_3d(vectors, title="Neuron directions", color='blue', size=50):
-    if isinstance(vectors, (list, tuple)):
-        vectors = torch.cat(vectors, dim=1)
+def plot_vector_diversity(weights_list, save_path):
+    plt.figure(figsize=(16, 6))
 
-    W = vectors.T.detach().cpu().numpy()
+    for idx, weight in enumerate(weights_list):
+        if isinstance(weight, (list, tuple)):
+            weight = torch.cat(weight, dim=1)
 
-    if W.shape[1] > 3:
-        W_3d = PCA(n_components=3).fit_transform(W)
-    else:
-        W_3d = W
+        normed_weights = weight / (torch.linalg.norm(weight, dim=0, keepdim=True) + 1e-8)
+        sim = (normed_weights.T @ normed_weights).detach().cpu().numpy()
+        plt.subplot(1, 3, idx+1)
+        plt.imshow(sim, cmap="viridis", vmin=-1, vmax=1)
+        plt.colorbar()
+        plt.title(f"Weights in layer {idx+1}")
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300)
 
-    fig = plt.figure(figsize=(8, 6))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(W_3d[:,0], W_3d[:,1], W_3d[:,2], c=color, s=size)
-    ax.set_title(title)
-    ax.set_xlabel("PC1")
-    ax.set_ylabel("PC2")
-    ax.set_zlabel("PC3")
+
+def plot_neuron_vectors_3d(vectors_list, save_path=None):
+    fig = plt.figure(figsize=(16, 6))
+
+    axes = [
+        fig.add_subplot(1, 3, i + 1, projection='3d')
+        for i in range(3)
+    ]
+
+    for idx, vector in enumerate(vectors_list):
+        if isinstance(vector, (list, tuple)):
+            vector = torch.cat(vector, dim=1)
+
+        W = vector.T.detach().cpu().numpy()
+
+        if W.shape[1] > 3:
+            W_3d = PCA(n_components=3).fit_transform(W)
+        else:
+            W_3d = W
+
+        ax = axes[idx]
+        ax.scatter(W_3d[:, 0], W_3d[:, 1], W_3d[:, 2], c="blue", s=50)
+        ax.set_title(f"Neuron directions {idx + 1}")
+        ax.set_xlabel("PC1")
+        ax.set_ylabel("PC2")
+        ax.set_zlabel("PC3")
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=200)
     plt.show()
 
 

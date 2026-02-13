@@ -57,8 +57,8 @@ class ConfigFilePaths(_Const):
         return os.path.join(self.PROJECT_ROOT, self.dirs_config_paths.get(key, ""))
 
 
-class DevDRNNPaths(_Const):
-    dirs_dataset_paths = {
+class DevDRNNDataPaths(_Const):
+    dirs_data_paths = {
         "results_adult":
             "networks/dev_drnn/data/results/adult",
         "results_cifar10":
@@ -132,10 +132,161 @@ class DevDRNNPaths(_Const):
 
     def __init__(self):
         super().__init__()
-        self.create_directories(self.dirs_dataset_paths, "STORAGE")
+        self.create_directories(self.dirs_data_paths, "STORAGE")
 
     def get_data_path(self, key):
-        return os.path.join(self.STORAGE_ROOT, self.dirs_dataset_paths.get(key, ""))
+        return os.path.join(self.STORAGE_ROOT, self.dirs_data_paths.get(key, ""))
+
+
+class DevDRNNImagePaths(_Const):
+    dirs_image_paths = {
+        "vector_diversity_adult":
+            "networks/dev_drnn/image/vector_diversity/adult",
+        "vector_diversity_cifar10":
+            "networks/dev_drnn/image/vector_diversity/cifar10",
+        "vector_diversity_connect4":
+            "networks/dev_drnn/image/vector_diversity/connect4",
+        "vector_diversity_isolete":
+            "networks/dev_drnn/image/vector_diversity/isolete",
+        "vector_diversity_letter":
+            "networks/dev_drnn/image/vector_diversity/letter",
+        "vector_diversity_mnist":
+            "networks/dev_drnn/image/vector_diversity/mnist",
+        "vector_diversity_mnist_fashion":
+            "networks/dev_drnn/image/vector_diversity/mnist_fashion",
+        "vector_diversity_musk2":
+            "networks/dev_drnn/image/vector_diversity/musk2",
+        "vector_diversity_optdigits":
+            "networks/dev_drnn/image/vector_diversity/optdigits",
+        "vector_diversity_page_blocks":
+            "networks/dev_drnn/image/vector_diversity/page_blocks",
+        "vector_diversity_segment":
+            "networks/dev_drnn/image/vector_diversity/segment",
+        "vector_diversity_shuttle":
+            "networks/dev_drnn/image/vector_diversity/shuttle",
+        "vector_diversity_spambase":
+            "networks/dev_drnn/image/vector_diversity/spambase",
+        "vector_diversity_usps":
+            "networks/dev_drnn/image/vector_diversity/usps",
+        "vector_diversity_satimages":
+            "networks/dev_drnn/image/vector_diversity/satimages",
+        "vector_diversity_wall":
+            "networks/dev_drnn/image/vector_diversity/wall",
+        "vector_diversity_waveform":
+            "networks/dev_drnn/image/vector_diversity/waveform",
+
+        "neuron_vectors_3d_adult":
+            "networks/dev_drnn/image/neuron_vectors_3d/adult",
+        "neuron_vectors_3d_cifar10":
+            "networks/dev_drnn/image/neuron_vectors_3d/cifar10",
+        "neuron_vectors_3d_connect4":
+            "networks/dev_drnn/image/neuron_vectors_3d/connect4",
+        "neuron_vectors_3d_isolete":
+            "networks/dev_drnn/image/neuron_vectors_3d/isolete",
+        "neuron_vectors_3d_letter":
+            "networks/dev_drnn/image/neuron_vectors_3d/letter",
+        "neuron_vectors_3d_mnist":
+            "networks/dev_drnn/image/neuron_vectors_3d/mnist",
+        "neuron_vectors_3d_mnist_fashion":
+            "networks/dev_drnn/image/neuron_vectors_3d/mnist_fashion",
+        "neuron_vectors_3d_musk2":
+            "networks/dev_drnn/image/neuron_vectors_3d/musk2",
+        "neuron_vectors_3d_optdigits":
+            "networks/dev_drnn/image/neuron_vectors_3d/optdigits",
+        "neuron_vectors_3d_page_blocks":
+            "networks/dev_drnn/image/neuron_vectors_3d/page_blocks",
+        "neuron_vectors_3d_segment":
+            "networks/dev_drnn/image/neuron_vectors_3d/segment",
+        "neuron_vectors_3d_shuttle":
+            "networks/dev_drnn/image/neuron_vectors_3d/shuttle",
+        "neuron_vectors_3d_spambase":
+            "networks/dev_drnn/image/neuron_vectors_3d/spambase",
+        "neuron_vectors_3d_usps":
+            "networks/dev_drnn/image/neuron_vectors_3d/usps",
+        "neuron_vectors_3d_satimages":
+            "networks/dev_drnn/image/neuron_vectors_3d/satimages",
+        "neuron_vectors_3d_wall":
+            "networks/dev_drnn/image/neuron_vectors_3d/wall",
+        "neuron_vectors_3d_waveform":
+            "networks/dev_drnn/image/neuron_vectors_3d/waveform",
+
+        "histogram_adult":
+            "networks/dev_drnn/image/histogram/adult",
+        "histogram_cifar10":
+            "networks/dev_drnn/image/histogram/cifar10",
+        "histogram_connect4":
+            "networks/dev_drnn/image/histogram/connect4",
+        "histogram_isolete":
+            "networks/dev_drnn/image/histogram/isolete",
+        "histogram_letter":
+            "networks/dev_drnn/image/histogram/letter",
+        "histogram_mnist":
+            "networks/dev_drnn/image/histogram/mnist",
+        "histogram_mnist_fashion":
+            "networks/dev_drnn/image/histogram/mnist_fashion",
+        "histogram_musk2":
+            "networks/dev_drnn/image/histogram/musk2",
+        "histogram_optdigits":
+            "networks/dev_drnn/image/histogram/optdigits",
+        "histogram_page_blocks":
+            "networks/dev_drnn/image/histogram/page_blocks",
+        "histogram_segment":
+            "networks/dev_drnn/image/histogram/segment",
+        "histogram_shuttle":
+            "networks/dev_drnn/image/histogram/shuttle",
+        "histogram_spambase":
+            "networks/dev_drnn/image/histogram/spambase",
+        "histogram_usps":
+            "networks/dev_drnn/image/histogram/usps",
+        "histogram_satimages":
+            "networks/dev_drnn/image/histogram/satimages",
+        "histogram_wall":
+            "networks/dev_drnn/image/histogram/wall",
+        "histogram_waveform":
+            "networks/dev_drnn/image/histogram/waveform",
+
+        "condition_number_adult":
+            "networks/dev_drnn/image/condition_number/adult",
+        "condition_number_cifar10":
+            "networks/dev_drnn/image/condition_number/cifar10",
+        "condition_number_connect4":
+            "networks/dev_drnn/image/condition_number/connect4",
+        "condition_number_isolete":
+            "networks/dev_drnn/image/condition_number/isolete",
+        "condition_number_letter":
+            "networks/dev_drnn/image/condition_number/letter",
+        "condition_number_mnist":
+            "networks/dev_drnn/image/condition_number/mnist",
+        "condition_number_mnist_fashion":
+            "networks/dev_drnn/image/condition_number/mnist_fashion",
+        "condition_number_musk2":
+            "networks/dev_drnn/image/condition_number/musk2",
+        "condition_number_optdigits":
+            "networks/dev_drnn/image/condition_number/optdigits",
+        "condition_number_page_blocks":
+            "networks/dev_drnn/image/condition_number/page_blocks",
+        "condition_number_segment":
+            "networks/dev_drnn/image/condition_number/segment",
+        "condition_number_shuttle":
+            "networks/dev_drnn/image/condition_number/shuttle",
+        "condition_number_spambase":
+            "networks/dev_drnn/image/condition_number/spambase",
+        "condition_number_usps":
+            "networks/dev_drnn/image/condition_number/usps",
+        "condition_number_satimages":
+            "networks/dev_drnn/image/condition_number/satimages",
+        "condition_number_wall":
+            "networks/dev_drnn/image/condition_number/wall",
+        "condition_number_waveform":
+            "networks/dev_drnn/image/condition_number/waveform",
+    }
+
+    def __init__(self):
+        super().__init__()
+        self.create_directories(self.dirs_image_paths, "STORAGE")
+
+    def get_data_path(self, key):
+        return os.path.join(self.STORAGE_ROOT, self.dirs_image_paths.get(key, ""))
 
 
 class DatasetFilesPaths(_Const):
@@ -187,5 +338,6 @@ class DatasetFilesPaths(_Const):
 CONST: _Const = _Const()
 
 JSON_FILES_PATHS: ConfigFilePaths = ConfigFilePaths()
-DEV_DRNN_PATHS: DevDRNNPaths = DevDRNNPaths()
+DEV_DRNN_DATA_PATHS: DevDRNNDataPaths = DevDRNNDataPaths()
+DEV_DRNN_IMAGE_PATHS: DevDRNNImagePaths = DevDRNNImagePaths()
 DATASET_FILES_PATHS: DatasetFilesPaths = DatasetFilesPaths()

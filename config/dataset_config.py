@@ -2,7 +2,7 @@ import os
 
 from typing import Dict
 
-from config.data_paths import (DATASET_FILES_PATHS, DEV_DRNN_PATHS)
+from config.data_paths import (DATASET_FILES_PATHS, DEV_DRNN_DATA_PATHS, DEV_DRNN_IMAGE_PATHS)
 
 
 def general_dataset_configs(dataset_type) -> Dict:
@@ -335,138 +335,274 @@ def drnn_paths_config(dataset_type) -> Dict:
         "adult": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_adult"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_adult"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_adult"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_adult"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_adult"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_adult"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_adult"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_adult")
             }
         },
         "connect4": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_connect4"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_connect4"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_connect4"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_connect4"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_connect4"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_connect4"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_connect4"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_connect4")
             }
         },
         "cifar10": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_cifar10"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_cifar10"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_cifar10"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_cifar10"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_cifar10"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_cifar10"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_cifar10"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_cifar10")
             }
         },
         "isolete": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_isolete"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_isolete"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_isolete"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_isolete"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_isolete"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_isolete"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_isolete"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_isolete")
             }
         },
         "letter": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_letter"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_letter"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_letter"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_letter"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_letter"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_letter"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_letter"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_letter")
             },
         },
         "mnist": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_mnist"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_mnist"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_mnist"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_mnist"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_mnist"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_mnist"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_mnist"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_mnist")
             },
         },
         "mnist_fashion": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_mnist_fashion"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_mnist_fashion"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_mnist_fashion"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_mnist_fashion"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_mnist_fashion"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_mnist_fashion"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_mnist_fashion"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_mnist_fashion")
             },
         },
         "musk2": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_musk2"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_musk2"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_musk2"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_musk2"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_musk2"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_musk2"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_musk2"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_musk2")
             },
         },
         "optdigits": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_optdigits"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_optdigits"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_optdigits"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_optdigits"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_optdigits"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_optdigits"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_optdigits"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_optdigits")
             },
         },
         "page_blocks": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_page_blocks"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_page_blocks"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_page_blocks"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_page_blocks"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_page_blocks"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_page_blocks"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_page_blocks"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_page_blocks")
             },
         },
         "satimages": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_satimages"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_satimages"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_satimages")
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_satimages"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_satimages"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_satimages"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_satimages"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_satimages")
             },
         },
         "segment": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_segment"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_segment"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_segment"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_segment"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_segment"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_segment"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_segment"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_segment")
             },
         },
         "shuttle": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_shuttle"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_shuttle"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_shuttle"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_shuttle"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_shuttle"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_shuttle"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_shuttle"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_adult")
             },
         },
         "spambase": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_spambase"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_spambase"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_spambase"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_spambase"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_spambase"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_spambase"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_spambase"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_spambase")
             },
         },
         "usps": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_usps"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_usps"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_usps"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_usps"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_usps"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_usps"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_usps"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_usps")
             },
         },
         "wall": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_wall"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_wall"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_wall"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_wall"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_wall"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_wall"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_wall"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_wall")
             },
         },
         "waveform": {
             "dev_drnn": {
                 "path_to_results":
-                    DEV_DRNN_PATHS.get_data_path("results_waveform"),
+                    DEV_DRNN_DATA_PATHS.get_data_path("results_waveform"),
                 "hyperparam_tuning":
-                    DEV_DRNN_PATHS.get_data_path("hyperparam_waveform"),
-            },
+                    DEV_DRNN_DATA_PATHS.get_data_path("hyperparam_waveform"),
+                "vector_diversity":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("vector_diversity_waveform"),
+                "neuron_vectors_3d":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("neuron_vectors_3d_waveform"),
+                "histogram":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_waveform"),
+                "condition":
+                    DEV_DRNN_IMAGE_PATHS.get_data_path("histogram_waveform")
+            }
         }
     }
 
