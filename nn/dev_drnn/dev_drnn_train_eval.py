@@ -36,8 +36,7 @@ class DevDRNN(BaseDevDRNN):
         self.results_filename = (
             os.path.join(
                 drnn_config.get("dev_drnn").get("path_to_results"),
-                f"{timestamp}_{self.dataset_name}_dataset_{penalty_term}"
-                f"_penalty_{rcond:.4f}_rcond.xlsx"
+                f"{timestamp}_{self.dataset_name}_dataset.xlsx"
             )
         )
 

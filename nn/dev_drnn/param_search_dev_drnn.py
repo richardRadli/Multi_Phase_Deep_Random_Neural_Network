@@ -20,9 +20,18 @@ class ParamSearch(BaseDevDRNN):
         colorama.init()
 
         self.hyperparam_config = {
-            "rcond": tune.loguniform(1e-1, 1e-30),
-            "penalty_term": tune.uniform(0.1, 30),
-            "neurons": self.cfg.get("exp_neurons")
+            "rcond": [
+                tune.loguniform(1e-30, 1e-1),
+                tune.loguniform(1e-30, 1e-1),
+                tune.loguniform(1e-30, 1e-1)
+            ],
+            "penalty_term": [
+                tune.loguniform(1e-30, 1e-1),
+                tune.loguniform(1e-30, 1e-1),
+                tune.loguniform(1e-30, 1e-1)
+            ],
+            "neurons": self.cfg.get("exp_neurons"),
+            "method": self.cfg.get("method")
         }
 
     def main(self, config):
@@ -36,8 +45,8 @@ class ParamSearch(BaseDevDRNN):
 
         self.first_layer = (
             LayerFactory.create(
-                "DevDeepRandomizedNeuralNetworkFirstLayer",
-                first_layer_cfg,
+                network_type="DevDeepRandomizedNeuralNetworkFirstLayer",
+                network_cfg=first_layer_cfg,
                 train_loader=self.train_loader
             )
         )
@@ -60,15 +69,18 @@ class ParamSearch(BaseDevDRNN):
         )
         self.second_layer = (
             LayerFactory.create(
-                "DevDeepRandomizedNeuralNetworkSecondLayer", second_layer_cfg
+                network_type="DevDeepRandomizedNeuralNetworkSecondLayer",
+                network_cfg=second_layer_cfg
             )
         )
 
         self.second_layer, _, _ = (
             self.model_training_and_evaluation(
                 model=self.second_layer,
-                weights=[self.second_layer.extended_beta_weights,
-                         self.second_layer.gamma_weights],
+                weights=[
+                    self.second_layer.extended_beta_weights,
+                    self.second_layer.gamma_weights
+                ],
                 num_hidden_layers=2,
                 verbose=True
             )
@@ -77,22 +89,26 @@ class ParamSearch(BaseDevDRNN):
         # Third layer
         third_layer_cfg = (
             self.get_network_config(
-                network_type="DevDeepRandomizedNeuralNetworkThirdLayer", config=config
+                network_type="DevDeepRandomizedNeuralNetworkThirdLayer",
+                config=config
             )
         )
 
         third_layer = (
             LayerFactory.create(
-                "DevDeepRandomizedNeuralNetworkThirdLayer", third_layer_cfg
+                network_type="DevDeepRandomizedNeuralNetworkThirdLayer",
+                network_cfg=third_layer_cfg
             )
         )
 
         third_layer, training_metrics, testing_metrics = (
             self.model_training_and_evaluation(
                 model=third_layer,
-                weights=[third_layer.extended_beta_weights,
-                         third_layer.extended_gamma_weights,
-                         third_layer.delta_weights],
+                weights=[
+                    third_layer.extended_beta_weights,
+                    third_layer.extended_gamma_weights,
+                    third_layer.delta_weights
+                ],
                 num_hidden_layers=3,
                 verbose=True
             )
@@ -123,7 +139,7 @@ class ParamSearch(BaseDevDRNN):
                 "gpu": 0
             },
             config=self.hyperparam_config,
-            num_samples=60,
+            num_samples=100,
             scheduler=scheduler,
             progress_reporter=reporter,
             storage_path="/home/ricsi/Desktop/hyperparam_search_best_results.txt"

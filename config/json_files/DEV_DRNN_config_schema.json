@@ -95,217 +95,115 @@
     },
     "rcond": {
       "type": "object",
-      "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
+      "description": "Number of equal neurons.",
       "properties": {
-      "adult": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "cifar10": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "connect4": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "isolete": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "letter": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "mnist": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "mnist_fashion": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "musk2": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "optdigits": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "page_blocks": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "satimages": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "segment": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "shuttle": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "spambase": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "usps": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "wall": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      },
-      "waveform": {
-        "oneOf": [
-        { "type": "number" },
-        { "type": "null" }
-        ]
-      }
+        "adult": {
+          "type": "array"
+        },
+        "cifar10": {
+          "type": "array"
+        },
+        "connect4": {
+          "type": "array"
+        },
+        "isolete": {
+          "type": "array"
+        },
+        "letter": {
+          "type": "array"
+        },
+        "mnist": {
+          "type": "array"
+        },
+        "mnist_fashion": {
+          "type": "array"
+        },
+        "musk2": {
+          "type": "array"
+        },
+        "optdigits": {
+          "type": "array"
+        },
+        "page_blocks": {
+          "type": "array"
+        },
+        "satimages": {
+          "type": "array"
+        },
+        "segment": {
+          "type": "array"
+        },
+        "shuttle": {
+          "type": "array"
+        },
+        "spambase": {
+          "type": "array"
+        },
+        "usps": {
+          "type": "array"
+        },
+        "wall": {
+          "type": "array"
+        },
+        "waveform": {
+          "type": "array"
+        }
       }
     },
     "penalty": {
       "type": "object",
-      "description": "Value of the L2 penalty term.",
+      "description": "Number of equal neurons.",
       "properties": {
         "adult": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "cifar10": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "connect4": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "isolete": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "letter": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "mnist": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "mnist_fashion": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "musk2": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "optdigits": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "page_blocks": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "satimages": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "segment": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "shuttle": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "spambase": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "usps": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "wall": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         },
         "waveform": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "null" }
-          ]
+          "type": "array"
         }
       }
     }
