@@ -55,6 +55,7 @@ class BaseDevDRNN:
                 "first_layer_output_nodes": self.gen_ds_cfg.get("num_classes"),
                 "activation": self.activation,
                 "rcond": config.get("rcond"),
+                "method": config.get("method"),
                 "penalty_term": config.get("penalty_term")
             },
             "DevDeepRandomizedNeuralNetworkSecondLayer": {

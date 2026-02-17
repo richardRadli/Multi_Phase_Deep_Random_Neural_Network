@@ -14,6 +14,10 @@
       "enum": ["ReLU", "LeakyReLU", "Tanh", "Sigmoid", "Identity"],
       "description": "The activation function to be used in the neural network."
     },
+    "method": {
+      "type": "string",
+      "enum": ["baseline", "ort", "alpha", "sim", "residual"]
+    },
     "number_of_tests": {
       "type": "integer",
       "description": "Number of tests to be performed."

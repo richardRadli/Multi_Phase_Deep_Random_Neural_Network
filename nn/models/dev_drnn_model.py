@@ -20,6 +20,7 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
         activation_function: str,
         rcond: float,
         penalty_term: float = None,
+        method: str = "baseline",
         train_loader=None
     ):
         """
@@ -51,6 +52,8 @@ class DevDeepRandomizedNeuralNetworkFirstLayer(nn.Module):
         self.hidden_nodes = hidden_nodes
         self.rcond = rcond
         self.penalty_term = penalty_term
+
+        self.method = method
 
         self.condition_number_list = []
 
@@ -238,6 +241,7 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
             activation_function=first_layer_instance.activation_function.__class__.__name__,
             rcond=first_layer_instance.rcond,
             penalty_term=first_layer_instance.penalty_term,
+            method=first_layer_instance.method,
             train_loader=first_layer_instance.train_loader,
         )
 
@@ -384,6 +388,49 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
 
         return self._allocate_neurons_per_class_pair(hidden_layer, total_neurons, eps)
 
+    @staticmethod
+    def fill_remaining_xavier(remaining_neurons, weights, new_columns=None):
+        if not new_columns:
+            new_columns = []
+
+        if remaining_neurons > 0:
+            # random_mtx = torch.randn(dimension, remaining_neurons)
+            # q_random = torch.nn.init.orthogonal_(random_mtx)
+            #
+            # for i in range(remaining_neurons):
+            #     new_columns.append(q_random[:, i].view(dimension, 1))
+
+            dimension = weights.shape[0]
+            fan_out = remaining_neurons
+            std = torch.sqrt(torch.tensor(2.0) / (dimension + fan_out))
+
+            xavier_mtx = torch.empty(
+                dimension, remaining_neurons
+            ).normal_(0.0, std.item())
+
+            Q, _ = torch.linalg.qr(xavier_mtx, mode='reduced')
+
+            for i in range(remaining_neurons):
+                v = Q[:, i]
+                v = v / (v.norm() + 1e-8)
+                new_columns.append(v.view(dimension, 1))
+
+        return new_columns
+
+    def _create_hidden_layer_baseline(self, weights, n_hidden_nodes):
+        noise = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], weights.shape[1]))
+        w_rnd_out_i = weights + noise
+        hidden_layer_i_a = torch.hstack((weights, w_rnd_out_i))
+
+        w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes))
+        q = w_rnd.clone()
+        torch.nn.init.orthogonal_(q)
+        # q = q @ q.t()
+
+        hidden_layer_i = torch.cat((hidden_layer_i_a, q), dim=1)
+
+        return hidden_layer_i
+
     def _create_hidden_layer_new(
             self,
             weights: torch.Tensor,
@@ -425,31 +472,22 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         if orthogonal:
             ort = new_columns_matrix.clone()
             torch.nn.init.orthogonal_(ort)
-            ort = ort @ ort.t()
+            # ort = ort @ ort.t()
             hidden_layer = torch.cat([weights, w_rnd_out_i, ort], dim=1)
         else:
            hidden_layer = torch.cat([weights, w_rnd_out_i, new_columns_matrix], dim=1)
 
         return hidden_layer
 
-    def _create_hidden_layer_baseline(self, weights, n_hidden_nodes):
-        noise = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], weights.shape[1]))
+    def _create_hidden_layer_similarity(
+            self,
+            weights,
+            error_threshold: float = 1e-8 ,
+            similarity_threshold: float = 0.2
+    ):
+        noise = torch.normal(mean=self.mu, std=self.sigma, size=weights.shape)
         w_rnd_out_i = weights + noise
-        hidden_layer_i_a = torch.hstack((weights, w_rnd_out_i))
 
-        w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], n_hidden_nodes))
-        q = w_rnd.clone()
-        torch.nn.init.orthogonal_(q)
-        q = q @ q.t()
-
-        # plot_vector_diversity([q], "Old method")
-        # plot_neuron_vectors_3d([q])
-
-        hidden_layer_i = torch.cat((hidden_layer_i_a, q), dim=1)
-
-        return hidden_layer_i
-
-    def _create_hidden_layer_threshold(self, weights, error_threshold: float, similarity_threshold: float):
         dimension, _ = weights.shape
         new_columns = []
 
@@ -493,22 +531,45 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
                             allocated_directed_neurons += 1
 
         remaining_neurons = total_target_neurons - len(new_columns)
-        if remaining_neurons > 0:
-            random_mtx = torch.randn(dimension, remaining_neurons)
-            q_random = torch.nn.init.orthogonal_(random_mtx)
-
-            for i in range(remaining_neurons):
-                new_columns.append(q_random[:, i].view(dimension, 1))
+        new_columns = self.fill_remaining_xavier(remaining_neurons, weights, new_columns)
 
         new_columns_matrix = torch.cat(new_columns, dim=1)
-        # new_columns_matrix = new_columns_matrix @ new_columns_matrix.t()
-        hidden_layer = torch.cat([weights, new_columns_matrix], dim=1)
+        hidden_layer = torch.cat([weights, w_rnd_out_i, new_columns_matrix], dim=1)
 
         return hidden_layer
 
-    def _create_hidden_layer_residual(self, weights, hidden_layer, n_hidden_nodes, rcond):
-        noise = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], weights.shape[1]))
-        w_rnd_out_i = weights + noise
+    @staticmethod
+    def fill_remaining_from_residual(X, residual, remaining_neurons, eps=1e-8):
+        """
+        X: (N, input_dim)
+        residual: (N, output_dim)
+        """
+
+        input_dim = X.shape[1]
+
+        new_columns = []
+
+        for i in range(min(remaining_neurons, residual.shape[1])):
+            r = residual[:, i]
+
+            v = X.T @ r
+            norm = v.norm()
+
+            if norm > eps:
+                v = v / norm
+                new_columns.append(v.view(input_dim, 1))
+
+        return new_columns
+
+
+    def _create_hidden_layer_residual(
+            self,
+            prev_weights,
+            hidden_layer,
+            n_hidden_nodes
+    ):
+        noise = torch.normal(mean=self.mu, std=self.sigma, size=(prev_weights.shape[0], prev_weights.shape[1]))
+        prev_weights_perturbed = prev_weights + noise
 
         _, y_one_hot = next(iter(self.train_loader))
         y_true = torch.argmax(y_one_hot, dim=1)
@@ -519,17 +580,33 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
         residual_misclassified = (y_one_hot - self.predictions)[misclassified_mask]
 
         if hidden_misclassified.size(0) > 0:
-            beta_res = torch.linalg.pinv(hidden_misclassified, rcond=rcond) @ residual_misclassified
+            beta_res = torch.linalg.pinv(hidden_misclassified) @ residual_misclassified
         else:
             beta_res = torch.zeros((hidden_layer.size(1), y_one_hot.size(1)), device=hidden_layer.device)
 
-        remaining_neurons = n_hidden_nodes - (weights.shape[1] + w_rnd_out_i.shape[1] + beta_res.shape[1])
+        remaining_neurons = n_hidden_nodes - (
+                prev_weights.shape[1] + prev_weights_perturbed.shape[1] + beta_res.shape[1]
+        )
+        new_columns = self.fill_remaining_xavier(
+            remaining_neurons,
+            prev_weights
+        )
 
-        w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], remaining_neurons))
-        q = w_rnd.clone()
-        torch.nn.init.orthogonal_(q)
-        # q = q @ q.t()
-        hidden_layer = torch.cat([weights, w_rnd_out_i, beta_res, q], dim=1)
+        new_columns_matrix = torch.cat(new_columns, dim=1)
+
+        # w_rnd = torch.normal(mean=self.mu, std=self.sigma, size=(weights.shape[0], remaining_neurons))
+        # q = w_rnd.clone()
+        # torch.nn.init.orthogonal_(q)
+
+        hidden_layer = torch.cat(
+            tensors=[
+                prev_weights,
+                prev_weights_perturbed,
+                beta_res,
+                new_columns_matrix
+            ],
+            dim=1
+        )
 
         return hidden_layer
 
@@ -544,10 +621,15 @@ class DevDeepRandomizedNeuralNetworkSecondLayer(DevDeepRandomizedNeuralNetworkFi
             torch.Tensor: The created hidden layer with added noise.
         """
 
-        # return self._create_hidden_layer_baseline(weights, n_hidden_nodes=self.hidden_nodes[1])
-        # return self._create_hidden_layer_new(weights, orthogonal=False, alpha=True)
-        # return self._create_hidden_layer_threshold(weights, 1e-8)
-        return self._create_hidden_layer_residual(weights, self.h1.data, self.hidden_nodes[1], self.rcond)
+        selectable_methods = {
+            "baseline": self._create_hidden_layer_baseline(weights, n_hidden_nodes=self.hidden_nodes[1]),
+            "ort": self._create_hidden_layer_new(weights, orthogonal=True, alpha=False),
+            "alpha": self._create_hidden_layer_new(weights, orthogonal=False, alpha=True),
+            "sim": self._create_hidden_layer_similarity(weights),
+            "residual": self._create_hidden_layer_residual(weights, self.h1.data, self.hidden_nodes[1])
+        }
+
+        return selectable_methods[self.method]
 
     def train_layer(self):
         """
@@ -652,10 +734,15 @@ class DevDeepRandomizedNeuralNetworkThirdLayer(DevDeepRandomizedNeuralNetworkSec
             torch.Tensor: The created hidden layer with added noise.
         """
 
-        # return self._create_hidden_layer_baseline(weights, n_hidden_nodes=self.hidden_nodes[2])
-        # return self._create_hidden_layer_new(weights, orthogonal=False, alpha=True)
-        # return self._create_hidden_layer_threshold(weights, 1e-8)
-        return self._create_hidden_layer_residual(weights, self.h2.data, self.hidden_nodes[2], rcond=self.rcond)
+        selectable_methods = {
+            "baseline": self._create_hidden_layer_baseline(weights, n_hidden_nodes=self.hidden_nodes[2]),
+            "ort": self._create_hidden_layer_new(weights, orthogonal=True, alpha=False),
+            "alpha": self._create_hidden_layer_new(weights, orthogonal=False, alpha=True),
+            "sim": self._create_hidden_layer_similarity(weights),
+            "residual": self._create_hidden_layer_residual(weights, self.h2.data, self.hidden_nodes[2])
+        }
+
+        return selectable_methods[self.method]
 
     def train_layer(self):
         """

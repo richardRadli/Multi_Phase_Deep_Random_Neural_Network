@@ -357,18 +357,28 @@ def reorder_metrics_lists(train_metrics, test_metrics, training_time_list = None
     """
 
     if training_time_list is not None:
-        training_time = sum(training_time_list)
+        training_time = round(sum(training_time_list), 3)
 
-        train_acc, train_precision, train_recall, train_f1, = (
-            train_metrics[0], train_metrics[1], train_metrics[2], train_metrics[3]
+        train_acc, train_precision, train_recall, train_f1 = (
+            round(train_metrics[0], 3),
+            round(train_metrics[1], 3),
+            round(train_metrics[2], 3),
+            round(train_metrics[3], 3),
         )
     else:
         train_acc, train_precision, train_recall, train_f1, training_time = (
-            train_metrics[0], train_metrics[1], train_metrics[2], train_metrics[3], train_metrics[4]
+            round(train_metrics[0], 3),
+            round(train_metrics[1], 3),
+            round(train_metrics[2], 3),
+            round(train_metrics[3], 3),
+            round(train_metrics[4], 3),
         )
 
     test_acc, test_precision, test_recall, test_f1 = (
-        test_metrics[0], test_metrics[1], test_metrics[2], test_metrics[3]
+        round(test_metrics[0], 3),
+        round(test_metrics[1], 3),
+        round(test_metrics[2], 3),
+        round(test_metrics[3], 3),
     )
 
     combined_metrics = [

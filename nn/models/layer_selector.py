@@ -29,6 +29,7 @@ class FirstLayerWrapper(LayerSelector):
             activation_function=network_cfg.get("activation"),
             rcond=network_cfg.get("rcond"),
             penalty_term=network_cfg.get("penalty_term"),
+            method=network_cfg.get("method"),
             train_loader=train_loader
         )
 

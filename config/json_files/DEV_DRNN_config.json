@@ -1,7 +1,8 @@
 {
-  "dataset_name": "wall",
+  "dataset_name": "letter",
   "activation": "LeakyReLU",
-  "number_of_tests": 1,
+  "method": "sim",
+  "number_of_tests": 10,
   "seed": true,
   "mu": 0,
   "sigma": 0.1,

@@ -72,7 +72,8 @@ class DevDRNN(BaseDevDRNN):
         self.hyperparam_config = {
             "rcond": rcond,
             "penalty_term": penalty_term,
-            "neurons": self.cfg.get("exp_neurons")
+            "neurons": self.cfg.get("exp_neurons"),
+            "method": self.cfg.get("method")
         }
 
     def main(self) -> None:
@@ -172,37 +173,37 @@ class DevDRNN(BaseDevDRNN):
                 )
             )
 
-            plot_condition_number(
-                cond_list=third_layer.condition_number_list,
-                save_path=self.condition_filename
-            )
-
-            plot_weights_histogram(
-                hidden_layers=[
-                    third_layer.h1,
-                    third_layer.extended_beta_weights,
-                    third_layer.extended_gamma_weights
-                ],
-                save_path=self.histogram_filename
-            )
-
-            plot_vector_diversity(
-                weights_list=[
-                    third_layer.h1,
-                    third_layer.extended_beta_weights,
-                    third_layer.extended_gamma_weights
-                ],
-                save_path=self.vector_diversity_filename
-            )
-
-            plot_neuron_vectors_3d(
-                vectors_list=[
-                    third_layer.h1,
-                    third_layer.extended_beta_weights,
-                    third_layer.extended_gamma_weights
-                ],
-                save_path=self.neuron_vectors_3d_filename
-            )
+            # plot_condition_number(
+            #     cond_list=third_layer.condition_number_list,
+            #     save_path=self.condition_filename
+            # )
+            #
+            # plot_weights_histogram(
+            #     hidden_layers=[
+            #         third_layer.h1,
+            #         third_layer.extended_beta_weights,
+            #         third_layer.extended_gamma_weights
+            #     ],
+            #     save_path=self.histogram_filename
+            # )
+            #
+            # plot_vector_diversity(
+            #     weights_list=[
+            #         third_layer.h1,
+            #         third_layer.extended_beta_weights,
+            #         third_layer.extended_gamma_weights
+            #     ],
+            #     save_path=self.vector_diversity_filename
+            # )
+            #
+            # plot_neuron_vectors_3d(
+            #     vectors_list=[
+            #         third_layer.h1,
+            #         third_layer.extended_beta_weights,
+            #         third_layer.extended_gamma_weights
+            #     ],
+            #     save_path=self.neuron_vectors_3d_filename
+            # )
 
             insert_data_to_excel(self.results_filename, self.dataset_name, i + 2, metrics)
 
