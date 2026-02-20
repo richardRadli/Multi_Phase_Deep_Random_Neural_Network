@@ -38,7 +38,7 @@
     },
     "exp_neurons": {
       "type": "object",
-      "description": "Number of equal neurons.",
+      "description": "Number of neurons.",
       "properties": {
         "adult": {
           "type": "array"
@@ -93,117 +93,651 @@
         }
       }
     },
-    "rcond": {
+"rcond": {
       "type": "object",
-      "description": "Number of equal neurons.",
+      "description": "Value of the rcond parameter for the Moore-Penrose pseudo Inverse solver.",
       "properties": {
-        "adult": {
-          "type": "array"
-        },
-        "cifar10": {
-          "type": "array"
-        },
-        "connect4": {
-          "type": "array"
-        },
-        "isolete": {
-          "type": "array"
-        },
-        "letter": {
-          "type": "array"
-        },
-        "mnist": {
-          "type": "array"
-        },
-        "mnist_fashion": {
-          "type": "array"
-        },
-        "musk2": {
-          "type": "array"
-        },
-        "optdigits": {
-          "type": "array"
-        },
-        "page_blocks": {
-          "type": "array"
-        },
-        "satimages": {
-          "type": "array"
-        },
-        "segment": {
-          "type": "array"
-        },
-        "shuttle": {
-          "type": "array"
-        },
-        "spambase": {
-          "type": "array"
-        },
-        "usps": {
-          "type": "array"
-        },
-        "wall": {
-          "type": "array"
-        },
-        "waveform": {
-          "type": "array"
-        }
+      "adult": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "cifar10": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "connect4": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "isolete": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "letter": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "mnist": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "mnist_fashion": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "musk2": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "optdigits": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "page_blocks": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "satimages": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "segment": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "shuttle": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "spambase": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "usps": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "wall": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "waveform": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      }
       }
     },
     "penalty": {
       "type": "object",
-      "description": "Number of equal neurons.",
+      "description": "Value of the L2 penalty term.",
       "properties": {
         "adult": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "cifar10": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "connect4": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "isolete": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "letter": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "mnist": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "mnist_fashion": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "musk2": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "optdigits": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "page_blocks": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "satimages": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "segment": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "shuttle": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "spambase": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "usps": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "wall": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         },
         "waveform": {
-          "type": "array"
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "scaling_factor": {
+      "type": "object",
+      "description": "Value of the scaling factor.",
+      "properties": {
+      "adult": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "cifar10": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "connect4": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "isolete": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "letter": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "mnist": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "mnist_fashion": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "musk2": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "optdigits": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "page_blocks": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "satimages": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "segment": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "shuttle": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "spambase": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "usps": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "wall": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "waveform": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      }
+      }
+    },
+    "error_threshold": {
+      "type": "object",
+      "description": "Value of the error threshold.",
+      "properties": {
+        "adult": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "cifar10": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "connect4": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "isolete": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "letter": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist_fashion": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "musk2": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "optdigits": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "page_blocks": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "satimages": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "segment": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "shuttle": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "spambase": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "usps": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "wall": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "waveform": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "similarity_threshold": {
+      "type": "object",
+      "description": "Value of the similarity threshold.",
+      "properties": {
+      "adult": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "cifar10": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "connect4": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "isolete": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "letter": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "mnist": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "mnist_fashion": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "musk2": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "optdigits": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "page_blocks": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "satimages": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "segment": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "shuttle": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "spambase": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "usps": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "wall": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      },
+      "waveform": {
+        "oneOf": [
+        { "type": "number" },
+        { "type": "null" }
+        ]
+      }
+      }
+    },
+    "res_rcond": {
+      "type": "object",
+      "description": "Value of the residual rcond.",
+      "properties": {
+        "adult": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "cifar10": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "connect4": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "isolete": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "letter": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "mnist_fashion": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "musk2": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "optdigits": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "page_blocks": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "satimages": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "segment": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "shuttle": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "spambase": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "usps": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "wall": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        },
+        "waveform": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ]
         }
       }
     }

@@ -43,6 +43,10 @@ class SecondLayerWrapper(LayerSelector):
             first_layer_instance=network_cfg.get("first_layer_instance"),
             mu=network_cfg.get("mu"),
             sigma=network_cfg.get("sigma"),
+            scaling_factor=network_cfg.get("scaling_factor"),
+            error_threshold=network_cfg.get("error_threshold"),
+            similarity_threshold=network_cfg.get("similarity_threshold"),
+            res_rcond=network_cfg.get("res_rcond")
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

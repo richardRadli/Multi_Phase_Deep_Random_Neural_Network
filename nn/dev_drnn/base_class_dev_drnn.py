@@ -61,7 +61,11 @@ class BaseDevDRNN:
             "DevDeepRandomizedNeuralNetworkSecondLayer": {
                 "first_layer_instance": self.first_layer,
                 "sigma": self.cfg.get('sigma'),
-                "mu": self.cfg.get('mu')
+                "mu": self.cfg.get('mu'),
+                "scaling_factor": config.get("scaling_factor"),
+                "error_threshold": config.get("error_threshold"),
+                "similarity_threshold": config.get("similarity_threshold"),
+                "res_rcond": config.get("res_rcond"),
             },
             "DevDeepRandomizedNeuralNetworkThirdLayer": {
                 "second_layer_instance": self.second_layer,

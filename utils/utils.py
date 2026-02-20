@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from typing import Any, Callable, List, Tuple, Union
 
 
-def average_columns_in_excel(filename: str) -> None:
+def average_columns_in_excel(filename: str) -> dict:
     """
     Calculates the average of each numeric column for each sheet in an Excel file and appends these averages to the end
     of each sheet.
@@ -55,6 +55,8 @@ def average_columns_in_excel(filename: str) -> None:
             cell.fill = fill
 
     workbook.save(filename)
+
+    return results
 
 
 def create_timestamp() -> str:
@@ -357,28 +359,28 @@ def reorder_metrics_lists(train_metrics, test_metrics, training_time_list = None
     """
 
     if training_time_list is not None:
-        training_time = round(sum(training_time_list), 3)
+        training_time = round(sum(training_time_list), 4)
 
         train_acc, train_precision, train_recall, train_f1 = (
-            round(train_metrics[0], 3),
-            round(train_metrics[1], 3),
-            round(train_metrics[2], 3),
-            round(train_metrics[3], 3),
+            round(train_metrics[0], 4),
+            round(train_metrics[1], 4),
+            round(train_metrics[2], 4),
+            round(train_metrics[3], 4),
         )
     else:
         train_acc, train_precision, train_recall, train_f1, training_time = (
-            round(train_metrics[0], 3),
-            round(train_metrics[1], 3),
-            round(train_metrics[2], 3),
-            round(train_metrics[3], 3),
-            round(train_metrics[4], 3),
+            round(train_metrics[0], 4),
+            round(train_metrics[1], 4),
+            round(train_metrics[2], 4),
+            round(train_metrics[3], 4),
+            round(train_metrics[4], 4),
         )
 
     test_acc, test_precision, test_recall, test_f1 = (
-        round(test_metrics[0], 3),
-        round(test_metrics[1], 3),
-        round(test_metrics[2], 3),
-        round(test_metrics[3], 3),
+        round(test_metrics[0], 4),
+        round(test_metrics[1], 4),
+        round(test_metrics[2], 4),
+        round(test_metrics[3], 4),
     )
 
     combined_metrics = [

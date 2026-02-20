@@ -72,6 +72,10 @@ class DevDRNN(BaseDevDRNN):
             "rcond": rcond,
             "penalty_term": penalty_term,
             "neurons": self.cfg.get("exp_neurons"),
+            "scaling_factor": self.cfg.get("scaling_factor"),
+            "error_threshold": self.cfg.get("error_threshold"),
+            "similarity_threshold": self.cfg.get("similarity_threshold"),
+            "res_rcond": self.cfg.get("res_rcond"),
             "method": self.cfg.get("method")
         }
 
@@ -208,7 +212,10 @@ class DevDRNN(BaseDevDRNN):
 
             training_time.clear()
 
-        average_columns_in_excel(self.results_filename)
+        final_results = average_columns_in_excel(self.results_filename)
+
+        for v in final_results.values():
+            logging.info(v)
 
 
 if __name__ == "__main__":
