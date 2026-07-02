@@ -1,7 +1,7 @@
 import logging
 import os
 
-from utils.utils import setup_logger
+from utils.common import setup_logger
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -13,7 +13,7 @@ class _Const(object):
     # Select user and according paths
     STORAGE_ROOT = os.getenv('STORAGE_ROOT', "D:/storage/lion17")
     DATASET_ROOT = os.getenv("DATASET_ROOT", "C:/Users/hmark/Documents/Datasets/datasets")
-    PROJECT_ROOT = os.getenv("PROJECT_ROOT", "C:/Users/hmark/Documents/GitHub/Multi_Phase_Deep_Random_Neural_Network")
+    PROJECT_ROOT = os.getenv("PROJECT_ROOT", "/")
 
 
     # ------------------------------------------------------------------------------------------------------------------

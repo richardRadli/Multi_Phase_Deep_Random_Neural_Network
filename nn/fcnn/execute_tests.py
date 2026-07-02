@@ -3,8 +3,8 @@ import os
 
 from tqdm import tqdm
 
-from config.data_paths import JSON_FILES_PATHS
-from config.dataset_config import fcnn_paths_configs
+from dataset_operations_service.config.data_paths import JSON_FILES_PATHS
+from dataset_operations_service.config.dataset_config import fcnn_paths_configs
 from eval_fcnn import EvalFCNN
 from train_fcnn import TrainFCNN
 from utils.utils import create_timestamp, insert_data_to_excel, load_config_json, average_columns_in_excel

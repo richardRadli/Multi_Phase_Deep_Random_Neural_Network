@@ -11,8 +11,8 @@ from torchinfo import summary
 from torch.utils.tensorboard import SummaryWriter
 from typing import List
 
-from config.data_paths import ConfigFilePaths
-from config.dataset_config import general_dataset_configs, fcnn_paths_configs
+from dataset_operations_service.config.data_paths import ConfigFilePaths
+from dataset_operations_service.config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (create_timestamp, setup_logger, device_selector, load_config_json, measure_execution_time,
                          create_train_test_datasets)

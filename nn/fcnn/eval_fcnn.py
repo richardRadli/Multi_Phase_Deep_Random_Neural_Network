@@ -7,8 +7,8 @@ from torch.utils.data import DataLoader
 from torchinfo import summary
 from tqdm import tqdm
 
-from config.data_paths import JSON_FILES_PATHS
-from config.dataset_config import general_dataset_configs, fcnn_paths_configs
+from dataset_operations_service.config.data_paths import JSON_FILES_PATHS
+from dataset_operations_service.config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (setup_logger, device_selector, create_train_test_datasets, load_config_json,
                          find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)

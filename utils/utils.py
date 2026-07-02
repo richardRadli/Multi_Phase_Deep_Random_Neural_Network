@@ -21,7 +21,6 @@ from openpyxl.styles import PatternFill
 from torch.utils.data import DataLoader
 from typing import Any, Callable, List, Optional, Tuple, Union
 
-
 def average_columns_in_excel(filename: str) -> None:
     """
     Calculates the average of each numeric column for each sheet in an Excel file and appends these averages to the end
@@ -529,7 +528,7 @@ def save_log_to_txt(output_file: str, result: Any, operation: str) -> None:
 
     logging.info(f"Saving log to {output_file}")
 
-
+# NOTE: setup_logger és load_config_json duplikálva van a
 def setup_logger() -> logging.Logger:
     """
     Set up a colorized logger with the following log levels and colors:

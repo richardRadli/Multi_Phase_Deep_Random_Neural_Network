@@ -2,8 +2,8 @@ import torch
 
 from typing import Dict
 
-from config.json_config import json_config_selector
-from config.dataset_config import general_dataset_configs
+from dataset_operations_service.config.json_config import json_config_selector
+from dataset_operations_service.config.dataset_config import general_dataset_configs
 from utils.utils import create_train_test_datasets, load_config_json, setup_logger
 
 

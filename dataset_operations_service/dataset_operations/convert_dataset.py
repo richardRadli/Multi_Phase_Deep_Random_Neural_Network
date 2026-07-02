@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 
 from config.data_paths import ConfigFilePaths
 from config.dataset_config import general_dataset_configs
-from utils.utils import setup_logger, load_config_json
+from utils.common import setup_logger, load_config_json
 
 
 def all_elements_numeric(nested_list):

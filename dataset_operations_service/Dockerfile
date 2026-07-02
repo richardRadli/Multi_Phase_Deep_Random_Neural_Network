@@ -8,29 +8,19 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 
-
 FROM python:3.11-slim
 
-ENV PYTHONUNBUFFERED=1 \
-    MPLBACKEND=Agg
-
+ENV PYTHONUNBUFFERED=1
 
 ENV PROJECT_ROOT=/app
 ENV DATASET_ROOT=/app/datasets
 ENV STORAGE_ROOT=/app/storage
 
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
-
 
 COPY --from=builder /install /usr/local
 
 COPY . .
-
 
 RUN useradd --create-home --shell /bin/bash appuser \
     && chown -R appuser:appuser /app
