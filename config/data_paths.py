@@ -71,7 +71,10 @@ class MPDRNNPaths(_Const):
                 dataset = key.replace(prefix, "")
                 folder_type = "hyperparam" if prefix == "hyperparam_" else "results"
 
-                full_path = os.path.join(self.STORAGE_ROOT, f"networks/mpdrnn/data/{folder_type}/{dataset}")
+                full_path = os.path.join(
+                    self.STORAGE_ROOT,
+                    f"networks/mpdrnn/data/{folder_type}/{dataset}",
+                )
                 self.create_directories(full_path)
                 return full_path
         return os.path.join(self.STORAGE_ROOT, key)

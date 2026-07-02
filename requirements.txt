@@ -15,3 +15,7 @@ torchvision==0.17.1+cu121
 tqdm~=4.66.2
 torchinfo~=1.8.0
 tensorboard
+
+# API Service dependencies
+fastapi~=0.110.0
+uvicorn~=0.28.0

@@ -32,12 +32,11 @@ def all_elements_numeric(nested_list):
     return True
 
 
-def split_dataset(dataset_name):
+def split_dataset(dataset_name, train_ratio: float = None):
     """
-    Returns:
-        Notes
+    Splits and converts the dataset. If train_ratio is provided, it calculates
+    the split dynamically. Otherwise, it falls back to the static config values.
     """
-
     setup_logger()
 
     cfg = (
@@ -50,8 +49,14 @@ def split_dataset(dataset_name):
     path_to_dataset = general_dataset_configs(dataset_name).get("dataset_file")
     size_of_dataset = general_dataset_configs(dataset_name).get("dataset_size")
     num_features = general_dataset_configs(dataset_name).get("num_features")
-    size_of_train_subset = general_dataset_configs(dataset_name).get("num_train_data")
-    size_of_test_subset = general_dataset_configs(dataset_name).get("num_test_data")
+
+    # If a ratio is provided from the API, calculate from that. Otherwise, fall back to the old static data.
+    if train_ratio is not None:
+        size_of_train_subset = int(size_of_dataset * train_ratio)
+        size_of_test_subset = size_of_dataset - size_of_train_subset
+    else:
+        size_of_train_subset = general_dataset_configs(dataset_name).get("num_train_data")
+        size_of_test_subset = general_dataset_configs(dataset_name).get("num_test_data")
 
     try:
         with open(path_to_dataset, "r") as file:
