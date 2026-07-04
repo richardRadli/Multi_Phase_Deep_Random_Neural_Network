@@ -7,4 +7,4 @@ storage/
 datasets/
 *.npz
 *.txt
-!dataset_operations_service/requirements.txt
+!requirements.txt
