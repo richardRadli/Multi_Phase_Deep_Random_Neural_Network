@@ -35,7 +35,6 @@ def train_fcnn_task(self, config: dict):
     dataset_name = config["dataset_name"]
     seed = config["seed"]
     epochs = config["epochs"]
-    num_tests = config["num_tests"]
 
     params_path = os.path.join(PROJECT_ROOT, "training_params.json")
 

@@ -11,8 +11,8 @@ from torchinfo import summary
 from torch.utils.tensorboard import SummaryWriter
 from typing import List
 
-from dataset_operations_service.config.data_paths import JSON_FILES_PATHS
-from dataset_operations_service.config.dataset_config import general_dataset_configs, fcnn_paths_configs
+from services.training_and_evaluation.config.data_paths import JSON_FILES_PATHS
+from services.training_and_evaluation.config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (create_timestamp, setup_logger, device_selector, load_config_json, measure_execution_time,
                          create_train_test_datasets)
@@ -30,8 +30,8 @@ class TrainFCNN:
         else:
             self.cfg = (
                 load_config_json(
-                    json_schema_filename=ConfigFilePaths().get_data_path("config_schema_fcnn"),
-                    json_filename=ConfigFilePaths().get_data_path("config_fcnn")
+                    json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
+                    json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn")
                 )
             )
 

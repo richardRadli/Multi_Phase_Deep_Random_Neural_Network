@@ -1,14 +1,14 @@
 import os
 import sys
 from enum import Enum
-from fastapi import FastAPI,HTTPException,Query
+from fastapi import FastAPI, HTTPException, Query
 
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if root_dir not in sys.path:
-    sys.path.append(root_dir)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
 
 from config.dataset_config import VALID_DATASETS, general_dataset_configs
-from dataset_operations.convert_dataset import split_dataset
+from services.dataset_operations_service.dataset_operations.convert_dataset import split_dataset
 
 app = FastAPI(
     title="Dataset Operations Service",
@@ -23,14 +23,6 @@ def conver_and_split_dataset(
         dataset: DatasetEnum,
         train_ratio: float = Query(0.8, ge=0.1, le=0.9, description="Ratio of training data to total data")
 ):
-    """
-    Select a dataset from the drop-down, calculate the split of training and testing data,
-    and convert the dataset into a format suitable for training.
-
-    Args:
-        dataset (DatasetEnum): The dataset to convert and split.
-        train_ratio (float): The ratio of training data to total data (default is 0.8).
-    """
     try:
         ds_cfg = general_dataset_configs(dataset.value)
         total_size = ds_cfg.get("dataset_size")
@@ -58,4 +50,4 @@ def conver_and_split_dataset(
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run("api.api:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("services.dataset_operations_service.api.api:app", host="127.0.0.1", port=8000, reload=True)

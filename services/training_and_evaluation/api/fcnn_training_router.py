@@ -13,7 +13,6 @@ class FCNNTrainingConfig(BaseModel):
     dataset_name: str = Field(default="connect4")
     seed: bool = Field(default=False)
     epochs: int = Field(default=1000)
-    num_tests: int = Field(default=1)
 
 
 @fcnn_router.post("/train", status_code=status.HTTP_202_ACCEPTED)

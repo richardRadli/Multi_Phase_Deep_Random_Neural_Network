@@ -4,10 +4,9 @@ import numpy as np
 from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 
-from config.data_paths import ConfigFilePaths
+from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs
 from utils.common import setup_logger, load_config_json
-
 
 def all_elements_numeric(nested_list):
     """
@@ -41,8 +40,8 @@ def split_dataset(dataset_name, train_ratio: float = None):
 
     cfg = (
         load_config_json(
-            json_schema_filename=ConfigFilePaths().get_data_path("config_schema_mpdrnn"),
-            json_filename=ConfigFilePaths().get_data_path("config_mpdrnn")
+            json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_mpdrnn"),
+            json_filename=JSON_FILES_PATHS.get_data_path("config_mpdrnn")
         )
     )
 
