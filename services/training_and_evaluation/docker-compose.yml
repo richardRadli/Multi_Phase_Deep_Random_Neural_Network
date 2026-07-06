@@ -9,13 +9,19 @@ services:
       context: ../..
       dockerfile: services/training_and_evaluation/Dockerfile
     ports:
-      - "8000:8000"
+      - "8001:8001"
+    command: uvicorn services.training_and_evaluation.main:app --host 0.0.0.0 --port 8001
     environment:
       - CELERY_BROKER_URL=redis://redis_broker:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
       - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
     depends_on:
       - redis_broker
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
 
   fcnn-worker:
     build:
@@ -26,5 +32,10 @@ services:
       - CELERY_BROKER_URL=redis://redis_broker:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
       - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
     depends_on:
       - redis_broker
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage

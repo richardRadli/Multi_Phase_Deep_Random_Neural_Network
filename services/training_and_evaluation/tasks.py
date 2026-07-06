@@ -42,7 +42,6 @@ def train_fcnn_task(self, config: dict):
         "dataset_name": dataset_name,
         "seed": seed,
         "epochs": epochs,
-        "num_tests": num_tests,
         "status": "running",
         "start_time": time.time(),
         "start_time_str": time.strftime("%Y-%m-%d %H:%M:%S")
@@ -66,10 +65,11 @@ def train_fcnn_task(self, config: dict):
         with open(fcnn_config_path, "r") as f:
             raw_json = json.load(f)
 
+
         raw_json["dataset_name"] = dataset_name
         raw_json["seed"] = seed
         raw_json["epochs"] = epochs
-        raw_json["num_tests"] = num_tests
+
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
         nested_config = {k: v for k, v in raw_json.items() if isinstance(v, dict)}

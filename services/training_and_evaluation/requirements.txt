@@ -13,6 +13,9 @@ torchinfo~=1.8.0
 matplotlib~=3.8.1
 seaborn~=0.13.0
 scipy~=1.12.0
+colorama~=0.4.6
+tensorboard
+
 
 --extra-index-url https://download.pytorch.org/whl/cpu
 

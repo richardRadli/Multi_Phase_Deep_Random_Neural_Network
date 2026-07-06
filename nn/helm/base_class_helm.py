@@ -6,8 +6,8 @@ import scipy.linalg as linalg
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from typing import List, Tuple
 
-from dataset_operations_service.config.data_paths import JSON_FILES_PATHS
-from dataset_operations_service.config.dataset_config import general_dataset_configs
+from config.data_paths import JSON_FILES_PATHS
+from config.dataset_config import general_dataset_configs
 from utils.utils import load_config_json, setup_logger, measure_execution_time, create_train_test_datasets
 
 

@@ -3,7 +3,7 @@ import os
 import logging
 
 from tqdm import tqdm
-from dataset_operations_service.config.dataset_config import general_dataset_configs, drnn_paths_config
+from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.mpdrnn.base_class_mpdrnn import BaseMPDRNN
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, get_num_of_neurons, insert_data_to_excel,

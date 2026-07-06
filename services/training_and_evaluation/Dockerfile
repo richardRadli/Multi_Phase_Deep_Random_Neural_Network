@@ -17,5 +17,5 @@ COPY utils/ ./utils/
 
 COPY services/training_and_evaluation/ ./services/training_and_evaluation/
 
-EXPOSE 8000
+EXPOSE 8001
 CMD ["uvicorn", "services.training_and_evaluation.main:app", "--host", "0.0.0.0", "--port", "8000"]

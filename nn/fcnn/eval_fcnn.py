@@ -7,23 +7,26 @@ from torch.utils.data import DataLoader
 from torchinfo import summary
 from tqdm import tqdm
 
-from dataset_operations_service.config.data_paths import JSON_FILES_PATHS
-from dataset_operations_service.config.dataset_config import general_dataset_configs, fcnn_paths_configs
+from config.data_paths import JSON_FILES_PATHS
+from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (setup_logger, device_selector, create_train_test_datasets, load_config_json,
                          find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
 
 
 class EvalFCNN:
-    def __init__(self):
+    def __init__(self, override_cfg: dict = None):
         # Basic setup
         colorama.init()
         setup_logger()
 
-        self.cfg = (
-            load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
-                             json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
-        )
+        if override_cfg is not None:
+            self.cfg = override_cfg
+        else:
+            self.cfg = (
+                load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
+                                 json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
+            )
 
         gen_ds_cfg = (
             general_dataset_configs(self.cfg.get("dataset_name"))

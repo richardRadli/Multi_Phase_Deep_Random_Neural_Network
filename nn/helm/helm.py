@@ -2,7 +2,7 @@ import os
 
 from tqdm import tqdm
 
-from dataset_operations_service.config.dataset_config import helm_paths_config
+from config.dataset_config import helm_paths_config
 from nn.helm.base_class_helm import HELMBase
 from utils.utils import average_columns_in_excel, create_timestamp, insert_data_to_excel, reorder_metrics_lists
 
