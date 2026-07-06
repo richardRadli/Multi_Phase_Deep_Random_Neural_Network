@@ -4,13 +4,17 @@ import json
 import time
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
-from services.training_and_evaluation.tasks import celery_app, train_fcnn_task, test_fcnn_task
+from enum import Enum
+from config.dataset_config import VALID_DATASETS
+from services.training_and_evaluation.tasks import celery_app, train_fcnn_task
 
 fcnn_router = APIRouter(prefix="/nn/fcnn", tags=["FCNN Control & Evaluation"])
 
+DatasetEnum = Enum("DatasetEnum", {ds.upper(): ds for ds in VALID_DATASETS})
+
 
 class FCNNTrainingConfig(BaseModel):
-    dataset_name: str = Field(default="connect4")
+    dataset_name: DatasetEnum = Field(description="Válaszd ki a tanítani kívánt adathalmazt a legördülő listából")
     seed: bool = Field(default=False)
     epochs: int = Field(default=1000)
 
@@ -18,8 +22,21 @@ class FCNNTrainingConfig(BaseModel):
 @fcnn_router.post("/train", status_code=status.HTTP_202_ACCEPTED)
 async def start_fcnn_training(config: FCNNTrainingConfig):
     try:
-        task = train_fcnn_task.delay(config=config.model_dump())
+        task = train_fcnn_task.delay(config=config.model_dump(mode="json"))
+
+        celery_app.backend.client.sadd("fcnn:active_tasks", task.id)
+
         return {"task_id": task.id, "status": "QUEUED"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@fcnn_router.get("/active-tasks")
+async def list_active_tasks():
+    try:
+        active_ids = celery_app.backend.client.smembers("fcnn:active_tasks")
+        task_ids = [tid.decode("utf-8") for tid in active_ids]
+        return {"active_task_ids": task_ids}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -27,18 +44,14 @@ async def start_fcnn_training(config: FCNNTrainingConfig):
 @fcnn_router.post("/stop/{task_id}")
 async def stop_fcnn_training(task_id: str):
     try:
-        task_result = celery_app.AsyncResult(task_id)
-
-        last_known_epoch = 0
-        if task_result.state == "PROGRESS" and task_result.info:
-            last_known_epoch = task_result.info.get("current_epoch", 0)
+        celery_app.backend.client.set(f"fcnn:abort:{task_id}", "true")
+        celery_app.backend.client.srem("fcnn:active_tasks", task_id)
 
         celery_app.control.revoke(task_id=task_id, terminate=True, signal="SIGKILL")
-        logging.info(f"FCNN training task {task_id} has been forcefully stopped.")
+        logging.info(f"FCNN native abort signal emitted for task: {task_id}")
 
-        PROJECT_ROOT = os.getenv("PROJECT_ROOT",
-                                 os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-        params_path = os.path.join(PROJECT_ROOT, "training_params.json")
+        STORAGE_ROOT = os.getenv("STORAGE_ROOT", "/app/storage")
+        params_path = os.path.join(STORAGE_ROOT, f"training_params_{task_id}.json")
 
         if os.path.exists(params_path):
             with open(params_path, "r") as f:
@@ -46,8 +59,6 @@ async def stop_fcnn_training(task_id: str):
 
             config_data["status"] = "aborted"
             config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
-            config_data["final_epoch"] = last_known_epoch
-
             if "start_time" in config_data:
                 config_data["execution_time_seconds"] = round(time.time() - config_data["start_time"], 4)
 
@@ -55,8 +66,8 @@ async def stop_fcnn_training(task_id: str):
                 json.dump(config_data, f, indent=4)
 
         return {
-            "status": "ABORTED",
-            "message": f"Task {task_id} stopped. training_params.json updated with final epoch {last_known_epoch}."
+            "status": "ABORT_SIGNAL_SENT",
+            "message": f"Task {task_id} successfully signaled to abort. File {os.path.basename(params_path)} updated."
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -76,6 +87,7 @@ async def get_fcnn_status(task_id: str):
     elif task_result.state == "PENDING":
         response["info"] = {"status": "Waiting in queue..."}
     elif task_result.state == "REVOKED":
-        response["info"] = {"status": "Task was manually aborted by the user."}
+        response["status"] = "ABORTED"
+        response["info"] = {"status": "Task was manually aborted."}
 
     return response

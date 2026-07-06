@@ -19,11 +19,13 @@ from utils.utils import (create_timestamp, setup_logger, device_selector, load_c
 
 
 class TrainFCNN:
-    def __init__(self, override_cfg: dict = None):
+    def __init__(self, override_cfg: dict = None, celery_task = None):
         # Basic setup
         timestamp = create_timestamp()
         colorama.init()
         setup_logger()
+
+        self.celery_task = celery_task
 
         if override_cfg is not None:
             self.cfg = override_cfg
@@ -153,6 +155,12 @@ class TrainFCNN:
         total_epochs = self.cfg.get("epochs")
 
         for epoch in tqdm(range(total_epochs)):
+            if self.celery_task:
+                is_aborted = self.celery_task.backend.client.get(f"fcnn:abort:{self.celery_task.request.id}")
+                if is_aborted:
+                    logging.info("Celery native abort signal detected via backend client. Stopping PyTorch loop.")
+                    break
+
             self.model.train()
             for batch_data, batch_labels in self.train_loader:
                 self.train_loop(batch_data, batch_labels, train_losses)
