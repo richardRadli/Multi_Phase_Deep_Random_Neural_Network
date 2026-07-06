@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  redis_broker:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  fcnn-api:
+    build:
+      context: .
+      dockerfile: services/training_and_evaluation/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
+      - PROJECT_ROOT=/app
+    depends_on:
+      - redis_broker
+
+  fcnn-worker:
+    build:
+      context: .
+      dockerfile: services/training_and_evaluation/Dockerfile
+    command: celery -A services.training_and_evaluation.tasks.celery_app worker --loglevel=info -P solo
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
+      - PROJECT_ROOT=/app
+    depends_on:
+      - redis_broker

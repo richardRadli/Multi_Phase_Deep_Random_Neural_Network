@@ -10,7 +10,7 @@ from train_fcnn import TrainFCNN
 from utils.utils import create_timestamp, insert_data_to_excel, load_config_json, average_columns_in_excel
 
 
-def main() -> None:
+def main(override_cfg: dict = None) -> None:
     """
     Main function to load configuration, run training and evaluation cycles, and save results to an Excel file.
 
@@ -21,10 +21,13 @@ def main() -> None:
     timestamp = create_timestamp()
     colorama.init()
 
-    cfg = (
-        load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
-                         json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
-    )
+    if override_cfg is not None:
+        cfg = override_cfg
+    else:
+        cfg = (
+            load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
+                             json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
+        )
 
     dataset_name = cfg.get("dataset_name")
     batch_size = cfg.get("batch_size")
@@ -43,12 +46,13 @@ def main() -> None:
     collected_data = []
 
     for i in tqdm(range(cfg.get("num_tests")), desc=f"{colorama.Fore.LIGHTBLUE_EX} Testing cycle"):
-        train_fcnn = TrainFCNN()
+        train_fcnn = TrainFCNN(override_cfg=cfg)
         train_fcnn.fit()
         training_time = train_fcnn.fit.execution_time
 
-        eval_fcnn = EvalFCNN()
+        eval_fcnn = EvalFCNN(override_cfg=cfg)
         eval_fcnn.main()
+
         collected_data.append((eval_fcnn.train_accuracy, eval_fcnn.test_accuracy,
                                eval_fcnn.train_precision, eval_fcnn.test_precision,
                                eval_fcnn.train_recall, eval_fcnn.test_recall,

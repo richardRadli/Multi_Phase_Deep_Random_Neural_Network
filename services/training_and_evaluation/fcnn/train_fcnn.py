@@ -11,7 +11,7 @@ from torchinfo import summary
 from torch.utils.tensorboard import SummaryWriter
 from typing import List
 
-from dataset_operations_service.config.data_paths import ConfigFilePaths
+from dataset_operations_service.config.data_paths import JSON_FILES_PATHS
 from dataset_operations_service.config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (create_timestamp, setup_logger, device_selector, load_config_json, measure_execution_time,
@@ -19,18 +19,21 @@ from utils.utils import (create_timestamp, setup_logger, device_selector, load_c
 
 
 class TrainFCNN:
-    def __init__(self):
+    def __init__(self, override_cfg: dict = None):
         # Basic setup
         timestamp = create_timestamp()
         colorama.init()
         setup_logger()
 
-        self.cfg = (
-            load_config_json(
-                json_schema_filename=ConfigFilePaths().get_data_path("config_schema_fcnn"),
-                json_filename=ConfigFilePaths().get_data_path("config_fcnn")
+        if override_cfg is not None:
+            self.cfg = override_cfg
+        else:
+            self.cfg = (
+                load_config_json(
+                    json_schema_filename=ConfigFilePaths().get_data_path("config_schema_fcnn"),
+                    json_filename=ConfigFilePaths().get_data_path("config_fcnn")
+                )
             )
-        )
 
         if self.cfg.get("seed"):
             torch.manual_seed(1234)
@@ -103,6 +106,10 @@ class TrainFCNN:
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
+        self.epoch_callback = None
+        self.current_epoch_run = 0
+
+
     def train_loop(self, batch_data: torch.Tensor, batch_labels: torch.Tensor, train_losses: List[float]):
         """
         Performs a single training iteration for the given batch of data.
@@ -143,8 +150,9 @@ class TrainFCNN:
         """
 
         train_losses = []
+        total_epochs = self.cfg.get("epochs")
 
-        for epoch in tqdm(range(self.cfg.get("epochs"))):
+        for epoch in tqdm(range(total_epochs)):
             self.model.train()
             for batch_data, batch_labels in self.train_loader:
                 self.train_loop(batch_data, batch_labels, train_losses)
@@ -160,6 +168,10 @@ class TrainFCNN:
             best_model_path = os.path.join(self.save_path, f"best_model_epoch_{epoch}.pt")
             torch.save(self.model.state_dict(), best_model_path)
             logging.info(f'New weights have been saved at epoch {epoch} with value of {train_loss:.4f}')
+
+            self.current_epoch_run = epoch + 1
+            if self.epoch_callback is not None:
+                self.epoch_callback(self.current_epoch_run, total_epochs)
 
         self.writer.close()
         self.writer.flush()
