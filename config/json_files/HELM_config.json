@@ -1,5 +1,5 @@
 {
-  "dataset_name": "segment",
+  "dataset_name": "connect4",
   "seed": false,
   "num_tests": 1,
   "penalty": {

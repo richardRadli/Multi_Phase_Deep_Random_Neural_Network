@@ -4,9 +4,23 @@ services:
     ports:
       - "6379:6379"
 
+  dataset-service:
+    build:
+      context: .
+      dockerfile: services/dataset_operations_service/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
   fcnn-api:
     build:
-      context: ../..
+      context: .
       dockerfile: services/training_and_evaluation/Dockerfile
     ports:
       - "8001:8001"
@@ -25,7 +39,7 @@ services:
 
   fcnn-worker:
     build:
-      context: ../..
+      context: .
       dockerfile: services/training_and_evaluation/Dockerfile
     command: celery -A services.training_and_evaluation.tasks.celery_app worker --loglevel=info -P solo
     environment:
@@ -36,6 +50,7 @@ services:
       - STORAGE_ROOT=/app/storage
     depends_on:
       - redis_broker
+      - fcnn-api
     volumes:
       - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
       - D:/storage/lion17:/app/storage

@@ -1,16 +1,18 @@
+import logging
+
 import colorama
 import os
 
 from tqdm import tqdm
 
-from config.data_paths import JSON_FILES_PATHS, ConfigFilePaths
-from config.dataset_config import general_dataset_configs, fcnn_paths_configs
-from eval_fcnn import EvalFCNN
-from train_fcnn import TrainFCNN
+from config.data_paths import JSON_FILES_PATHS
+from config.dataset_config import  fcnn_paths_configs
+from nn.fcnn.eval_fcnn import EvalFCNN
+from nn.fcnn.train_fcnn import TrainFCNN
 from utils.utils import create_timestamp, insert_data_to_excel, load_config_json, average_columns_in_excel
 
 
-def main(override_cfg: dict = None) -> None:
+def main(override_cfg: dict = None, celery_task = None) -> None:
     """
     Main function to load configuration, run training and evaluation cycles, and save results to an Excel file.
 
@@ -43,12 +45,25 @@ def main(override_cfg: dict = None) -> None:
             f"{timestamp}_bs_{batch_size}_hn_{hidden_neurons}_lr_{lr}_device_{device}.xlsx")
     )
 
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+
     collected_data = []
 
     for i in tqdm(range(cfg.get("num_tests")), desc=f"{colorama.Fore.LIGHTBLUE_EX} Testing cycle"):
-        train_fcnn = TrainFCNN(override_cfg=cfg)
+        if celery_task:
+            is_aborted = celery_task.backend.client.get(f"fcnn:abort:{celery_task.request.id}")
+            if is_aborted:
+                logging.info("FCNN testing series abort signal detected mid-cycle. Breaking loop.")
+                break
+
+        train_fcnn = TrainFCNN(override_cfg=cfg, celery_task=celery_task)
         train_fcnn.fit()
         training_time = train_fcnn.fit.execution_time
+
+        if celery_task:
+            is_aborted = celery_task.backend.client.get(f"fcnn:abort:{celery_task.request.id}")
+            if is_aborted:
+                break
 
         eval_fcnn = EvalFCNN(override_cfg=cfg)
         eval_fcnn.main()
@@ -66,7 +81,10 @@ def main(override_cfg: dict = None) -> None:
 
         collected_data.clear()
 
-    average_columns_in_excel(filename)
+    if os.path.exists(filename):
+        average_columns_in_excel(filename)
+    else:
+        logging.info("Excel results file was not created due to early abort. Skipping averaging.")
 
 
 if __name__ == '__main__':

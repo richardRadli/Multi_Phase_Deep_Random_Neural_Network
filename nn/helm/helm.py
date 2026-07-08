@@ -1,3 +1,4 @@
+import logging
 import os
 
 from tqdm import tqdm
@@ -8,14 +9,14 @@ from utils.utils import average_columns_in_excel, create_timestamp, insert_data_
 
 
 class HELM(HELMBase):
-    def __init__(self):
+    def __init__(self, override_cfg: dict = None, celery_task = None):
         """
         Initializes the HELM class and sets up file paths and hyperparameter configurations.
 
         Returns:
             None
         """
-        super().__init__()
+        super().__init__(override_cfg=override_cfg, celery_task=celery_task)
 
         timestamp = create_timestamp()
         dataset_name = self.cfg.get("dataset_name")
@@ -39,8 +40,14 @@ class HELM(HELMBase):
         Returns:
             None
         """
+        os.makedirs(os.path.dirname(self.filename), exist_ok=True)
 
         for idx in tqdm(range(self.cfg.get("num_tests")), desc="Evaluation"):
+            if self.celery_task:
+                is_aborted = self.celery_task.backend.client.get(f"helm:abort:{self.celery_task.request.id}")
+                if is_aborted:
+                    logging.info("HELM testing series abort signal detected mid-cycle. Breaking loop.")
+                    break
             t3, beta, beta1, beta2, l3, ps1, ps2 = self.train(config=self.hyperparam_config)
             training_metrics = self.training_accuracy(t3, beta)
             testing_metrics = self.evaluation(beta, beta1, beta2, l3, ps1, ps2, self.test_loader)
@@ -49,7 +56,8 @@ class HELM(HELMBase):
                                             test_metrics=testing_metrics)
             insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), idx + 2, metrics)
 
-        average_columns_in_excel(self.filename)
+        if os.path.exists(self.filename):
+            average_columns_in_excel(self.filename)
 
 
 if __name__ == "__main__":

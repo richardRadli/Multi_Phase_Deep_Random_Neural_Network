@@ -2,28 +2,39 @@ import logging
 import os
 import json
 import time
-from fastapi import APIRouter, HTTPException, status
+import sys
+from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field
 from enum import Enum
+
+PROJECT_ROOT = os.getenv("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+
 from config.dataset_config import VALID_DATASETS
 from services.training_and_evaluation.tasks import celery_app, train_fcnn_task
 
 fcnn_router = APIRouter(prefix="/nn/fcnn", tags=["FCNN Control & Evaluation"])
 
-DatasetEnum = Enum("DatasetEnum", {ds.upper(): ds for ds in VALID_DATASETS})
+DatasetEnum = Enum("DatasetEnum", {ds.upper(): ds for ds in VALID_DATASETS}, type=str)
 
 
-class FCNNTrainingConfig(BaseModel):
-    dataset_name: DatasetEnum = Field(description="Válaszd ki a tanítani kívánt adathalmazt a legördülő listából")
-    seed: bool = Field(default=False)
-    epochs: int = Field(default=1000)
+class FCNNTrainingRemainingConfig(BaseModel):
+    seed: bool = Field(default=False, description="True esetén fixálja a random seedet")
+    epochs: int = Field(default=1000, ge=1, description="A tanítási epoch-ok száma")
 
 
 @fcnn_router.post("/train", status_code=status.HTTP_202_ACCEPTED)
-async def start_fcnn_training(config: FCNNTrainingConfig):
+async def start_fcnn_training(
+        config: FCNNTrainingRemainingConfig,
+        dataset_name: DatasetEnum = Query(..., description="Válaszd ki az adathalmazt a listából")
+):
     try:
-        task = train_fcnn_task.delay(config=config.model_dump(mode="json"))
-
+        config_payload = {
+            "dataset_name": dataset_name.value,
+            **config.model_dump()
+        }
+        task = train_fcnn_task.delay(config=config_payload)
         celery_app.backend.client.sadd("fcnn:active_tasks", task.id)
 
         return {"task_id": task.id, "status": "QUEUED"}
@@ -46,7 +57,6 @@ async def stop_fcnn_training(task_id: str):
     try:
         celery_app.backend.client.set(f"fcnn:abort:{task_id}", "true")
         celery_app.backend.client.srem("fcnn:active_tasks", task_id)
-
         celery_app.control.revoke(task_id=task_id, terminate=True, signal="SIGKILL")
         logging.info(f"FCNN native abort signal emitted for task: {task_id}")
 

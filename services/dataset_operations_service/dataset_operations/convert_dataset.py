@@ -40,8 +40,8 @@ def split_dataset(dataset_name, train_ratio: float = None):
 
     cfg = (
         load_config_json(
-            json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_mpdrnn"),
-            json_filename=JSON_FILES_PATHS.get_data_path("config_mpdrnn")
+            json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
+            json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn")
         )
     )
 

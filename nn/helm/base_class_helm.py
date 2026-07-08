@@ -12,13 +12,17 @@ from utils.utils import load_config_json, setup_logger, measure_execution_time, 
 
 
 class HELMBase:
-    def __init__(self):
+    def __init__(self, override_cfg: dict = None, celery_task = None):
         setup_logger()
+        self.celery_task = celery_task
 
-        self.cfg = (
-            load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_helm"),
-                             json_filename=JSON_FILES_PATHS.get_data_path("config_helm"))
-        )
+        if override_cfg is not None:
+            self.cfg = override_cfg
+        else:
+            self.cfg = (
+                load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_helm"),
+                                 json_filename=JSON_FILES_PATHS.get_data_path("config_helm"))
+            )
 
         if self.cfg.get("seed"):
             np.random.seed(self.cfg.get("seed"))
