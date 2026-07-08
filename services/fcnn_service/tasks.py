@@ -8,7 +8,7 @@ from celery import Celery
 CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/0")
 CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/0")
 
-celery_app = Celery("training_tasks", broker=CELERY_BROKER, backend=CELERY_BACKEND)
+celery_app = Celery("fcnn_tasks", broker=CELERY_BROKER, backend=CELERY_BACKEND)
 
 celery_app.conf.update(
     task_serializer='json',
@@ -22,7 +22,7 @@ PROJECT_ROOT = os.getenv("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path
 if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
-from config.data_paths import ConfigFilePaths
+from config.data_paths import JSON_FILES_PATHS
 from nn.fcnn.train_fcnn import TrainFCNN
 from nn.fcnn.eval_fcnn import EvalFCNN
 from nn.helm.helm import HELM
@@ -63,7 +63,7 @@ def train_fcnn_task(self, config: dict):
 
     trainer = None
     try:
-        fcnn_config_path = ConfigFilePaths().get_data_path("config_fcnn")
+        fcnn_config_path = JSON_FILES_PATHS.get_data_path("config_fcnn")
         with open(fcnn_config_path, "r") as f:
             raw_json = json.load(f)
 
@@ -92,7 +92,7 @@ def train_fcnn_task(self, config: dict):
         if is_aborted:
             config_data["status"] = "aborted"
             config_data["final_epoch"] = getattr(trainer, "current_epoch_run", 0)
-            self.update_state(state="REVOKED") # Celery szinten is beállítjuk
+            self.update_state(state="REVOKED")
         else:
             config_data["status"] = "completed"
             config_data["final_epoch"] = epochs
@@ -137,7 +137,7 @@ def test_fcnn_task(self, config: dict):
         num_tests = config.get("num_tests", 1)
         epochs = config.get("epochs", 1000)
 
-        fcnn_config_path = ConfigFilePaths().get_data_path("config_fcnn")
+        fcnn_config_path = JSON_FILES_PATHS.get_data_path("config_fcnn")
         with open(fcnn_config_path, "r") as f:
             raw_json = json.load(f)
 
@@ -207,7 +207,7 @@ def helm_task(self, config: dict):
         seed = config["seed"]
         num_tests = config.get("num_tests", 1)
 
-        helm_config_path = ConfigFilePaths().get_data_path("config_helm")
+        helm_config_path = JSON_FILES_PATHS.get_data_path("config_helm")
         with open(helm_config_path, "r") as f:
             raw_json = json.load(f)
 

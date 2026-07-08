@@ -21,10 +21,10 @@ services:
   fcnn-api:
     build:
       context: .
-      dockerfile: services/training_and_evaluation/Dockerfile
+      dockerfile: services/fcnn_service/Dockerfile
     ports:
       - "8001:8001"
-    command: uvicorn services.training_and_evaluation.main:app --host 0.0.0.0 --port 8001
+    command: uvicorn services.fcnn_service.main:app --host 0.0.0.0 --port 8001
     environment:
       - CELERY_BROKER_URL=redis://redis_broker:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
@@ -40,8 +40,8 @@ services:
   fcnn-worker:
     build:
       context: .
-      dockerfile: services/training_and_evaluation/Dockerfile
-    command: celery -A services.training_and_evaluation.tasks.celery_app worker --loglevel=info -P solo
+      dockerfile: services/fcnn_service/Dockerfile
+    command: celery -A services.fcnn_service.tasks.celery_app worker --loglevel=info -P solo
     environment:
       - CELERY_BROKER_URL=redis://redis_broker:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0

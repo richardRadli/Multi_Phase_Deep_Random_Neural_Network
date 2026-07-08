@@ -9,7 +9,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
 from config.dataset_config import VALID_DATASETS
-from services.training_and_evaluation.tasks import celery_app, test_fcnn_task
+from services.fcnn_service.tasks import celery_app, test_fcnn_task
 
 fcnn_test_router = APIRouter(prefix="/nn/fcnn", tags=["FCNN Model Evaluation"])
 
