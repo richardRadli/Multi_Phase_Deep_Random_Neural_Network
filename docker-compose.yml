@@ -54,3 +54,45 @@ services:
     volumes:
       - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
       - D:/storage/lion17:/app/storage
+
+
+  helm-api:
+    build:
+      context: .
+      dockerfile: services/helm_service/Dockerfile
+    ports:
+      - "8002:8002"
+    command: uvicorn services.helm_service.main:app --host 0.0.0.0 --port 8002
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    depends_on:
+      - redis_broker
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  helm-worker:
+    build:
+      context: .
+      dockerfile: services/helm_service/Dockerfile
+    command: celery -A services.helm_service.tasks.celery_app worker --loglevel=info -P solo
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+      - OMP_NUM_THREADS=4
+      - OPENBLAS_NUM_THREADS=4
+      - MKL_NUM_THREADS=4
+      - NUMEXPR_NUM_THREADS=4
+    depends_on:
+      - redis_broker
+      - helm-api
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage

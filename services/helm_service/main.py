@@ -1,6 +1,4 @@
 from fastapi import FastAPI
-from services.fcnn_service.api.fcnn_training_router import fcnn_router as fcnn_train_router
-from services.fcnn_service.api.fcnn_testing_router import fcnn_test_router
 from services.helm_service.api.helm_router import helm_router
 
 app = FastAPI(

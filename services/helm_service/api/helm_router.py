@@ -10,7 +10,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
 from config.dataset_config import VALID_DATASETS
-from services.fcnn_service.tasks import celery_app, helm_task
+from services.helm_service.tasks import celery_app, helm_task
 
 helm_router = APIRouter(prefix="/nn/helm", tags=["HELM Unified Control"])
 
