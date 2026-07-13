@@ -26,8 +26,8 @@ services:
       - "8001:8001"
     command: uvicorn services.fcnn_service.main:app --host 0.0.0.0 --port 8001
     environment:
-      - CELERY_BROKER_URL=redis://redis_broker:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
+      - CELERY_BROKER_URL=redis://redis_broker:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/1
       - PROJECT_ROOT=/app
       - DATASET_ROOT=/app/datasets
       - STORAGE_ROOT=/app/storage
@@ -43,8 +43,8 @@ services:
       dockerfile: services/fcnn_service/Dockerfile
     command: celery -A services.fcnn_service.tasks.celery_app worker --loglevel=info -P solo
     environment:
-      - CELERY_BROKER_URL=redis://redis_broker:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
+      - CELERY_BROKER_URL=redis://redis_broker:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/1
       - PROJECT_ROOT=/app
       - DATASET_ROOT=/app/datasets
       - STORAGE_ROOT=/app/storage
@@ -64,8 +64,8 @@ services:
       - "8002:8002"
     command: uvicorn services.helm_service.main:app --host 0.0.0.0 --port 8002
     environment:
-      - CELERY_BROKER_URL=redis://redis_broker:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
+      - CELERY_BROKER_URL=redis://redis_broker:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/2
       - PROJECT_ROOT=/app
       - DATASET_ROOT=/app/datasets
       - STORAGE_ROOT=/app/storage
@@ -81,8 +81,8 @@ services:
       dockerfile: services/helm_service/Dockerfile
     command: celery -A services.helm_service.tasks.celery_app worker --loglevel=info -P solo
     environment:
-      - CELERY_BROKER_URL=redis://redis_broker:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/0
+      - CELERY_BROKER_URL=redis://redis_broker:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/2
       - PROJECT_ROOT=/app
       - DATASET_ROOT=/app/datasets
       - STORAGE_ROOT=/app/storage

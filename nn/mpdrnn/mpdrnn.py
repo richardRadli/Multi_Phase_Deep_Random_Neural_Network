@@ -11,8 +11,8 @@ from utils.utils import (average_columns_in_excel, create_timestamp, get_num_of_
 
 
 class MPDRNN(BaseMPDRNN):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, override_cfg: dict = None, celery_task = None):
+        super().__init__(override_cfg=override_cfg, celery_task=celery_task)
 
         # Create timestamp as the program begins to execute.
         timestamp = create_timestamp()
@@ -57,6 +57,12 @@ class MPDRNN(BaseMPDRNN):
         training_time = []
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
+            if self.celery_task:
+                is_aborted = self.celery_task.backend.client.get(f"mpdrnn:abort:{self.celery_task.request.id}")
+                if is_aborted:
+                    logging.info("MPDRNN testing series abort signal detected mid-cycle. Breaking loop.")
+                    break
+
             # Initial Model
             net_cfg = (
                 self.get_network_config(

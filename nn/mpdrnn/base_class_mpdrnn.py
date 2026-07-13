@@ -8,16 +8,20 @@ from utils.utils import create_train_test_datasets, load_config_json, setup_logg
 
 
 class BaseMPDRNN:
-    def __init__(self):
+    def __init__(self, override_cfg: dict = None, celery_task = None):
         setup_logger()
+        self.celery_task = celery_task
 
         # Initialize paths and settings
-        self.cfg = (
-            load_config_json(
-                json_schema_filename=json_config_selector("mpdrnn").get("schema"),
-                json_filename=json_config_selector("mpdrnn").get("config"),
+        if override_cfg is not None:
+            self.cfg = override_cfg
+        else:
+            self.cfg = (
+                load_config_json(
+                    json_schema_filename=json_config_selector("mpdrnn").get("schema"),
+                    json_filename=json_config_selector("mpdrnn").get("config"),
+                )
             )
-        )
 
         if self.cfg.get("seed"):
             torch.manual_seed(1234)

@@ -4,8 +4,8 @@ import logging
 import sys
 from celery import Celery
 
-CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/0")
-CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/0")
+CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/2")
+CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/2")
 
 celery_app = Celery("helm_tasks", broker=CELERY_BROKER, backend=CELERY_BACKEND)
 
