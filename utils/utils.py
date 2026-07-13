@@ -383,7 +383,7 @@ def measure_execution_time(func: Callable) -> Callable:
     return wrapper
 
 
-def plot_confusion_matrix_fcnn(cm: np.ndarray, operation: str, class_labels: List[str], dataset_name: str) -> None:
+def plot_confusion_matrix_fcnn(cm: np.ndarray, path_to_plot: str, operation: str, class_labels: List[str], dataset_name: str) -> None:
     """
     Plots a confusion matrix as a heatmap for a given dataset and operation.
 
@@ -404,7 +404,11 @@ def plot_confusion_matrix_fcnn(cm: np.ndarray, operation: str, class_labels: Lis
     plt.ylabel("Actual labels")
     plt.title(f"Confusion matrix of {dataset_name} on the {operation} set.")
     plt.tight_layout()
-    plt.show()
+
+    filename = os.path.join(path_to_plot, f"{dataset_name}_fcnn_{operation}.jpg")
+    plt.savefig(filename, format="jpg", dpi=300)
+    plt.close()
+    gc.collect()
 
 
 def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_dataset: str, operation: str, method: str,
@@ -434,7 +438,7 @@ def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_data
         ax.set_xlabel('Predicted')
         ax.set_ylabel('Actual')
 
-    filename = os.path.join(path_to_plot, f"{name_of_dataset}_{method}_{operation}.png")
+    filename = os.path.join(path_to_path := path_to_plot, f"{name_of_dataset}_{method}_{operation}.jpg")
     plt.tight_layout()
     plt.savefig(filename, dpi=300)
     plt.close()

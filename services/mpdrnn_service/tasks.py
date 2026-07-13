@@ -2,20 +2,13 @@ import os
 import json
 import logging
 import sys
+import numpy as np
 from celery import Celery
 
-CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/0")
-CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/0")
+CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/3")
+CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/3")
 
 celery_app = Celery("mpdrnn_tasks", broker=CELERY_BROKER, backend=CELERY_BACKEND)
-
-celery_app.conf.update(
-    task_serializer='json',
-    accept_content=['json'],
-    result_serializer='json',
-    timezone='UTC',
-    enable_utc=True,
-)
 
 PROJECT_ROOT = os.getenv("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
@@ -24,11 +17,32 @@ if PROJECT_ROOT not in sys.path:
 from config.data_paths import JSON_FILES_PATHS
 from nn.mpdrnn.mpdrnn import MPDRNN
 
+
+def exponential_neurons(num_of_layers, num_of_neurons, decay_rate=0.5):
+    if num_of_layers <= 0:
+        raise ValueError("Number of layers must be greater than zero.")
+    if num_of_neurons <= 0:
+        raise ValueError("Number of neurons must be greater than zero.")
+
+    layers = np.arange(num_of_layers)
+    neuron_distribution = np.exp(-decay_rate * layers)
+    neuron_distribution /= neuron_distribution.sum()
+    neuron_distribution *= num_of_neurons
+    neuron_distribution = np.round(neuron_distribution).astype(int)
+
+    while neuron_distribution.sum() < num_of_neurons:
+        for i in range(len(neuron_distribution)):
+            if neuron_distribution[i] > 0:
+                neuron_distribution[i] += 1
+                if neuron_distribution.sum() >= num_of_neurons:
+                    break
+    return neuron_distribution.tolist()
+
+
 @celery_app.task(bind=True, name="tasks.mpdrnn_task")
 def mpdrnn_task(self, config: dict):
-    logging.info("Starting unified MPDRNN task")
+    logging.info("Starting updated MPDRNN task based on PhD specs")
     task_id = self.request.id
-    self.update_state(state="PROGRESS", meta={'status': "Running Multi-Phase Deep Randomized computations"})
     try:
         dataset_name = config["dataset_name"]
         method = config["method"]
@@ -42,8 +56,19 @@ def mpdrnn_task(self, config: dict):
         raw_json["number_of_tests"] = config["number_of_tests"]
         raw_json["seed"] = config["seed"]
         raw_json["method"] = method
-        raw_json["mu"] = 0  # szigorúan fixálva 0-ra
-        raw_json["sigma"] = config["sigma"]
+
+        if method == "BASE":
+            raw_json.pop("mu", None)
+            raw_json.pop("sigma", None)
+        else:
+            raw_json["mu"] = 0
+            raw_json["sigma"] = config["sigma"]
+
+        computed_exp_neurons = exponential_neurons(
+            num_of_layers=config["num_of_layers"],
+            num_of_neurons=config["num_of_neurons"],
+            decay_rate=config["decay_rate"]
+        )
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
         nested_config = {k: v for k, v in raw_json.items() if isinstance(v, dict)}
@@ -51,19 +76,15 @@ def mpdrnn_task(self, config: dict):
         flattened_config = {}
         for key, value in nested_config.items():
             if dataset_name in value:
-                if key == "rcond":
-                    flattened_config[key] = value[dataset_name]
-                else:
-                    flattened_config[key] = value[dataset_name]
+                flattened_config[key] = value[dataset_name]
 
         override_cfg = {**simple_config, **flattened_config}
 
-        if config.get("penalty") is not None:
+        override_cfg["exp_neurons"] = computed_exp_neurons
+        override_cfg.pop("eq_neurons", None)
+
+        if config.get("penalty") is not None and method == "EXP_ORT_C":
             override_cfg["penalty"] = config["penalty"]
-        if config.get("eq_neurons") is not None:
-            override_cfg["eq_neurons"] = config["eq_neurons"]
-        if config.get("exp_neurons") is not None:
-            override_cfg["exp_neurons"] = config["exp_neurons"]
 
         if config.get("rcond") is not None:
             override_cfg["rcond"][method] = config["rcond"]
@@ -74,7 +95,7 @@ def mpdrnn_task(self, config: dict):
         is_aborted = self.backend.client.get(f"mpdrnn:abort:{task_id}")
         if is_aborted:
             self.update_state(state="REVOKED")
-            return {"status": "ABORTED", "mode": "standard", "dataset_name": dataset_name}
+            return {"status": "ABORTED", "dataset_name": dataset_name}
 
         return {
             "status": "SUCCESS",
@@ -83,5 +104,5 @@ def mpdrnn_task(self, config: dict):
             "output_file": getattr(evaluator, "filename", None)
         }
     except Exception as e:
-        logging.exception(f"MPDRNN task encountered an error: {str(e)}")
-        raise RuntimeError(f"MPDRNN execution failed: {str(e)}")
+        logging.exception(f"MPDRNN error: {str(e)}")
+        raise RuntimeError(str(e))

@@ -1,9 +1,9 @@
 import os
 import sys
 from fastapi import APIRouter, HTTPException, status, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from enum import Enum
-from typing import Optional, List
+from typing import Optional
 
 PROJECT_ROOT = os.getenv("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
@@ -28,17 +28,34 @@ class MethodEnum(str, Enum):
     EXP_ORT = "EXP_ORT"
     EXP_ORT_C = "EXP_ORT_C"
 
+
 class MPDRNNConfig(BaseModel):
     activation: ActivationEnum = Field(default=ActivationEnum.LeakyReLU, description="Aktivációs függvény")
     number_of_tests: int = Field(default=20, ge=1, description="Tesztek futtatási száma")
     seed: bool = Field(default=True, description="True esetén fixálja a random seedet")
     method: MethodEnum = Field(default=MethodEnum.BASE, description="Súlygenerálási módszer")
-    sigma: float = Field(default=0.1, ge=0.01, le=1.0, description="Szórás (0.01 és 1.0 között)")
 
-    penalty: Optional[float] = Field(default=None, description="Opcionális L2 penalty felülírás")
+    sigma: Optional[float] = Field(default=0.1, ge=0.01, le=1.0,
+                                   description="Szórás (BASE esetén figyelmen kívül hagyva)")
+
+    penalty: Optional[float] = Field(default=None,
+                                     description="L2 penalty felülírás (Kizárólag EXP_ORT_C-nél megengedett)")
+
+    num_of_layers: int = Field(default=3, ge=1, description="Rétegek száma az exponenciális eloszláshoz")
+    num_of_neurons: int = Field(default=100, ge=1, description="Összes neuronszám")
+    decay_rate: float = Field(default=0.5, ge=0.0, description="Lecsengési ráta (decay rate)")
+
     rcond: Optional[float] = Field(default=None, description="Opcionális Moore-Penrose rcond felülírás")
-    exp_neurons: Optional[List[int]] = Field(default=None, description="Opcionális exponenciális neurónszám lista")
-    eq_neurons: Optional[List[int]] = Field(default=None, description="Opcionális egyenlő neurónszám lista")
+
+    @model_validator(mode='after')
+    def validate_business_rules(self):
+        if self.method == MethodEnum.BASE:
+            self.sigma = None
+
+        if self.method != MethodEnum.EXP_ORT_C and self.penalty is not None:
+            raise ValueError("A 'penalty' paraméter kizárólag a 'EXP_ORT_C' metódus esetén használható!")
+
+        return self
 
 
 @mpdrnn_router.post("/start", status_code=status.HTTP_202_ACCEPTED)

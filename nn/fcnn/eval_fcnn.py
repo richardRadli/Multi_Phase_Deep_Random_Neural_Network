@@ -1,3 +1,5 @@
+import os
+
 import colorama
 import logging
 import torch
@@ -66,6 +68,8 @@ class EvalFCNN:
         self.model.load_state_dict(torch.load(checkpoint))
         self.model = self.model.to(self.device)
 
+        self.output_dir = os.path.dirname(checkpoint)
+
         self.train_accuracy = None
         self.test_accuracy = None
         self.train_precision = None
@@ -121,7 +125,14 @@ class EvalFCNN:
         setattr(self, f"{operation}_f1sore", f1sore)
         setattr(self, f"{operation}_cm", cm)
 
-        plot_confusion_matrix_fcnn(cm, operation, self.class_labels, self.cfg.get("dataset_name"))
+        plot_confusion_matrix_fcnn(
+            cm=cm,
+            path_to_plot=self.output_dir,
+            operation=operation,
+            class_labels=self.class_labels,
+            dataset_name=self.cfg.get("dataset_name")
+        )
+
         logging.info(f"{operation} accuracy: {accuracy:.4f}")
         logging.info(f"{operation} precision: {precision:.4f}")
         logging.info(f"{operation} recall: {recall:.4f}")
