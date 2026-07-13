@@ -237,7 +237,7 @@ def get_num_of_neurons(cfg: dict, method: str) -> list:
     """
 
     num_neurons = {
-        "BASE": cfg.get("eq_neurons"),
+        "BASE": cfg.get("exp_neurons"),
         "EXP_ORT": cfg.get("exp_neurons"),
         "EXP_ORT_C": cfg.get("exp_neurons"),
     }

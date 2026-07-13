@@ -5,6 +5,9 @@ import sys
 import numpy as np
 from celery import Celery
 
+from config.json_config import json_config_selector
+from utils.utils import load_config_json
+
 CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/3")
 CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/3")
 
@@ -58,8 +61,12 @@ def mpdrnn_task(self, config: dict):
         raw_json["method"] = method
 
         if method == "BASE":
-            raw_json.pop("mu", None)
-            raw_json.pop("sigma", None)
+            default_cfg = load_config_json(
+                json_schema_filename=json_config_selector("mpdrnn").get("schema"),
+                json_filename=json_config_selector("mpdrnn").get("config")
+            )
+            raw_json["mu"] = default_cfg.get("mu", 0)
+            raw_json["sigma"] = default_cfg.get("sigma", 0.1)
         else:
             raw_json["mu"] = 0
             raw_json["sigma"] = config["sigma"]

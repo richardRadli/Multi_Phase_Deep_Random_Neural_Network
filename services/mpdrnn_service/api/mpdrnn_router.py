@@ -1,7 +1,7 @@
 import os
 import sys
 from fastapi import APIRouter, HTTPException, status, Query
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional
 
@@ -30,10 +30,8 @@ class MethodEnum(str, Enum):
 
 
 class MPDRNNConfig(BaseModel):
-    activation: ActivationEnum = Field(default=ActivationEnum.LeakyReLU, description="Aktivációs függvény")
     number_of_tests: int = Field(default=20, ge=1, description="Tesztek futtatási száma")
     seed: bool = Field(default=True, description="True esetén fixálja a random seedet")
-    method: MethodEnum = Field(default=MethodEnum.BASE, description="Súlygenerálási módszer")
 
     sigma: Optional[float] = Field(default=0.1, ge=0.01, le=1.0,
                                    description="Szórás (BASE esetén figyelmen kívül hagyva)")
@@ -47,41 +45,43 @@ class MPDRNNConfig(BaseModel):
 
     rcond: Optional[float] = Field(default=None, description="Opcionális Moore-Penrose rcond felülírás")
 
-    @model_validator(mode='after')
-    def validate_business_rules(self):
-        if self.method == MethodEnum.BASE:
-            self.sigma = None
-
-        if self.method != MethodEnum.EXP_ORT_C and self.penalty is not None:
-            raise ValueError("A 'penalty' paraméter kizárólag a 'EXP_ORT_C' metódus esetén használható!")
-
-        return self
-
 
 @mpdrnn_router.post("/start", status_code=status.HTTP_202_ACCEPTED)
 async def start_mpdrnn_process(
         config: MPDRNNConfig,
-        dataset_name: DatasetEnum = Query(..., description="Válaszd ki az adathalmazt")
+        dataset_name: DatasetEnum = Query(..., description="Válaszd ki az adathalmazt"),
+        method: MethodEnum = Query(MethodEnum.BASE, description="Válaszd ki a súlygenerálási módszert"),
+        activation: ActivationEnum = Query(ActivationEnum.LeakyReLU, description="Válaszd ki az aktivációs függvényt")
 ):
     try:
+        if method != MethodEnum.EXP_ORT_C and config.penalty is not None:
+            raise HTTPException(
+                status_code=400,
+                detail="A 'penalty' paraméter kizárólag a 'EXP_ORT_C' metódus esetén használható!"
+            )
+
         config_payload = {
             "dataset_name": dataset_name.value,
+            "method": method.value,
+            "activation": activation.value,
             **config.model_dump()
         }
         task = mpdrnn_task.delay(config=config_payload)
         return {"task_id": task.id, "status": "QUEUED"}
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @mpdrnn_router.post("/stop/{task_id}")
-async def stop_mpdrnn_process(task_id: str):
-    try:
-        celery_app.control.revoke(task_id=task_id, terminate=True, signal="SIGKILL")
-        return {"status": "ABORT_SIGNAL_SENT", "message": f"MPDRNN task {task_id} revoked."}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+def stop_mpdrnn_task(task_id: str):
+    celery_app.backend.client.set(f"mpdrnn:abort:{task_id}", 1, ex=3600)
+    celery_app.control.revoke(task_id, terminate=True)
+    return {
+        "status": "ABORT_SIGNAL_SENT",
+        "message": f"MPDRNN task {task_id} abort signal sent to Redis."
+    }
 
 @mpdrnn_router.get("/status/{task_id}")
 async def get_mpdrnn_status(task_id: str):
