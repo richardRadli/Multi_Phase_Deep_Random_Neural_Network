@@ -54,8 +54,8 @@ async def start_helm_process(
 async def stop_helm_process(task_id: str):
     try:
         celery_app.backend.client.set(f"helm:abort:{task_id}", "true")
-        celery_app.control.revoke(task_id=task_id, terminate=True, signal="SIGKILL")
-        return {"status": "ABORT_SIGNAL_SENT", "message": f"HELM task {task_id} revoked."}
+        celery_app.control.revoke(task_id=task_id, terminate=False)
+        return {"status": "ABORT_SIGNAL_SENT", "message": f"HELM task {task_id} signaled to abort gracefully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

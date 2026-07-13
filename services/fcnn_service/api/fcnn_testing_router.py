@@ -50,7 +50,7 @@ async def test_fcnn_model(
 async def stop_fcnn_testing(task_id: str):
     try:
         celery_app.backend.client.set(f"fcnn:abort:{task_id}", "true")
-        celery_app.control.revoke(task_id=task_id, terminate=True, signal="SIGKILL")
+        celery_app.control.revoke(task_id=task_id, terminate=False)
         return {
             "status": "ABORT_SIGNAL_SENT",
             "message": f"FCNN Testing task {task_id} successfully signaled to abort."

@@ -77,7 +77,7 @@ async def start_mpdrnn_process(
 @mpdrnn_router.post("/stop/{task_id}")
 def stop_mpdrnn_task(task_id: str):
     celery_app.backend.client.set(f"mpdrnn:abort:{task_id}", 1, ex=3600)
-    celery_app.control.revoke(task_id, terminate=True)
+    celery_app.control.revoke(task_id, terminate=False)
     return {
         "status": "ABORT_SIGNAL_SENT",
         "message": f"MPDRNN task {task_id} abort signal sent to Redis."

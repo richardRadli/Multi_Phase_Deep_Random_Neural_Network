@@ -35,21 +35,6 @@ def train_fcnn_task(self, config: dict):
     seed = config["seed"]
     epochs = config["epochs"]
 
-    STORAGE_ROOT = os.getenv("STORAGE_ROOT", "/app/storage")
-    params_path = os.path.join(STORAGE_ROOT, f"training_params_{task_id}.json")
-
-    config_data = {
-        "task_id": task_id,
-        "dataset_name": dataset_name,
-        "seed": seed,
-        "epochs": epochs,
-        "status": "running",
-        "start_time": time.time(),
-        "start_time_str": time.strftime("%Y-%m-%d %H:%M:%S")
-    }
-    with open(params_path, "w") as f:
-        json.dump(config_data, f, indent=4)
-
     def on_epoch_end(current_epoch: int, total_epochs: int):
         self.update_state(
             state="PROGRESS",
@@ -82,10 +67,24 @@ def train_fcnn_task(self, config: dict):
 
         trainer = TrainFCNN(override_cfg=override_cfg, celery_task=self)
         trainer.epoch_callback = on_epoch_end
+
+        params_path = os.path.join(trainer.save_path, "training_params.json")
+
+        config_data = {
+            "task_id": task_id,
+            "dataset_name": dataset_name,
+            "seed": seed,
+            "epochs": epochs,
+            "status": "running",
+            "start_time": time.time(),
+            "start_time_str": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        with open(params_path, "w", encoding="utf-8") as f:
+            json.dump(config_data, f, indent=4)
+
         trainer.fit()
 
         execution_time = trainer.fit.execution_time
-
         is_aborted = self.backend.client.get(f"fcnn:abort:{task_id}")
 
         if is_aborted:
@@ -99,7 +98,7 @@ def train_fcnn_task(self, config: dict):
         config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
         config_data["execution_time_seconds"] = round(execution_time, 4)
 
-        with open(params_path, "w") as f:
+        with open(params_path, "w", encoding="utf-8") as f:
             json.dump(config_data, f, indent=4)
 
         return {
@@ -110,14 +109,17 @@ def train_fcnn_task(self, config: dict):
 
     except Exception as e:
         logging.exception(f"FCNN training task encountered an error: {str(e)}")
-        config_data["status"] = "failed"
-        config_data["error"] = str(e)
-        config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
-        config_data["execution_time_seconds"] = round(time.time() - config_data["start_time"], 4)
-        config_data["final_epoch"] = getattr(trainer, "current_epoch_run", 0)
-
-        with open(params_path, "w") as f:
-            json.dump(config_data, f, indent=4)
+        try:
+            target_json = params_path if 'params_path' in locals() else os.path.join(os.getenv("STORAGE_ROOT", "/app/storage"), f"training_params_failed_{task_id}.json")
+            config_data["status"] = "failed"
+            config_data["error"] = str(e)
+            config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            config_data["execution_time_seconds"] = round(time.time() - config_data.get("start_time", time.time()), 4)
+            config_data["final_epoch"] = getattr(trainer, "current_epoch_run", 0) if trainer else 0
+            with open(target_json, "w", encoding="utf-8") as f:
+                json.dump(config_data, f, indent=4)
+        except Exception:
+            pass
         raise e
     finally:
         self.backend.client.srem("fcnn:active_tasks", task_id)

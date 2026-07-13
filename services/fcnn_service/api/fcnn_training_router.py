@@ -57,27 +57,13 @@ async def stop_fcnn_training(task_id: str):
     try:
         celery_app.backend.client.set(f"fcnn:abort:{task_id}", "true")
         celery_app.backend.client.srem("fcnn:active_tasks", task_id)
-        celery_app.control.revoke(task_id=task_id, terminate=True, signal="SIGKILL")
-        logging.info(f"FCNN native abort signal emitted for task: {task_id}")
 
-        STORAGE_ROOT = os.getenv("STORAGE_ROOT", "/app/storage")
-        params_path = os.path.join(STORAGE_ROOT, f"training_params_{task_id}.json")
-
-        if os.path.exists(params_path):
-            with open(params_path, "r") as f:
-                config_data = json.load(f)
-
-            config_data["status"] = "aborted"
-            config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
-            if "start_time" in config_data:
-                config_data["execution_time_seconds"] = round(time.time() - config_data["start_time"], 4)
-
-            with open(params_path, "w") as f:
-                json.dump(config_data, f, indent=4)
+        celery_app.control.revoke(task_id=task_id, terminate=False)
+        logging.info(f"FCNN graceful abort signal set for task: {task_id}")
 
         return {
             "status": "ABORT_SIGNAL_SENT",
-            "message": f"Task {task_id} successfully signaled to abort. File {os.path.basename(params_path)} updated."
+            "message": f"Task {task_id} successfully signaled to abort gracefully via Redis flag."
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

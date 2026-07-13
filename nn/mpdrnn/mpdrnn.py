@@ -7,7 +7,7 @@ from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.mpdrnn.base_class_mpdrnn import BaseMPDRNN
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, get_num_of_neurons, insert_data_to_excel,
-                         reorder_metrics_lists)
+                         reorder_metrics_lists, plot_confusion_matrix_mpdrnn)
 
 
 class MPDRNN(BaseMPDRNN):
@@ -155,6 +155,40 @@ class MPDRNN(BaseMPDRNN):
                 )
             )
             insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), i + 2, metrics)
+
+            train_cms = [
+                initial_model_training_metrics[4],
+                subsequent_model_training_metrics[4],
+                final_model_training_metrics[4]
+            ]
+            test_cms = [
+                initial_model_testing_metrics[4],
+                subsequent_model_testing_metrics[4],
+                final_model_testing_metrics[4]
+            ]
+
+            path_to_plots = os.path.dirname(self.filename)
+            class_labels = self.gen_ds_cfg.get("class_labels")
+
+            # Train
+            plot_confusion_matrix_mpdrnn(
+                cm=train_cms,
+                path_to_plot=path_to_plots,
+                name_of_dataset=self.cfg.get("dataset_name"),
+                operation="train",
+                method=self.method,
+                labels=class_labels
+            )
+
+            # Test
+            plot_confusion_matrix_mpdrnn(
+                cm=test_cms,
+                path_to_plot=path_to_plots,
+                name_of_dataset=self.cfg.get("dataset_name"),
+                operation="test",
+                method=self.method,
+                labels=class_labels
+            )
 
             training_time.clear()
 
