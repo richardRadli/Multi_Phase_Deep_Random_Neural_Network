@@ -412,7 +412,7 @@ def plot_confusion_matrix_fcnn(cm: np.ndarray, path_to_plot: str, operation: str
 
 
 def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_dataset: str, operation: str, method: str,
-                                 labels=None) -> None:
+                                 labels=None,prefix: str = "") -> None:
     """
     Plots multiple confusion matrices side by side and saves the plot as a PNG file.
 
@@ -438,7 +438,8 @@ def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_data
         ax.set_xlabel('Predicted')
         ax.set_ylabel('Actual')
 
-    filename = os.path.join(path_to_path := path_to_plot, f"{name_of_dataset}_{method}_{operation}.jpg")
+    filename = os.path.join(path_to_path := path_to_plot, f"{prefix}{name_of_dataset}_{method}_{operation}.jpg")
+    plt.tight_layout()
     plt.tight_layout()
     plt.savefig(filename, dpi=300)
     plt.close()

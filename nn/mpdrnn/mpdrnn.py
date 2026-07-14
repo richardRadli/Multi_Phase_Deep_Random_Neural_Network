@@ -15,7 +15,7 @@ class MPDRNN(BaseMPDRNN):
         super().__init__(override_cfg=override_cfg, celery_task=celery_task)
 
         # Create timestamp as the program begins to execute.
-        timestamp = create_timestamp()
+        self.timestamp = create_timestamp()
         colorama.init()
 
         penalty_term = self.cfg.get('penalty')
@@ -28,7 +28,7 @@ class MPDRNN(BaseMPDRNN):
         self.filename = (
             os.path.join(
                 drnn_config.get("mpdrnn").get("path_to_results"),
-                f"{timestamp}_{self.dataset_name}_dataset_{self.method}_method_{penalty_term}"
+                f"{self.timestamp}_{self.dataset_name}_dataset_{self.method}_method_{penalty_term}"
                 f"_penalty_{rcond_str}_rcond.xlsx"
             )
         )
@@ -170,6 +170,8 @@ class MPDRNN(BaseMPDRNN):
             path_to_plots = os.path.dirname(self.filename)
             class_labels = self.gen_ds_cfg.get("class_labels")
 
+            file_prefix = f"{self.timestamp}_cycle_{i}_"
+
             # Train
             plot_confusion_matrix_mpdrnn(
                 cm=train_cms,
@@ -177,7 +179,8 @@ class MPDRNN(BaseMPDRNN):
                 name_of_dataset=self.cfg.get("dataset_name"),
                 operation="train",
                 method=self.method,
-                labels=class_labels
+                labels=class_labels,
+                prefix=file_prefix
             )
 
             # Test
@@ -187,7 +190,8 @@ class MPDRNN(BaseMPDRNN):
                 name_of_dataset=self.cfg.get("dataset_name"),
                 operation="test",
                 method=self.method,
-                labels=class_labels
+                labels=class_labels,
+                prefix=file_prefix
             )
 
             training_time.clear()

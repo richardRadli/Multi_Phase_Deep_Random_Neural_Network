@@ -84,7 +84,7 @@ def stop_mpdrnn_task(task_id: str):
     }
 
 @mpdrnn_router.get("/status/{task_id}")
-async def get_mpdrnn_status(task_id: str):
+def get_mpdrnn_status(task_id: str):
     task_result = celery_app.AsyncResult(task_id)
     response = {"task_id": task_id, "status": task_result.state, "info": None}
     if task_result.state == "SUCCESS":
