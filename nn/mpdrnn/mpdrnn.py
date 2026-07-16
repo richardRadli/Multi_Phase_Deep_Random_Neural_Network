@@ -24,10 +24,20 @@ class MPDRNN(BaseMPDRNN):
         self.gen_ds_cfg = general_dataset_configs(self.cfg.get("dataset_name"))
         drnn_config = drnn_paths_config(self.dataset_name)
 
+        base_results_dir = drnn_config.get("mpdrnn").get("path_to_results")
+
+        self.method_dir = os.path.join(base_results_dir, self.method)
+        self.excel_dir = os.path.join(self.method_dir, "excel")
+        self.cm_dir = os.path.join(self.method_dir, "confusion_matrix")
+
+        os.makedirs(self.excel_dir, exist_ok=True)
+        os.makedirs(self.cm_dir, exist_ok=True)
+
         rcond_str = f"{rcond:.4f}" if rcond is not None else "none"
+
         self.filename = (
             os.path.join(
-                drnn_config.get("mpdrnn").get("path_to_results"),
+                self.excel_dir,
                 f"{self.timestamp}_{self.dataset_name}_dataset_{self.method}_method_{penalty_term}"
                 f"_penalty_{rcond_str}_rcond.xlsx"
             )
@@ -55,6 +65,7 @@ class MPDRNN(BaseMPDRNN):
         """
 
         training_time = []
+        total_tests = self.cfg.get('number_of_tests')
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
             if self.celery_task:
@@ -62,6 +73,21 @@ class MPDRNN(BaseMPDRNN):
                 if is_aborted:
                     logging.info("MPDRNN testing series abort signal detected mid-cycle. Breaking loop.")
                     break
+
+                current_test = i + 1
+                progress_percent = round((current_test / total_tests) * 100, 1)
+
+                self.celery_task.update_state(
+                    state="PROGRESS",
+                    meta={
+                        "status": f"Running cycle {current_test}/{total_tests}",
+                        "telemetry": {
+                            "current_cycle": current_test,
+                            "total_cycles": total_tests,
+                            "progress_percent": progress_percent
+                        }
+                    }
+                )
 
             # Initial Model
             net_cfg = (
@@ -167,7 +193,7 @@ class MPDRNN(BaseMPDRNN):
                 final_model_testing_metrics[4]
             ]
 
-            path_to_plots = os.path.dirname(self.filename)
+            path_to_plots = self.cm_dir
             class_labels = self.gen_ds_cfg.get("class_labels")
 
             file_prefix = f"{self.timestamp}_cycle_{i}_"

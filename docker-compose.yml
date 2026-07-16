@@ -133,3 +133,16 @@ services:
     volumes:
       - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
       - D:/storage/lion17:/app/storage
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development

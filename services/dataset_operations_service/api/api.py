@@ -2,6 +2,7 @@ import os
 import sys
 from enum import Enum
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
@@ -16,7 +17,23 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 DatasetEnum = Enum("DatasetEnum", {ds.upper(): ds for ds in VALID_DATASETS})
+
+
+@app.get("/")
+async def root():
+    """
+    Health check endpoint a React státuszjelző számára.
+    """
+    return {"service": "Dataset Service", "status": "healthy"}
 
 @app.post("/dataset/convert", tags=["Dataset Operations"])
 def conver_and_split_dataset(
@@ -51,3 +68,4 @@ def conver_and_split_dataset(
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run("services.dataset_operations_service.api.api:app", host="127.0.0.1", port=8000, reload=True)
+

@@ -94,3 +94,7 @@ def get_mpdrnn_status(task_id: str):
     elif task_result.state == "FAILURE":
         response["info"] = str(task_result.info)
     return response
+
+@mpdrnn_router.get("/datasets", tags=["Config"])
+def get_datasets():
+    return {"datasets": VALID_DATASETS}

@@ -445,6 +445,45 @@ def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_data
     plt.close()
     gc.collect()
 
+def plot_confusion_matrix_helm(cm_list: List[np.ndarray], path_to_plot: str, name_of_dataset: str, operation: str,
+                               method: str,
+                               labels=None, prefix: str = "") -> None:
+    """
+    Plots multiple confusion matrices side by side for each hierarchical layer of HELM
+    and saves the plot as a JPG file using a Purples color map.
+
+    Args:
+        cm_list (List[np.ndarray]): A list of 2D NumPy arrays representing confusion matrices per layer.
+        path_to_plot (str): The directory path where the plot image will be saved.
+        name_of_dataset (str): The name of the dataset.
+        operation (str): "train" or "test".
+        method (str): The weight method used.
+        labels (Optional[List[str]]): Class labels.
+        prefix (str): Prefix for the filename (e.g., timestamp and cycle).
+
+    Returns:
+        None: The function saves the plot to the specified path and does not return any value.
+    """
+    num_layers = len(cm_list)
+    if num_layers == 0:
+        return
+
+    fig, axis = plt.subplots(1, num_layers, figsize=(5 * num_layers, 5), squeeze=False)
+
+    for i, cm in enumerate(cm_list):
+        ax = axis[0, i]
+        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, cmap="Purples", ax=ax)
+        ax.set_title(f"Layer {i + 1}\n{name_of_dataset.upper()} - {method}\n({operation.upper()})", fontsize=10,
+                     fontweight='bold')
+        ax.set_xlabel('Predicted', fontsize=9)
+        ax.set_ylabel('Actual', fontsize=9)
+
+    filename = os.path.join(path_to_plot, f"{prefix}{name_of_dataset}_{method}_{operation}.jpg")
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300)
+    plt.close()
+    gc.collect()
+
 
 def reorder_metrics_lists(train_metrics, test_metrics, training_time_list: Optional = None) -> List:
     """
