@@ -73,3 +73,8 @@ async def get_helm_status(task_id: str):
     elif task_result.state == "REVOKED":
         response["status"] = "ABORTED"
     return response
+
+
+@helm_router.get("/datasets", tags=["Config"])
+def get_datasets():
+    return {"datasets": VALID_DATASETS}

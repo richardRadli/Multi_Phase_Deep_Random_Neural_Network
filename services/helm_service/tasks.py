@@ -24,10 +24,12 @@ if PROJECT_ROOT not in sys.path:
 from config.data_paths import JSON_FILES_PATHS
 from nn.helm.helm import HELM
 
+
 @celery_app.task(bind=True, name="tasks.helm_task")
 def helm_task(self, config: dict):
-    logging.info("Starting unified HELM task")
+    logging.info("Starting updated HELM task based on common architecture specs")
     task_id = self.request.id
+
     self.update_state(state="PROGRESS", meta={'status': "Running analytical matrix computations"})
     try:
         dataset_name = config["dataset_name"]
@@ -52,14 +54,18 @@ def helm_task(self, config: dict):
 
         override_cfg = {**simple_config, **flattened_config}
 
+        if not override_cfg.get("hidden_neurons"):
+            override_cfg["hidden_neurons"] = raw_json.get("hidden_neurons", {}).get(dataset_name, [100, 50, 25])
+
         if config.get("penalty") is not None:
             override_cfg["penalty"] = config["penalty"]
-            logging.info(f"Overriding gyári penalty value to: {config['penalty']}")
-
+            logging.info(f"Overriding default penalty value to: {config['penalty']}")
 
         if config.get("scaling_factor") is not None:
             override_cfg["scaling_factor"] = config["scaling_factor"]
-            logging.info(f"Overriding gyári scaling_factor value to: {config['scaling_factor']}")
+            logging.info(f"Overriding default scaling_factor value to: {config['scaling_factor']}")
+
+        override_cfg["method"] = "HELM"
 
         evaluator = HELM(override_cfg=override_cfg, celery_task=self)
         evaluator.main()
@@ -67,14 +73,33 @@ def helm_task(self, config: dict):
         is_aborted = self.backend.client.get(f"helm:abort:{task_id}")
         if is_aborted:
             self.update_state(state="REVOKED")
-            return {"status": "ABORTED", "mode": "standard", "dataset_name": dataset_name}
+            return {"status": "ABORTED", "dataset_name": dataset_name}
+
+        avg_metrics = getattr(evaluator, "averaged_metrics", [0.0] * 9)
+
+        def get_metric_or_default(index, default=0.0):
+            try:
+                return float(avg_metrics[index])
+            except (IndexError, TypeError, ValueError):
+                return default
 
         return {
             "status": "SUCCESS",
-            "mode": "series" if num_tests > 1 else "single",
             "dataset_name": dataset_name,
-            "output_file": getattr(evaluator, "filename", None)
+            "method": "HELM",
+            "output_file": getattr(evaluator, "filename", None),
+            "metrics": {
+                "train_accuracy": get_metric_or_default(0),
+                "test_accuracy": get_metric_or_default(1),
+                "train_precision": get_metric_or_default(2),
+                "test_precision": get_metric_or_default(3),
+                "train_recall": get_metric_or_default(4),
+                "test_recall": get_metric_or_default(5),
+                "train_f1_score": get_metric_or_default(6),
+                "test_f1_score": get_metric_or_default(7),
+                "training_time": get_metric_or_default(8)
+            }
         }
     except Exception as e:
-        logging.exception(f"HELM task encountered an error: {str(e)}")
-        raise RuntimeError(f"HELM execution failed: {str(e)}")
+        logging.exception(f"HELM error: {str(e)}")
+        raise RuntimeError(str(e))

@@ -1,7 +1,5 @@
 import logging
 import os
-import json
-import time
 import sys
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field
@@ -58,7 +56,6 @@ async def stop_fcnn_training(task_id: str):
         celery_app.backend.client.set(f"fcnn:abort:{task_id}", "true")
         celery_app.backend.client.srem("fcnn:active_tasks", task_id)
 
-        celery_app.control.revoke(task_id=task_id, terminate=False)
         logging.info(f"FCNN graceful abort signal set for task: {task_id}")
 
         return {
@@ -72,18 +69,32 @@ async def stop_fcnn_training(task_id: str):
 @fcnn_router.get("/status/{task_id}")
 async def get_fcnn_status(task_id: str):
     task_result = celery_app.AsyncResult(task_id)
-    response = {"task_id": task_id, "status": task_result.state, "info": None}
 
-    if task_result.state == "PROGRESS":
-        response["info"] = task_result.info
-    elif task_result.state == "SUCCESS":
+    try:
+        task_state = task_result.state
+        task_info = task_result.info
+    except Exception:
+        return {
+            "task_id": task_id,
+            "status": "ABORTED",
+            "info": {"status": "ABORTED", "message": "Task was manually aborted."}
+        }
+
+    response = {"task_id": task_id, "status": task_state, "info": None}
+
+    if task_state == "PROGRESS":
+        response["info"] = task_info
+    elif task_state == "SUCCESS":
         response["info"] = task_result.get()
-    elif task_result.state == "FAILURE":
-        response["info"] = str(task_result.info)
-    elif task_result.state == "PENDING":
+    elif task_state == "FAILURE":
+        response["info"] = str(task_info)
+    elif task_state == "PENDING":
         response["info"] = {"status": "Waiting in queue..."}
-    elif task_result.state == "REVOKED":
+    elif task_state in ["ABORTED", "REVOKED"]:
         response["status"] = "ABORTED"
-        response["info"] = {"status": "Task was manually aborted."}
+        if task_info and isinstance(task_info, dict):
+            response["info"] = task_info
+        else:
+            response["info"] = {"status": "ABORTED", "message": "Task was manually aborted."}
 
     return response

@@ -4,6 +4,7 @@ import time
 import logging
 import sys
 from celery import Celery
+from celery.exceptions import Ignore
 
 CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/1")
 CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/1")
@@ -25,6 +26,7 @@ if PROJECT_ROOT not in sys.path:
 from config.data_paths import JSON_FILES_PATHS
 from nn.fcnn.train_fcnn import TrainFCNN
 from nn.fcnn.eval_fcnn import EvalFCNN
+
 
 @celery_app.task(bind=True, name="task.train_fcnn_task")
 def train_fcnn_task(self, config: dict):
@@ -68,7 +70,13 @@ def train_fcnn_task(self, config: dict):
         trainer = TrainFCNN(override_cfg=override_cfg, celery_task=self)
         trainer.epoch_callback = on_epoch_end
 
-        params_path = os.path.join(trainer.save_path, "training_params.json")
+        from config.dataset_config import fcnn_paths_configs
+        fcnn_ds_cfg = fcnn_paths_configs(dataset_name)
+
+        meta_dir = os.path.join(fcnn_ds_cfg.get("saved_results"), "metadata")
+        os.makedirs(meta_dir, exist_ok=True)
+
+        params_path = os.path.join(meta_dir, f"run_{task_id}.json")
 
         config_data = {
             "task_id": task_id,
@@ -90,27 +98,43 @@ def train_fcnn_task(self, config: dict):
         if is_aborted:
             config_data["status"] = "aborted"
             config_data["final_epoch"] = getattr(trainer, "current_epoch_run", 0)
-            self.update_state(state="REVOKED")
+            config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            config_data["execution_time_seconds"] = round(execution_time, 4)
+
+            with open(params_path, "w", encoding="utf-8") as f:
+                json.dump(config_data, f, indent=4)
+
+            abort_payload = {
+                "status": "ABORTED",
+                "execution_time_seconds": round(execution_time, 4),
+                "total_epochs_run": getattr(trainer, "current_epoch_run", 0),
+                "message": f"Training gracefully stopped at epoch {getattr(trainer, 'current_epoch_run', 0)}."
+            }
+            self.update_state(state="ABORTED", meta=abort_payload)
+            raise Ignore()
+
         else:
             config_data["status"] = "completed"
             config_data["final_epoch"] = epochs
+            config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            config_data["execution_time_seconds"] = round(execution_time, 4)
 
-        config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
-        config_data["execution_time_seconds"] = round(execution_time, 4)
-
-        with open(params_path, "w", encoding="utf-8") as f:
-            json.dump(config_data, f, indent=4)
+            with open(params_path, "w", encoding="utf-8") as f:
+                json.dump(config_data, f, indent=4)
 
         return {
-            "status": "SUCCESS" if not is_aborted else "ABORTED",
+            "status": "SUCCESS",
             "execution_time_seconds": round(execution_time, 4),
             "total_epochs_run": getattr(trainer, "current_epoch_run", 0)
         }
 
     except Exception as e:
+        if isinstance(e, Ignore):
+            raise e
         logging.exception(f"FCNN training task encountered an error: {str(e)}")
         try:
-            target_json = params_path if 'params_path' in locals() else os.path.join(os.getenv("STORAGE_ROOT", "/app/storage"), f"training_params_failed_{task_id}.json")
+            target_json = params_path if params_path else os.path.join(fcnn_ds_cfg.get("saved_results"), "metadata",
+                                                                       f"run_failed_{task_id}.json")
             config_data["status"] = "failed"
             config_data["error"] = str(e)
             config_data["end_time_str"] = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -127,7 +151,7 @@ def train_fcnn_task(self, config: dict):
 
 @celery_app.task(bind=True, name="tasks.test_fcnn_task")
 def test_fcnn_task(self, config: dict):
-    logging.info("Starting FCNN evaluation task")
+    logging.info("Starting FCNN evaluation task (Strictly Pure Testing Mode)")
     self.update_state(state="PROGRESS", meta={'status': "Initializing weights and dataset for evaluation"})
     task_id = self.request.id
     try:
@@ -136,7 +160,6 @@ def test_fcnn_task(self, config: dict):
         seed = config["seed"]
         series_mode = config["series_mode"]
         num_tests = config.get("num_tests", 1)
-        epochs = config.get("epochs", 1000)
 
         fcnn_config_path = JSON_FILES_PATHS.get_data_path("config_fcnn")
         with open(fcnn_config_path, "r") as f:
@@ -146,7 +169,6 @@ def test_fcnn_task(self, config: dict):
         raw_json["batch_size"] = batch_size
         raw_json["seed"] = seed
         raw_json["num_tests"] = num_tests
-        raw_json["epochs"] = epochs
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
         nested_config = {k: v for k, v in raw_json.items() if isinstance(v, dict)}
@@ -158,18 +180,22 @@ def test_fcnn_task(self, config: dict):
 
         override_cfg = {**simple_config, **flattened_config}
 
+        def safe_float(val):
+            return float(val) if val is not None else 0.0
+
         if not series_mode:
             evaluator = EvalFCNN(override_cfg=override_cfg)
             evaluator.main()
+
             return {
                 "status": "SUCCESS",
                 "mode": "single",
                 "dataset_name": dataset_name,
                 "metrics": {
-                    "accuracy": getattr(evaluator, "test_accuracy", None),
-                    "precision": getattr(evaluator, "test_precision", None),
-                    "recall": getattr(evaluator, "test_recall", None),
-                    "f1_score": getattr(evaluator, "test_f1sore", None),
+                    "accuracy": safe_float(getattr(evaluator, "test_accuracy", None)),
+                    "precision": safe_float(getattr(evaluator, "test_precision", None)),
+                    "recall": safe_float(getattr(evaluator, "test_recall", None)),
+                    "f1_score": safe_float(getattr(evaluator, "test_f1sore", None)),
                     "confusion_matrix": getattr(evaluator, "test_cm", None).tolist() if getattr(evaluator, "test_cm",
                                                                                                 None) is not None else None
                 }
@@ -180,13 +206,16 @@ def test_fcnn_task(self, config: dict):
 
             is_aborted = self.backend.client.get(f"fcnn:abort:{task_id}")
             if is_aborted:
-                self.update_state(state="REVOKED")
-                return {
-                    "status": "ABORTED",
-                    "mode": "series",
-                    "dataset_name": dataset_name,
-                    "message": "FCNN test series was manually aborted."
-                }
+                self.update_state(
+                    state="ABORTED",
+                    meta={
+                        "status": "ABORTED",
+                        "mode": "series",
+                        "dataset_name": dataset_name,
+                        "message": "FCNN test series was manually aborted."
+                    }
+                )
+                raise Ignore()
 
             return {
                 "status": "SUCCESS",
@@ -194,7 +223,7 @@ def test_fcnn_task(self, config: dict):
                 "dataset_name": dataset_name,
                 "message": f"Excel test series report generated with {num_tests} cycles and columns averaged successfully."
             }
+
     except Exception as e:
         logging.exception(f"FCNN evaluation task encountered an error: {str(e)}")
         raise RuntimeError(f"FCNN evaluation failed: {str(e)}")
-

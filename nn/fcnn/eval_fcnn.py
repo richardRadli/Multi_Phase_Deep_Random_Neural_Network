@@ -13,7 +13,7 @@ from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (setup_logger, device_selector, create_train_test_datasets, load_config_json,
-                         find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
+                         find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn,create_timestamp)
 
 
 class EvalFCNN:
@@ -68,7 +68,9 @@ class EvalFCNN:
         self.model.load_state_dict(torch.load(checkpoint))
         self.model = self.model.to(self.device)
 
-        self.output_dir = os.path.dirname(checkpoint)
+        self.timestamp = create_timestamp()
+        self.cm_dir = os.path.join(fcnn_ds_cfg.get("saved_results"), "confusion_matrix")
+        os.makedirs(self.cm_dir, exist_ok=True)
 
         self.train_accuracy = None
         self.test_accuracy = None
@@ -125,12 +127,15 @@ class EvalFCNN:
         setattr(self, f"{operation}_f1sore", f1sore)
         setattr(self, f"{operation}_cm", cm)
 
+        dataset_name = self.cfg.get("dataset_name")
+
         plot_confusion_matrix_fcnn(
             cm=cm,
-            path_to_plot=self.output_dir,
+            path_to_plot=self.cm_dir,
             operation=operation,
             class_labels=self.class_labels,
-            dataset_name=self.cfg.get("dataset_name")
+            dataset_name=dataset_name,
+            prefix=f"{self.timestamp}_"
         )
 
         logging.info(f"{operation} accuracy: {accuracy:.4f}")

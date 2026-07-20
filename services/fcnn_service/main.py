@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from services.fcnn_service.api.fcnn_training_router import fcnn_router as fcnn_train_router
 from services.fcnn_service.api.fcnn_testing_router import fcnn_test_router
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 app = FastAPI(
     title="FCNN Training and Evaluation Service",
     description="Microservice for FCNN operations via Celery and Redis",
@@ -15,6 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="/app/storage"), name="static")
 app.include_router(fcnn_train_router)
 app.include_router(fcnn_test_router)
 

@@ -104,11 +104,30 @@ def mpdrnn_task(self, config: dict):
             self.update_state(state="REVOKED")
             return {"status": "ABORTED", "dataset_name": dataset_name}
 
+        avg_metrics = getattr(evaluator, "averaged_metrics", [0.0] * 9)
+
+        def get_metric_or_default(index, default=0.0):
+            try:
+                return float(avg_metrics[index])
+            except (IndexError, TypeError, ValueError):
+                return default
+
         return {
             "status": "SUCCESS",
             "dataset_name": dataset_name,
             "method": method,
-            "output_file": getattr(evaluator, "filename", None)
+            "output_file": getattr(evaluator, "filename", None),
+            "metrics": {
+                "train_accuracy": get_metric_or_default(0),
+                "test_accuracy": get_metric_or_default(1),
+                "train_precision": get_metric_or_default(2),
+                "test_precision": get_metric_or_default(3),
+                "train_recall": get_metric_or_default(4),
+                "test_recall": get_metric_or_default(5),
+                "train_f1_score": get_metric_or_default(6),
+                "test_f1_score": get_metric_or_default(7),
+                "training_time": get_metric_or_default(8)
+            }
         }
     except Exception as e:
         logging.exception(f"MPDRNN error: {str(e)}")

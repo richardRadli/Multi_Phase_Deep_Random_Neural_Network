@@ -7,7 +7,8 @@ from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.mpdrnn.base_class_mpdrnn import BaseMPDRNN
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, get_num_of_neurons, insert_data_to_excel,
-                         reorder_metrics_lists, plot_confusion_matrix_mpdrnn)
+                         reorder_metrics_lists, plot_confusion_matrix_mpdrnn, extract_float)
+
 
 
 class MPDRNN(BaseMPDRNN):
@@ -48,6 +49,8 @@ class MPDRNN(BaseMPDRNN):
             "penalty_term": penalty_term,
             "neurons": get_num_of_neurons(self.cfg, self.method)
         }
+
+        self.all_run_metrics = []
 
     def main(self) -> None:
         """
@@ -220,7 +223,21 @@ class MPDRNN(BaseMPDRNN):
                 prefix=file_prefix
             )
 
+            clean_metrics = [extract_float(m) for m in metrics[0]]
+            self.all_run_metrics.append(clean_metrics)
+
             training_time.clear()
+
+        if self.all_run_metrics:
+            num_runs = len(self.all_run_metrics)
+            num_metrics = len(self.all_run_metrics[0])
+
+            self.averaged_metrics = [
+                sum(run[j] for run in self.all_run_metrics) / num_runs
+                for j in range(num_metrics)
+            ]
+        else:
+            self.averaged_metrics = []
 
         average_columns_in_excel(self.filename)
 

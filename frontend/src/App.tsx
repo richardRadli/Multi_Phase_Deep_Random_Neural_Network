@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 
 import MpdrnnWorkspace from './views/MpdrnnWorkspace';
+import HelmWorkSpace from './views/HelmWorkspace';
+import DatasetWorkspace from './views/DatasetWorkspace';
+import FcnnWorkspace from './views/FcnnWorkspace';
 
 type ViewType = 'dashboard' | 'dataset' | 'fcnn_train' | 'fcnn_test' | 'helm' | 'mpdrnn';
 
@@ -111,7 +114,7 @@ export default function App() {
           <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-500/20">
             <Cpu className="w-6 h-6 animate-pulse" />
           </div>
-          <h1 className="text-xl font-extrabold tracking-tight">Defect Detection Framework</h1>
+          <h1 className="text-xl font-extrabold tracking-tight">Neural Network Training and Eval System</h1>
         </div>
 
         {/* Jobb oldal: Élő Státuszok */}
@@ -145,7 +148,6 @@ export default function App() {
               <h2 className="text-3xl font-black tracking-tight bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 bg-clip-text text-transparent">
                 Main Control Panel
               </h2>
-              <p className="text-sm text-slate-500 font-medium">Select an isolated workspace to manage datasets, train models, or view live plots.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
@@ -272,36 +274,33 @@ export default function App() {
         {currentView !== 'dashboard' && (
           <div className="w-full h-full animate-fadeIn">
             {currentView === 'dataset' && (
-              <div className="space-y-6">
-                <button onClick={() => setCurrentView('dashboard')} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer">
-                  Back to Dashboard
-                </button>
-                <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                  <h3 className="text-lg font-semibold">Dataset workspace placeholder</h3>
-                </div>
-              </div>
+              <DatasetWorkspace
+                darkMode={darkMode}
+                onBack={() => setCurrentView('dashboard')}
+              />
             )}
 
-            {(currentView === 'fcnn_train' || currentView === 'fcnn_test') && (
-              <div className="space-y-6">
-                <button onClick={() => setCurrentView('dashboard')} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer">
-                  Back to Dashboard
-                </button>
-                <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                  <h3 className="text-lg font-semibold">FCNN workspace placeholder</h3>
-                </div>
-              </div>
+            {currentView === 'fcnn_train' && (
+              <FcnnWorkspace
+                darkMode={darkMode}
+                mode="train"
+                onBack={() => setCurrentView('dashboard')}
+              />
+            )}
+
+            {currentView === 'fcnn_test' && (
+              <FcnnWorkspace
+                darkMode={darkMode}
+                mode="test"
+                onBack={() => setCurrentView('dashboard')}
+              />
             )}
 
             {currentView === 'helm' && (
-              <div className="space-y-6">
-                <button onClick={() => setCurrentView('dashboard')} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer">
-                  Back to Dashboard
-                </button>
-                <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                  <h3 className="text-lg font-semibold">HELM workspace placeholder</h3>
-                </div>
-              </div>
+              <HelmWorkSpace
+                darkMode={darkMode}
+                onBack={() => setCurrentView('dashboard')}
+              />
             )}
 
             {currentView === 'mpdrnn' && (
@@ -319,7 +318,7 @@ export default function App() {
       <footer className={`w-full py-4 text-center shrink-0 border-t transition-colors duration-200 ${
         darkMode ? 'border-slate-800/80 bg-slate-950/20 text-slate-500' : 'border-slate-200 bg-slate-100/50 text-slate-400'
       }`}>
-        <p className="text-xs font-semibold tracking-wide">Summer Internship • 2026</p>
+        <p className="text-xs font-semibold tracking-wide">© 2026 University of Pannonia - Image Processing Laboratory. All rights reserved.</p>
       </footer>
     </div>
   );

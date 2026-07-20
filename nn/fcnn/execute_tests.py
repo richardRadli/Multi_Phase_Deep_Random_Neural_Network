@@ -38,14 +38,12 @@ def main(override_cfg: dict = None, celery_task = None) -> None:
     lr = cfg.get("learning_rate")
 
     fcnn_config = fcnn_paths_configs(dataset_name)
+    base_results_dir = fcnn_config.get("saved_results")
 
-    filename = (
-        os.path.join(
-            fcnn_config.get("saved_results"),
-            f"{timestamp}_bs_{batch_size}_hn_{hidden_neurons}_lr_{lr}_device_{device}.xlsx")
-    )
+    excel_dir = os.path.join(base_results_dir, "excel")
+    os.makedirs(excel_dir, exist_ok=True)
 
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    filename = os.path.join(excel_dir, f"{timestamp}_bs_{batch_size}_hn_{hidden_neurons}_lr_{lr}_device_{device}.xlsx")
 
     collected_data = []
 

@@ -64,6 +64,9 @@ def conver_and_split_dataset(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/datasets", tags=["Datasets"])
+def get_all_available_datasets():
+    return {"datasets": VALID_DATASETS}
 
 if __name__ == '__main__':
     import uvicorn

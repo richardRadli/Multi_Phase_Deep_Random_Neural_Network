@@ -27,7 +27,6 @@ class FCNNTestRemainingConfig(BaseModel):
     seed: bool = Field(default=False, description="True esetén fixálja a random seedet")
     series_mode: bool = Field(default=False, description="True több Excel sorozathoz, False egyetlen JSON jelentéshez")
     num_tests: int = Field(default=20, ge=1, description="A sorozatban futtatandó tesztek száma")
-    epochs: int = Field(default=1000, ge=1, description="Hány epoch fusson ciklusonként?")
 
 @fcnn_test_router.post("/test", status_code=status.HTTP_202_ACCEPTED)
 async def test_fcnn_model(
@@ -50,10 +49,9 @@ async def test_fcnn_model(
 async def stop_fcnn_testing(task_id: str):
     try:
         celery_app.backend.client.set(f"fcnn:abort:{task_id}", "true")
-        celery_app.control.revoke(task_id=task_id, terminate=False)
         return {
             "status": "ABORT_SIGNAL_SENT",
-            "message": f"FCNN Testing task {task_id} successfully signaled to abort."
+            "message": f"FCNN Testing task {task_id} successfully signaled to abort gracefully via Redis."
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

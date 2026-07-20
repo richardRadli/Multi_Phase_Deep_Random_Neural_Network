@@ -69,11 +69,10 @@ class MPDRNNPaths(_Const):
         for prefix in ["results_", "hyperparam_"]:
             if key.startswith(prefix):
                 dataset = key.replace(prefix, "")
-                folder_type = "hyperparam" if prefix == "hyperparam_" else "results"
 
                 full_path = os.path.join(
                     self.STORAGE_ROOT,
-                    f"networks/mpdrnn/data/{folder_type}/{dataset}",
+                    f"networks/mpdrnn/{dataset}",
                 )
                 self.create_directories(full_path)
                 return full_path
@@ -118,8 +117,8 @@ class HELMPaths(_Const):
         """
         prefixes = {
             "helm_": "networks/helm/images/confusion_matrix",
-            "results_": "networks/helm/data/results",
-            "hyperparam_tuning_": "networks/helm/data/hyperparam_tuning"
+            "results_": "networks/helm",
+            "hyperparam_tuning_": "networks/helm/hyperparam_tuning"
         }
 
         for prefix, sub_path in prefixes.items():

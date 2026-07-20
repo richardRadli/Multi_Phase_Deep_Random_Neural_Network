@@ -383,7 +383,7 @@ def measure_execution_time(func: Callable) -> Callable:
     return wrapper
 
 
-def plot_confusion_matrix_fcnn(cm: np.ndarray, path_to_plot: str, operation: str, class_labels: List[str], dataset_name: str) -> None:
+def plot_confusion_matrix_fcnn(cm: np.ndarray, path_to_plot: str, operation: str, class_labels: List[str], dataset_name: str, prefix: str = "") -> None:
     """
     Plots a confusion matrix as a heatmap for a given dataset and operation.
 
@@ -397,16 +397,36 @@ def plot_confusion_matrix_fcnn(cm: np.ndarray, path_to_plot: str, operation: str
         None: The function displays the plot and does not return any value.
     """
 
+    num_classes = len(cm) if cm is not None else 0
+    current_font_size = 6 if num_classes > 12 else 9
+    current_label_size = 7 if num_classes > 12 else 9
+
     plt.figure(figsize=(10, 8))
+    ax = plt.gca()
+
     sns.heatmap(cm, annot=True, fmt=".0f", cmap="Blues",
-                xticklabels=class_labels, yticklabels=class_labels)
+                xticklabels=class_labels, yticklabels=class_labels, ax=ax,
+                annot_kws={"size": current_font_size})
+
     plt.xlabel("Predicted labels")
     plt.ylabel("Actual labels")
     plt.title(f"Confusion matrix of {dataset_name} on the {operation} set.")
+
+    if num_classes > 12:
+        ax.tick_params(axis='both', which='major', labelsize=current_label_size)
+
     plt.tight_layout()
 
-    filename = os.path.join(path_to_plot, f"{dataset_name}_fcnn_{operation}.jpg")
-    plt.savefig(filename, format="jpg", dpi=300)
+    latest_filename = os.path.join(path_to_plot, f"{dataset_name}_{operation}_confusion_matrix.jpg")
+    plt.savefig(latest_filename, format="jpg", dpi=300)
+
+    if prefix:
+        timestamped_filename = os.path.join(path_to_plot, f"{prefix}{dataset_name}_{operation}_confusion_matrix.jpg")
+        plt.savefig(timestamped_filename, format="jpg", dpi=300)
+
+    plt.close()
+    gc.collect()
+
     plt.close()
     gc.collect()
 
@@ -431,22 +451,27 @@ def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_data
 
     fig, axis = plt.subplots(1, 3, figsize=(15, 5))
 
-    for i, cm in enumerate(cm):
+    num_classes = len(cm[0]) if len(cm) > 0 else 0
+    current_font_size = 6 if num_classes > 12 else 9
+    current_label_size = 7 if num_classes > 12 else 9
+
+    for i, cm_single in enumerate(cm):
         ax = axis[i]
-        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=ax)
+        sns.heatmap(cm_single, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, ax=ax,
+                    annot_kws={"size": current_font_size})
         ax.set_title('%s, %s, %s, %s' % (f"Phase {i + 1}", name_of_dataset, method, operation))
         ax.set_xlabel('Predicted')
         ax.set_ylabel('Actual')
+        if num_classes > 12:
+            ax.tick_params(axis='both', which='major', labelsize=current_label_size)
 
-    filename = os.path.join(path_to_path := path_to_plot, f"{prefix}{name_of_dataset}_{method}_{operation}.jpg")
-    plt.tight_layout()
+    filename = os.path.join(path_to_plot, f"{prefix}{name_of_dataset}_{method}_{operation}.jpg")
     plt.tight_layout()
     plt.savefig(filename, dpi=300)
     plt.close()
     gc.collect()
 
 def plot_confusion_matrix_helm(cm_list: List[np.ndarray], path_to_plot: str, name_of_dataset: str, operation: str,
-                               method: str,
                                labels=None, prefix: str = "") -> None:
     """
     Plots multiple confusion matrices side by side for each hierarchical layer of HELM
@@ -468,17 +493,25 @@ def plot_confusion_matrix_helm(cm_list: List[np.ndarray], path_to_plot: str, nam
     if num_layers == 0:
         return
 
+    num_classes = len(cm_list[0]) if num_layers > 0 else 0
+    current_font_size = 6 if num_classes > 12 else 9
+    current_label_size = 7 if num_classes > 12 else 9
+
     fig, axis = plt.subplots(1, num_layers, figsize=(5 * num_layers, 5), squeeze=False)
 
-    for i, cm in enumerate(cm_list):
+    for i, cm_single in enumerate(cm_list):
         ax = axis[0, i]
-        sns.heatmap(cm, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, cmap="Purples", ax=ax)
-        ax.set_title(f"Layer {i + 1}\n{name_of_dataset.upper()} - {method}\n({operation.upper()})", fontsize=10,
+        sns.heatmap(cm_single, annot=True, fmt='.0f', xticklabels=labels, yticklabels=labels, cmap="Purples", ax=ax,
+                    annot_kws={"size": current_font_size})
+        ax.set_title(f"Layer {i + 1}\n{name_of_dataset.upper()} - \n({operation.upper()})", fontsize=10,
                      fontweight='bold')
         ax.set_xlabel('Predicted', fontsize=9)
         ax.set_ylabel('Actual', fontsize=9)
 
-    filename = os.path.join(path_to_plot, f"{prefix}{name_of_dataset}_{method}_{operation}.jpg")
+        if num_classes > 12:
+            ax.tick_params(axis='both', which='major', labelsize=current_label_size)
+
+    filename = os.path.join(path_to_plot, f"{prefix}{name_of_dataset}_{operation}.jpg")
     plt.tight_layout()
     plt.savefig(filename, dpi=300)
     plt.close()
@@ -609,3 +642,19 @@ def setup_logger() -> logging.Logger:
     logger.addHandler(console_handler)
 
     return logger
+
+def extract_float(val):
+    if isinstance(val, (list, tuple, np.ndarray)):
+        if len(val) == 1:
+            return float(val[0])
+        elif len(val) == 0:
+            return 0.0
+        else:
+            try:
+                return float(sum(val))
+            except Exception:
+                return float(val[0])
+    try:
+        return float(val)
+    except Exception:
+        return 0.0

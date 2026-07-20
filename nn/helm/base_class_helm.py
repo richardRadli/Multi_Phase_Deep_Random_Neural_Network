@@ -188,9 +188,9 @@ class HELMBase:
             training_time = self.train.execution_time
 
             logging.info(f"Training Accuracy is: {accuracy:.4f}%")
-            logging.info(f"Training precision is: {precision:.4f}%")
-            logging.info(f"Training recall is: {recall:.4f}%")
-            logging.info(f"Training f1sore is: {f1sore:.4f}%")
+            logging.info(f"Training precision is: {precision:.4f}")
+            logging.info(f"Training recall is: {recall:.4f}")
+            logging.info(f"Training f1sore is: {f1sore:.4f}")
             logging.info(f"Training time is: {training_time:.4f} seconds")
 
             return [accuracy, precision, recall, f1sore, training_time]
@@ -240,8 +240,8 @@ class HELMBase:
             f1sore = f1_score(y_true_argmax, y_predicted_argmax, average='macro', zero_division=0)
 
             logging.info(f"Testing Accuracy is: {accuracy:.4f}%")
-            logging.info(f"Testing precision is: {precision:.4f}%")
-            logging.info(f"Testing recall is: {recall:.4f}%")
-            logging.info(f"Testing f1sore is: {f1sore:.4f}%")
+            logging.info(f"Testing precision is: {precision:.4f}")
+            logging.info(f"Testing recall is: {recall:.4f}")
+            logging.info(f"Testing f1sore is: {f1sore:.4f}")
 
             return [accuracy, precision, recall, f1sore]
