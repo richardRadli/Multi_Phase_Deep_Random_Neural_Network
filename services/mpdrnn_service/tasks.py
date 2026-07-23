@@ -71,11 +71,16 @@ def mpdrnn_task(self, config: dict):
             raw_json["mu"] = 0
             raw_json["sigma"] = config["sigma"]
 
-        computed_exp_neurons = exponential_neurons(
-            num_of_layers=config["num_of_layers"],
-            num_of_neurons=config["num_of_neurons"],
-            decay_rate=config["decay_rate"]
-        )
+        hidden_neurons = config.get("hidden_neurons")
+
+        if hidden_neurons and isinstance(hidden_neurons, list):
+            computed_exp_neurons = hidden_neurons
+        else:
+            computed_exp_neurons = exponential_neurons(
+                num_of_layers=config.get("num_of_layers", 3),
+                num_of_neurons=config.get("num_of_neurons", 100),
+                decay_rate=config.get("decay_rate", 0.5)
+            )
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
         nested_config = {k: v for k, v in raw_json.items() if isinstance(v, dict)}

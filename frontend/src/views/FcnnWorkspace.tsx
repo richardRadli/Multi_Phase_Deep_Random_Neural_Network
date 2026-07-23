@@ -24,6 +24,7 @@ interface FcnnResults {
   message?: string;
   total_epochs_run?: number;
   execution_time_seconds?: number;
+  output_file?: string | null;
   metrics?: FcnnMetrics;
 }
 
@@ -44,6 +45,13 @@ const safeFloat = (val: number | undefined): string => {
   return typeof val === 'number' ? val.toFixed(4) : '0.0000';
 };
 
+// Intelligens Accuracy formázó (megszorozza 100-al és hozzáadja a % jelet)
+const formatAccuracy = (val: number | undefined): string => {
+  if (typeof val !== 'number') return '0.00%';
+  const pct = val <= 1.0 ? val * 100 : val;
+  return `${pct.toFixed(2)}%`;
+};
+
 export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceProps) {
   const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
   const [datasetName, setDatasetName] = useState<string>('');
@@ -53,6 +61,9 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
   const [batchSize, setBatchSize] = useState<number>(128);
   const [seriesMode, setSeriesMode] = useState<boolean>(false);
   const [numTests, setNumTests] = useState<number>(20);
+
+  // Fül váltáshoz (Train / Test)
+  const [activeTab, setActiveTab] = useState<'train' | 'test'>('test');
 
   // Állapotok betöltése LocalStorage-ból
   const [taskId, setTaskId] = useState<string | null>(() =>
@@ -153,7 +164,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
     }, 1000);
   };
 
-  // Dataset lista betöltése
   useEffect(() => {
     const fetchDatasets = async () => {
       try {
@@ -197,7 +207,7 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
         body = { seed, epochs };
       } else {
         url = `http://localhost:8001/nn/fcnn/test?dataset_name=${datasetName}&batch_size=${batchSize}`;
-        body = { seed, series_mode: seriesMode, num_tests: numTests };
+        body = { seed, series_mode: seriesMode, num_tests: numTests, epochs: epochs };
       }
 
       const response = await fetch(url, {
@@ -233,6 +243,29 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
     }
   };
 
+  const getDisplayMetrics = () => {
+    if (!results?.metrics) return { accuracy: 0, precision: 0, recall: 0, f1: 0 };
+    const m = results.metrics;
+
+    if (activeTab === 'train') {
+      return {
+        accuracy: m.train_accuracy ?? m.accuracy ?? 0,
+        precision: m.train_precision ?? m.precision ?? 0,
+        recall: m.train_recall ?? m.recall ?? 0,
+        f1: m.train_f1_score ?? m.f1_score ?? 0,
+      };
+    } else {
+      return {
+        accuracy: m.test_accuracy ?? m.accuracy ?? 0,
+        precision: m.test_precision ?? m.precision ?? 0,
+        recall: m.test_recall ?? m.recall ?? 0,
+        f1: m.test_f1_score ?? m.f1_score ?? 0,
+      };
+    }
+  };
+
+  const currentMetrics = getDisplayMetrics();
+
   return (
     <div className="space-y-6">
       {/* CÍMSOR ÉS MÓD JELZŐ */}
@@ -244,7 +277,7 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
-        {/* BAL OLDAL: PARAMÉTEREK ÉS NAVIGÁCIÓ */}
+        {/* BAL OSZLOP: PARAMÉTEREK ÉS NAVIGÁCIÓ */}
         <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} flex flex-col justify-between shadow-md`}>
           <div className="space-y-5">
             <div className={`flex items-center gap-3 border-b pb-3 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
@@ -268,7 +301,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
               </select>
             </div>
 
-            {/* SEED DOBOZ */}
             <div className={`flex items-center justify-between p-2.5 rounded-lg border ${
               darkMode ? 'border-slate-800/30 bg-slate-950/20' : 'border-slate-200 bg-slate-50'
             }`}>
@@ -334,16 +366,35 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
                 </div>
 
                 {seriesMode && (
-                  <div className="pt-1 animate-fadeIn">
+                  <div className="space-y-4 pt-1 animate-fadeIn">
+                    <div>
+                      <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        Training Epochs per Cycle: {epochs}
+                      </label>
+                      <input
+                        type="range"
+                        min="10"
+                        max="5000"
+                        step="50"
+                        value={epochs}
+                        disabled={status === 'running'}
+                        onChange={(e) => setEpochs(parseInt(e.target.value) || 10)}
+                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                      />
+                    </div>
+
                     <div>
                       <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                         Test Cycles: {numTests}
                       </label>
                       <input
-                        type="range" min="1" max="50" value={numTests}
+                        type="range"
+                        min="1"
+                        max="50"
+                        value={numTests}
                         disabled={status === 'running'}
                         onChange={(e) => setNumTests(parseInt(e.target.value))}
-                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none accent-amber-500"
+                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
                       />
                     </div>
                   </div>
@@ -352,7 +403,7 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
             )}
           </div>
 
-          {/* GOMBOK: INDÍTÁS ÉS VISSZA A DASHBOARDRÓL (BAL OLDALON) */}
+          {/* GOMBOK: INDÍTÁS ÉS VISSZA A DASHBOARDRA */}
           <div className="pt-4 space-y-2">
             {status === 'running' ? (
               <button
@@ -374,7 +425,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
               </button>
             )}
 
-            {/* BACK TO DASHBOARD GOMB KÖZVETLENÜL A KÁRTYÁN BELÜL ALUL */}
             <button
               onClick={onBack}
               className={`w-full py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all ${
@@ -388,14 +438,14 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
           </div>
         </div>
 
-        {/* JOBB OLDAL: EREDMÉNYEK ÉS LOGOK */}
+        {/* JOBB OSZLOP: LOGOK ÉS EREDMÉNYEK */}
         <div className="lg:col-span-2 flex flex-col space-y-4">
 
           {status === 'error' && (
             <div className={`p-4 rounded-xl border flex items-start gap-3 shrink-0 ${
               darkMode ? 'bg-rose-950/30 border-rose-900/50 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700'
             }`}>
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-500" />
+              <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-semibold text-sm">Pipeline Crash Log</h4>
                 <p className="text-xs mt-1">{errorMessage}</p>
@@ -437,7 +487,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  {/* TOTAL EPOCHS RUN DOBOZ */}
                   <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                     <span className={`block text-[10px] font-medium uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                       Total Epochs Run
@@ -445,7 +494,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
                     <span className="text-2xl font-mono font-bold text-emerald-500">{results.total_epochs_run ?? 0}</span>
                   </div>
 
-                  {/* EXECUTION TIME DOBOZ */}
                   <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                     <span className={`block text-[10px] font-medium uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                       Wall Clock Execution Time
@@ -454,8 +502,7 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
                   </div>
                 </div>
 
-                {/* CHECKPOINT LEÍRÁS DOBOZ */}
-                <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-2`}>
+                <div className={`p-4 rounded-xl border space-y-2 ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                   <span className={`text-xs font-bold uppercase tracking-wider block ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                     Weights Checkpoint File Status
                   </span>
@@ -470,24 +517,56 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
 
             {mode === 'test' && status === 'success' && results && (
               <div className="space-y-6">
-                {results.mode === 'single' && results.metrics ? (
+                {/* JAVÍTVA: results.metrics LÉTEZÉSE ESETÉN EGYBŐL MEGJELENÍTJÜK A METRİKÁKAT SINGLE ÉS SERIES MODE-BAN IS! */}
+                {results.metrics ? (
                   <div className="space-y-6">
-                    <div className={`flex items-center gap-3 border-b pb-2 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
-                      <BarChart2 className="w-5 h-5 text-amber-500" />
-                      <h4 className="font-bold text-sm text-amber-500">Evaluation Metrics Array</h4>
+                    <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 border-b pb-3 ${
+                      darkMode ? 'border-slate-800/40' : 'border-slate-200'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <BarChart2 className="w-5 h-5 text-amber-500" />
+                        <h4 className="font-bold text-sm text-amber-500">
+                          {results.mode === 'series' ? 'Averaged Series Evaluation Metrics' : 'Evaluation Metrics'}
+                        </h4>
+                      </div>
+
+                      <div className={`flex p-1 rounded-lg border text-[11px] ${
+                        darkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
+                      }`}>
+                        <button
+                          onClick={() => setActiveTab('test')}
+                          className={`px-3 py-1 font-semibold rounded cursor-pointer transition-all ${
+                            activeTab === 'test' 
+                              ? 'bg-amber-600 text-white font-bold' 
+                              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Test Set
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('train')}
+                          className={`px-3 py-1 font-semibold rounded cursor-pointer transition-all ${
+                            activeTab === 'train' 
+                              ? 'bg-amber-600 text-white font-bold' 
+                              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Train Set
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-4 gap-2 text-center">
                       {[
-                        { label: 'Accuracy', val: results.metrics.accuracy, color: 'text-emerald-500' },
-                        { label: 'Precision', val: results.metrics.precision, color: 'text-blue-500' },
-                        { label: 'Recall', val: results.metrics.recall, color: 'text-indigo-500' },
-                        { label: 'F1-Score', val: results.metrics.f1_score, color: 'text-purple-500' }
+                        { label: `${activeTab.toUpperCase()} Accuracy`, val: formatAccuracy(currentMetrics.accuracy), color: 'text-emerald-500' },
+                        { label: `${activeTab.toUpperCase()} Precision`, val: safeFloat(currentMetrics.precision), color: 'text-blue-500' },
+                        { label: `${activeTab.toUpperCase()} Recall`, val: safeFloat(currentMetrics.recall), color: 'text-indigo-500' },
+                        { label: `${activeTab.toUpperCase()} F1-Score`, val: safeFloat(currentMetrics.f1), color: 'text-purple-500' }
                       ].map((m) => (
                         <div key={m.label} className={`p-2 rounded-xl border ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                           <span className={`block text-[9px] font-medium uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{m.label}</span>
                           <span className={`text-lg font-mono font-bold ${m.color}`}>
-                            {safeFloat(m.val)}
+                            {m.val}
                           </span>
                         </div>
                       ))}
@@ -495,14 +574,14 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
 
                     <div className="space-y-2">
                       <span className={`block text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                        Generated Test Confusion Matrix
+                        Generated {activeTab.toUpperCase()} Confusion Matrix
                       </span>
                       <div className={`w-full rounded-xl border p-2 flex justify-center overflow-hidden h-64 ${
                         darkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
                       }`}>
                         <img
-                          src={`http://localhost:8001/static/networks/fcnn/results_fcnn/${results.dataset_name}/confusion_matrix/${results.dataset_name}_test_confusion_matrix.jpg?t=${matrixTimestamp}`}
-                          alt="FCNN Test Confusion Matrix"
+                          src={`http://localhost:8001/static/networks/fcnn/results_fcnn/${results.dataset_name}/confusion_matrix/${results.dataset_name}_${activeTab}_confusion_matrix.jpg?t=${matrixTimestamp}`}
+                          alt={`FCNN ${activeTab} Confusion Matrix`}
                           className="h-full object-contain rounded"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Matrix+Plot+Not+Found';
@@ -510,6 +589,17 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
                         />
                       </div>
                     </div>
+
+                    {/* JAVÍTVA: HA SERIES MODE-BAN VAN ÉS VAN EXCEL FÁJL, ALUL MEGJELENÍTJÜK AZ ELÉRÉSI ÚTJÁT */}
+                    {results.output_file && (
+                      <p className={`text-[11px] text-center shrink-0 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        Excel Report Saved to: <code className={`px-2 py-1 rounded font-mono ${
+                          darkMode
+                            ? 'bg-slate-950 text-amber-400'
+                            : 'bg-slate-100 border border-slate-200 text-amber-600'
+                        }`}>{results.output_file}</code>
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4 text-center py-6">

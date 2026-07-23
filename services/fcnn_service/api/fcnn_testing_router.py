@@ -1,5 +1,7 @@
 import os
 import sys
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field
 from enum import Enum
@@ -27,6 +29,7 @@ class FCNNTestRemainingConfig(BaseModel):
     seed: bool = Field(default=False, description="True esetén fixálja a random seedet")
     series_mode: bool = Field(default=False, description="True több Excel sorozathoz, False egyetlen JSON jelentéshez")
     num_tests: int = Field(default=20, ge=1, description="A sorozatban futtatandó tesztek száma")
+    epochs: Optional[int] = Field(default=1000, ge=1,  description="A tanítási epoch-ok száma ciklusos tesztelésnél")
 
 @fcnn_test_router.post("/test", status_code=status.HTTP_202_ACCEPTED)
 async def test_fcnn_model(

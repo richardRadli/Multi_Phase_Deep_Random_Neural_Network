@@ -5,6 +5,7 @@ import logging
 import sys
 from celery import Celery
 from celery.exceptions import Ignore
+from nn.fcnn.execute_tests import main as run_execute_tests
 
 CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/1")
 CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/1")
@@ -160,6 +161,7 @@ def test_fcnn_task(self, config: dict):
         seed = config["seed"]
         series_mode = config["series_mode"]
         num_tests = config.get("num_tests", 1)
+        epochs = config.get("epochs", 1000)
 
         fcnn_config_path = JSON_FILES_PATHS.get_data_path("config_fcnn")
         with open(fcnn_config_path, "r") as f:
@@ -169,6 +171,7 @@ def test_fcnn_task(self, config: dict):
         raw_json["batch_size"] = batch_size
         raw_json["seed"] = seed
         raw_json["num_tests"] = num_tests
+        raw_json["epochs"] = epochs
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
         nested_config = {k: v for k, v in raw_json.items() if isinstance(v, dict)}
@@ -201,8 +204,7 @@ def test_fcnn_task(self, config: dict):
                 }
             }
         else:
-            from nn.fcnn.execute_tests import main as run_execute_tests
-            run_execute_tests(override_cfg=override_cfg, celery_task=self)
+            filename, avg_metrics = run_execute_tests(override_cfg=override_cfg, celery_task=self)
 
             is_aborted = self.backend.client.get(f"fcnn:abort:{task_id}")
             if is_aborted:
@@ -221,7 +223,24 @@ def test_fcnn_task(self, config: dict):
                 "status": "SUCCESS",
                 "mode": "series",
                 "dataset_name": dataset_name,
-                "message": f"Excel test series report generated with {num_tests} cycles and columns averaged successfully."
+                "output_file": filename,
+                "metrics": {
+                    "train_accuracy": float(avg_metrics[0]),
+                    "test_accuracy": float(avg_metrics[1]),
+                    "train_precision": float(avg_metrics[2]),
+                    "test_precision": float(avg_metrics[3]),
+                    "train_recall": float(avg_metrics[4]),
+                    "test_recall": float(avg_metrics[5]),
+                    "train_f1_score": float(avg_metrics[6]),
+                    "test_f1_score": float(avg_metrics[7]),
+                    "training_time": float(avg_metrics[8]),
+                    # Alapértelmezett összefoglaló mezők
+                    "accuracy": float(avg_metrics[1]),
+                    "precision": float(avg_metrics[3]),
+                    "recall": float(avg_metrics[5]),
+                    "f1_score": float(avg_metrics[7])
+                },
+                "message": f"Excel test series report generated with {num_tests} cycles."
             }
 
     except Exception as e:

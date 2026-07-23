@@ -44,8 +44,17 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
   const [seed, setSeed] = useState<boolean>(true);
   const [sigma, setSigma] = useState<number>(0.1);
   const [penalty, setPenalty] = useState<number | null>(null);
+
+  // Alapértelmezett módszer (Standard vs Custom 3-Layer)
+  const [neuronMode, setNeuronMode] = useState<'standard' | 'custom3'>('standard');
   const [numOfLayers, setNumOfLayers] = useState<number>(3);
   const [numOfNeurons, setNumOfNeurons] = useState<number>(100);
+
+  // 3 Külön textbox neuron beállítás custom3 módhoz
+  const [layer1Neurons, setLayer1Neurons] = useState<number>(100);
+  const [layer2Neurons, setLayer2Neurons] = useState<number>(50);
+  const [layer3Neurons, setLayer3Neurons] = useState<number>(25);
+
   const [decayRate, setDecayRate] = useState<number>(0.5);
   const [rcond, setRcond] = useState<number | null>(null);
 
@@ -202,18 +211,21 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
     setProgressMsg('Queuing task in Celery...');
     setProgressPercent(0);
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       number_of_tests: numberOfTests,
-      num_tests: numberOfTests,
       seed: seed,
       sigma: method === 'BASE' ? undefined : sigma,
       penalty: penalty,
-      num_of_layers: numOfLayers,
-      num_of_neurons: numOfNeurons,
-      decay_rate: decayRate,
       rcond: rcond
     };
 
+    if (neuronMode === 'custom3') {
+      payload.hidden_neurons = [layer1Neurons, layer2Neurons, layer3Neurons];
+    } else {
+      payload.num_of_layers = numOfLayers;
+      payload.num_of_neurons = numOfNeurons;
+      payload.decay_rate = decayRate;
+    }
     try {
       const queryParams = `dataset_name=${datasetName}&method=${method}&activation=${activation}`;
       const response = await fetch(`http://localhost:8003/nn/mpdrnn/start?${queryParams}`, {
@@ -331,6 +343,121 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
               </div>
 
               <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+
+                {/* --- NEURON SPREAD MODE SELECTOR (Ricsi kérésére) --- */}
+                <div>
+                  <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Neuron Configuration Mode
+                  </label>
+                  <div className={`grid grid-cols-2 p-1 rounded-lg border text-xs font-semibold ${
+                    darkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
+                  }`}>
+                    <button
+                      type="button"
+                      disabled={status === 'running'}
+                      onClick={() => setNeuronMode('standard')}
+                      className={`py-1.5 px-2 rounded-md transition-all cursor-pointer ${
+                        neuronMode === 'standard'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Standard (Auto)
+                    </button>
+                    <button
+                      type="button"
+                      disabled={status === 'running'}
+                      onClick={() => setNeuronMode('custom3')}
+                      className={`py-1.5 px-2 rounded-md transition-all cursor-pointer ${
+                        neuronMode === 'custom3'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Custom 3-Layer
+                    </button>
+                  </div>
+                </div>
+
+                {/* DINAMIKUS MEZŐK A KIVÁLASZTOTT MÓD ALAPJÁN */}
+                {neuronMode === 'standard' ? (
+                  <div className="grid grid-cols-2 gap-3 animate-fadeIn">
+                    <div>
+                      <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layers</label>
+                      <input
+                        type="number"
+                        min="1"
+                        disabled={status === 'running'}
+                        value={numOfLayers}
+                        onChange={(e) => setNumOfLayers(parseInt(e.target.value) || 1)}
+                        className={`w-full text-sm p-2 rounded-md border ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        } disabled:opacity-50`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Total Neurons</label>
+                      <input
+                        type="number"
+                        min="1"
+                        disabled={status === 'running'}
+                        value={numOfNeurons}
+                        onChange={(e) => setNumOfNeurons(parseInt(e.target.value) || 1)}
+                        className={`w-full text-sm p-2 rounded-md border ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        } disabled:opacity-50`}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2 animate-fadeIn">
+                    <span className={`block text-[11px] font-mono ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                      Fixed 3-Layer Architecture Configuration
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 1</label>
+                        <input
+                          type="number"
+                          min="1"
+                          disabled={status === 'running'}
+                          value={layer1Neurons}
+                          onChange={(e) => setLayer1Neurons(parseInt(e.target.value) || 1)}
+                          className={`w-full text-xs p-2 rounded-md border ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          } disabled:opacity-50`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 2</label>
+                        <input
+                          type="number"
+                          min="1"
+                          disabled={status === 'running'}
+                          value={layer2Neurons}
+                          onChange={(e) => setLayer2Neurons(parseInt(e.target.value) || 1)}
+                          className={`w-full text-xs p-2 rounded-md border ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          } disabled:opacity-50`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 3</label>
+                        <input
+                          type="number"
+                          min="1"
+                          disabled={status === 'running'}
+                          value={layer3Neurons}
+                          onChange={(e) => setLayer3Neurons(parseInt(e.target.value) || 1)}
+                          className={`w-full text-xs p-2 rounded-md border ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          } disabled:opacity-50`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Sigma */}
                 <div>
                   <div className="flex justify-between text-xs font-medium mb-1">
@@ -402,36 +529,6 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
                       darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
                     } disabled:opacity-50`}
                   />
-                </div>
-
-                {/* Neurons & Layers */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layers</label>
-                    <input
-                      type="number"
-                      min="1"
-                      disabled={status === 'running'}
-                      value={numOfLayers}
-                      onChange={(e) => setNumOfLayers(parseInt(e.target.value) || 1)}
-                      className={`w-full text-sm p-2 rounded-md border ${
-                        darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                      } disabled:opacity-50`}
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Total Neurons</label>
-                    <input
-                      type="number"
-                      min="1"
-                      disabled={status === 'running'}
-                      value={numOfNeurons}
-                      onChange={(e) => setNumOfNeurons(parseInt(e.target.value) || 1)}
-                      className={`w-full text-sm p-2 rounded-md border ${
-                        darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                      } disabled:opacity-50`}
-                    />
-                  </div>
                 </div>
 
                 {/* Tests & Seed */}

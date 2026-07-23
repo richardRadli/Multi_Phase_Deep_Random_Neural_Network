@@ -3,7 +3,7 @@ import sys
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 PROJECT_ROOT = os.getenv("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
@@ -35,13 +35,15 @@ class MPDRNNConfig(BaseModel):
 
     sigma: Optional[float] = Field(default=0.1, ge=0.01, le=1.0,
                                    description="Szórás (BASE esetén figyelmen kívül hagyva)")
-
     penalty: Optional[float] = Field(default=None,
                                      description="L2 penalty felülírás (Kizárólag EXP_ORT_C-nél megengedett)")
 
-    num_of_layers: int = Field(default=3, ge=1, description="Rétegek száma az exponenciális eloszláshoz")
-    num_of_neurons: int = Field(default=100, ge=1, description="Összes neuronszám")
-    decay_rate: float = Field(default=0.5, ge=0.0, description="Lecsengési ráta (decay rate)")
+    num_of_layers: Optional[int] = Field(default=3, ge=1, description="Rétegek száma")
+    num_of_neurons: Optional[int] = Field(default=100, ge=1, description="Összes neuronszám")
+    decay_rate: Optional[float] = Field(default=0.5, ge=0.0, description="Lecsengési ráta")
+
+    hidden_neurons: Optional[List[int]] = Field(default=None,
+                                                description="Manuálisan megadott rétegenkénti neuronszámok [L1, L2, L3]")
 
     rcond: Optional[float] = Field(default=None, description="Opcionális Moore-Penrose rcond felülírás")
 

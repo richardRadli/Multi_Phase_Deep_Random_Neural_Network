@@ -3,6 +3,7 @@ import logging
 import colorama
 import os
 
+import numpy as np
 from tqdm import tqdm
 
 from config.data_paths import JSON_FILES_PATHS
@@ -36,6 +37,7 @@ def main(override_cfg: dict = None, celery_task = None) -> None:
     hidden_neurons = cfg.get("hidden_neurons")
     device = cfg.get("device")
     lr = cfg.get("learning_rate")
+    num_tests = cfg.get("num_tests", 1)
 
     fcnn_config = fcnn_paths_configs(dataset_name)
     base_results_dir = fcnn_config.get("saved_results")
@@ -46,6 +48,7 @@ def main(override_cfg: dict = None, celery_task = None) -> None:
     filename = os.path.join(excel_dir, f"{timestamp}_bs_{batch_size}_hn_{hidden_neurons}_lr_{lr}_device_{device}.xlsx")
 
     collected_data = []
+    all_series_metrics = []
 
     for i in tqdm(range(cfg.get("num_tests")), desc=f"{colorama.Fore.LIGHTBLUE_EX} Testing cycle"):
         if celery_task:
@@ -54,7 +57,24 @@ def main(override_cfg: dict = None, celery_task = None) -> None:
                 logging.info("FCNN testing series abort signal detected mid-cycle. Breaking loop.")
                 break
 
+        def on_epoch_end(current_epoch: int, total_epochs: int):
+            if celery_task:
+                cycle_progress = current_epoch / total_epochs
+                overall_pct = round(((i + cycle_progress) / num_tests) * 100, 1)
+                celery_task.update_state(
+                    state="PROGRESS",
+                    meta={
+                        "status": f"Testing cycle {i + 1}/{num_tests} - Epoch {current_epoch}/{total_epochs}",
+                        "current_epoch": current_epoch,
+                        "total_epochs": total_epochs,
+                        "current_cycle": i + 1,
+                        "total_cycles": num_tests,
+                        "progress_percent": overall_pct
+                    }
+                )
+
         train_fcnn = TrainFCNN(override_cfg=cfg, celery_task=celery_task)
+        train_fcnn.epoch_callback = on_epoch_end
         train_fcnn.fit()
         training_time = train_fcnn.fit.execution_time
 
@@ -66,11 +86,20 @@ def main(override_cfg: dict = None, celery_task = None) -> None:
         eval_fcnn = EvalFCNN(override_cfg=cfg)
         eval_fcnn.main()
 
-        collected_data.append((eval_fcnn.train_accuracy, eval_fcnn.test_accuracy,
-                               eval_fcnn.train_precision, eval_fcnn.test_precision,
-                               eval_fcnn.train_recall, eval_fcnn.test_recall,
-                               eval_fcnn.train_f1sore, eval_fcnn.test_f1sore,
-                               training_time))
+        cycle_metric_tuple = (
+            getattr(eval_fcnn, "train_accuracy", 0.0),
+            getattr(eval_fcnn, "test_accuracy", 0.0),
+            getattr(eval_fcnn, "train_precision", 0.0),
+            getattr(eval_fcnn, "test_precision", 0.0),
+            getattr(eval_fcnn, "train_recall", 0.0),
+            getattr(eval_fcnn, "test_recall", 0.0),
+            getattr(eval_fcnn, "train_f1sore", 0.0),
+            getattr(eval_fcnn, "test_f1sore", 0.0),
+            training_time
+        )
+
+        collected_data.append(cycle_metric_tuple)
+        all_series_metrics.append(cycle_metric_tuple)
 
         insert_data_to_excel(filename=filename,
                              dataset_name=dataset_name,
@@ -81,8 +110,13 @@ def main(override_cfg: dict = None, celery_task = None) -> None:
 
     if os.path.exists(filename):
         average_columns_in_excel(filename)
+
+    if all_series_metrics:
+        avg_metrics = np.mean(all_series_metrics, axis=0).tolist()
     else:
-        logging.info("Excel results file was not created due to early abort. Skipping averaging.")
+        avg_metrics = [0.0] * 9
+
+    return filename, avg_metrics
 
 
 if __name__ == '__main__':
