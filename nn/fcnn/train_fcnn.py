@@ -11,7 +11,7 @@ from torchinfo import summary
 from torch.utils.tensorboard import SummaryWriter
 from typing import List
 
-from config.data_paths import ConfigFilePaths
+from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (create_timestamp, setup_logger, device_selector, load_config_json, measure_execution_time,
@@ -19,18 +19,23 @@ from utils.utils import (create_timestamp, setup_logger, device_selector, load_c
 
 
 class TrainFCNN:
-    def __init__(self):
+    def __init__(self, override_cfg: dict = None, celery_task = None):
         # Basic setup
         timestamp = create_timestamp()
         colorama.init()
         setup_logger()
 
-        self.cfg = (
-            load_config_json(
-                json_schema_filename=ConfigFilePaths().get_data_path("config_schema_fcnn"),
-                json_filename=ConfigFilePaths().get_data_path("config_fcnn")
+        self.celery_task = celery_task
+
+        if override_cfg is not None:
+            self.cfg = override_cfg
+        else:
+            self.cfg = (
+                load_config_json(
+                    json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
+                    json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn")
+                )
             )
-        )
 
         if self.cfg.get("seed"):
             torch.manual_seed(1234)
@@ -116,6 +121,10 @@ class TrainFCNN:
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
+        self.epoch_callback = None
+        self.current_epoch_run = 0
+
+
     def train_loop(self, batch_data: torch.Tensor, batch_labels: torch.Tensor, train_losses: List[float]):
         """
         Performs a single training iteration for the given batch of data.
@@ -182,8 +191,14 @@ class TrainFCNN:
 
         train_losses = []
         valid_losses = []
+        total_epochs = self.cfg.get("epochs")
 
-        for epoch in tqdm(range(self.cfg.get("epochs"))):
+        for epoch in tqdm(range(total_epochs)):
+            if self.celery_task:
+                is_aborted = self.celery_task.backend.client.get(f"fcnn:abort:{self.celery_task.request.id}")
+                if is_aborted:
+                    logging.info("Celery native abort signal detected via backend client. Stopping PyTorch loop.")
+                    break
 
             self.model.train()
             for batch_data, batch_labels in self.train_loader:
@@ -196,18 +211,24 @@ class TrainFCNN:
             train_loss = np.mean(train_losses)
             valid_loss = np.mean(valid_losses)
 
-            logging.info(f'\ntrain_loss: {train_loss:.4f} ' + f'valid_loss: {valid_loss:.4f}')
+            logging.info(f'\ntrain_loss: {train_loss:.4f} ')
 
             self.writer.add_scalars("Loss", {"train": train_loss, "validation": valid_loss}, epoch)
 
             train_losses.clear()
             valid_losses.clear()
 
+            self.current_epoch_run = epoch + 1
+            if self.epoch_callback is not None:
+                self.epoch_callback(self.current_epoch_run, total_epochs)
+
             if valid_loss < best_valid_loss:
                 best_valid_loss = valid_loss
                 epoch_without_improvement = 0
-                if best_model_path is not None:
+
+                if best_model_path is not None and os.path.exists(best_model_path):
                     os.remove(best_model_path)
+
                 best_model_path = os.path.join(self.save_path, f"best_model_epoch_{epoch}.pt")
                 torch.save(self.model.state_dict(), best_model_path)
                 logging.info(f'New weights have been saved at epoch {epoch} with value of {best_valid_loss:.4f}')
@@ -215,7 +236,9 @@ class TrainFCNN:
                 logging.warning(f"No new weights have been saved. Best valid loss was {best_valid_loss:.5f},\n "
                                 f"current valid loss is {valid_loss:.5f}")
                 epoch_without_improvement += 1
-                if epoch_without_improvement >= self.cfg.get("patience"):
+
+                # Patience / Early stopping ellenőrzés
+                if epoch_without_improvement >= self.cfg.get("patience", 10):
                     logging.warning(f"Early stopping counter: {epoch_without_improvement}")
                     logging.info(f"Early stopping at epoch {epoch}")
                     break

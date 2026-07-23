@@ -1,21 +1,22 @@
 import colorama
 import os
 import logging
+from typing import Tuple, List
 
 from tqdm import tqdm
 from config.dataset_config import general_dataset_configs, drnn_paths_config
 from nn.mpdrnn.base_class_mpdrnn import BaseMPDRNN
 from nn.models.model_selector import ModelFactory
 from utils.utils import (average_columns_in_excel, create_timestamp, get_num_of_neurons, insert_data_to_excel,
-                         reorder_metrics_lists)
+                         reorder_metrics_lists, plot_confusion_matrix_mpdrnn, extract_float)
 
 
 class MPDRNN(BaseMPDRNN):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, override_cfg: dict = None, celery_task = None):
+        super().__init__(override_cfg=override_cfg, celery_task=celery_task)
 
         # Create timestamp as the program begins to execute.
-        timestamp = create_timestamp()
+        self.timestamp = create_timestamp()
         colorama.init()
 
         penalty_term = self.cfg.get('penalty')
@@ -24,11 +25,22 @@ class MPDRNN(BaseMPDRNN):
         self.gen_ds_cfg = general_dataset_configs(self.cfg.get("dataset_name"))
         drnn_config = drnn_paths_config(self.dataset_name)
 
+        base_results_dir = drnn_config.get("mpdrnn").get("path_to_results")
+
+        self.method_dir = os.path.join(base_results_dir, self.method)
+        self.excel_dir = os.path.join(self.method_dir, "excel")
+        self.cm_dir = os.path.join(self.method_dir, "confusion_matrix")
+
+        os.makedirs(self.excel_dir, exist_ok=True)
+        os.makedirs(self.cm_dir, exist_ok=True)
+
+        rcond_str = f"{rcond:.4f}" if rcond is not None else "none"
+
         self.filename = (
             os.path.join(
-                drnn_config.get("mpdrnn").get("path_to_results"),
-                f"{timestamp}_{self.dataset_name}_dataset_{self.method}_method_{penalty_term}"
-                f"_penalty_{rcond:.4f}_rcond.xlsx"
+                self.excel_dir,
+                f"{self.timestamp}_{self.dataset_name}_dataset_{self.method}_method_{penalty_term}"
+                f"_penalty_{rcond_str}_rcond.xlsx"
             )
         )
 
@@ -38,7 +50,9 @@ class MPDRNN(BaseMPDRNN):
             "neurons": get_num_of_neurons(self.cfg, self.method)
         }
 
-    def main(self) -> None:
+        self.all_run_metrics = []
+
+    def main(self) -> Tuple[str, List[float]]:
         """
         Executes the main process of training and evaluating models for a specified number of tests.
 
@@ -50,12 +64,34 @@ class MPDRNN(BaseMPDRNN):
         5. Saves the metrics to an Excel file.
 
         Returns:
-            None
+            Tuple[str, List[float]]: The path to the generated Excel file and the averaged metrics.
         """
 
         training_time = []
+        total_tests = self.cfg.get('number_of_tests')
 
         for i in tqdm(range(self.cfg.get('number_of_tests')), desc=colorama.Fore.CYAN + "Process"):
+            if self.celery_task:
+                is_aborted = self.celery_task.backend.client.get(f"mpdrnn:abort:{self.celery_task.request.id}")
+                if is_aborted:
+                    logging.info("MPDRNN testing series abort signal detected mid-cycle. Breaking loop.")
+                    break
+
+                current_test = i + 1
+                progress_percent = round((current_test / total_tests) * 100, 1)
+
+                self.celery_task.update_state(
+                    state="PROGRESS",
+                    meta={
+                        "status": f"Running cycle {current_test}/{total_tests}",
+                        "telemetry": {
+                            "current_cycle": current_test,
+                            "total_cycles": total_tests,
+                            "progress_percent": progress_percent
+                        }
+                    }
+                )
+
             # Initial Model
             net_cfg = (
                 self.get_network_config(
@@ -148,9 +184,65 @@ class MPDRNN(BaseMPDRNN):
                 )
             )
             insert_data_to_excel(self.filename, self.cfg.get("dataset_name"), i + 2, metrics)
+
+            train_cms = [
+                initial_model_training_metrics[4],
+                subsequent_model_training_metrics[4],
+                final_model_training_metrics[4]
+            ]
+            test_cms = [
+                initial_model_testing_metrics[4],
+                subsequent_model_testing_metrics[4],
+                final_model_testing_metrics[4]
+            ]
+
+            path_to_plots = self.cm_dir
+            class_labels = self.gen_ds_cfg.get("class_labels")
+
+            file_prefix = f"{self.timestamp}_cycle_{i}_"
+
+            # Train
+            plot_confusion_matrix_mpdrnn(
+                cm=train_cms,
+                path_to_plot=path_to_plots,
+                name_of_dataset=self.cfg.get("dataset_name"),
+                operation="train",
+                method=self.method,
+                labels=class_labels,
+                prefix=file_prefix
+            )
+
+            # Test
+            plot_confusion_matrix_mpdrnn(
+                cm=test_cms,
+                path_to_plot=path_to_plots,
+                name_of_dataset=self.cfg.get("dataset_name"),
+                operation="test",
+                method=self.method,
+                labels=class_labels,
+                prefix=file_prefix
+            )
+
+            clean_metrics = [extract_float(m) for m in metrics[0]]
+            self.all_run_metrics.append(clean_metrics)
+
             training_time.clear()
 
-        average_columns_in_excel(self.filename)
+        if self.all_run_metrics:
+            num_runs = len(self.all_run_metrics)
+            num_metrics = len(self.all_run_metrics[0])
+
+            self.averaged_metrics = [
+                sum(run[j] for run in self.all_run_metrics) / num_runs
+                for j in range(num_metrics)
+            ]
+        else:
+            self.averaged_metrics = []
+
+        if os.path.exists(self.filename):
+            average_columns_in_excel(self.filename)
+
+        return self.filename, self.averaged_metrics
 
 
 if __name__ == "__main__":

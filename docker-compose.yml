@@ -1,0 +1,148 @@
+services:
+  redis_broker:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  dataset-service:
+    build:
+      context: .
+      dockerfile: services/dataset_operations_service/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  fcnn-api:
+    build:
+      context: .
+      dockerfile: services/fcnn_service/Dockerfile
+    ports:
+      - "8001:8001"
+    command: uvicorn services.fcnn_service.main:app --host 0.0.0.0 --port 8001
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/1
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    depends_on:
+      - redis_broker
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  fcnn-worker:
+    build:
+      context: .
+      dockerfile: services/fcnn_service/Dockerfile
+    command: celery -A services.fcnn_service.tasks.celery_app worker --loglevel=info -P solo
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/1
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    depends_on:
+      - redis_broker
+      - fcnn-api
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+
+  helm-api:
+    build:
+      context: .
+      dockerfile: services/helm_service/Dockerfile
+    ports:
+      - "8002:8002"
+    command: uvicorn services.helm_service.main:app --host 0.0.0.0 --port 8002
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/2
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    depends_on:
+      - redis_broker
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  helm-worker:
+    build:
+      context: .
+      dockerfile: services/helm_service/Dockerfile
+    command: celery -A services.helm_service.tasks.celery_app worker --loglevel=info -P solo
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/2
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+      - OMP_NUM_THREADS=4
+      - OPENBLAS_NUM_THREADS=4
+      - MKL_NUM_THREADS=4
+      - NUMEXPR_NUM_THREADS=4
+    depends_on:
+      - redis_broker
+      - helm-api
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  mpdrnn-api:
+    build:
+      context: .
+      dockerfile: services/mpdrnn_service/Dockerfile
+    ports:
+      - "8003:8003"
+    command: uvicorn services.mpdrnn_service.main:app --host 0.0.0.0 --port 8003
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/3
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/3
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    depends_on:
+      - redis_broker
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  mpdrnn-worker:
+    build:
+      context: .
+      dockerfile: services/mpdrnn_service/Dockerfile
+    command: celery -A services.mpdrnn_service.tasks.celery_app worker --loglevel=info -P solo
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/3
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/3
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    depends_on:
+      - redis_broker
+      - mpdrnn-api
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development

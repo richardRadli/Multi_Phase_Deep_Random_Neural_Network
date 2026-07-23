@@ -1,3 +1,5 @@
+import os
+
 import colorama
 import logging
 import torch
@@ -11,19 +13,22 @@ from config.data_paths import JSON_FILES_PATHS
 from config.dataset_config import general_dataset_configs, fcnn_paths_configs
 from nn.models.fcnn_model import FullyConnectedNeuralNetwork
 from utils.utils import (setup_logger, device_selector, create_train_valid_test_datasets, load_config_json,
-                         find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn)
+                         find_latest_file_in_latest_directory, plot_confusion_matrix_fcnn, create_timestamp)
 
 
 class EvalFCNN:
-    def __init__(self):
+    def __init__(self, override_cfg: dict = None):
         # Basic setup
         colorama.init()
         setup_logger()
 
-        self.cfg = (
-            load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
-                             json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
-        )
+        if override_cfg is not None:
+            self.cfg = override_cfg
+        else:
+            self.cfg = (
+                load_config_json(json_schema_filename=JSON_FILES_PATHS.get_data_path("config_schema_fcnn"),
+                                 json_filename=JSON_FILES_PATHS.get_data_path("config_fcnn"))
+            )
 
         gen_ds_cfg = (
             general_dataset_configs(self.cfg.get("dataset_name"))
@@ -62,6 +67,10 @@ class EvalFCNN:
         checkpoint = find_latest_file_in_latest_directory(fcnn_ds_cfg.get("fcnn_saved_weights"))
         self.model.load_state_dict(torch.load(checkpoint))
         self.model = self.model.to(self.device)
+
+        self.timestamp = create_timestamp()
+        self.cm_dir = os.path.join(fcnn_ds_cfg.get("saved_results"), "confusion_matrix")
+        os.makedirs(self.cm_dir, exist_ok=True)
 
         self.train_accuracy = None
         self.test_accuracy = None
@@ -118,7 +127,17 @@ class EvalFCNN:
         setattr(self, f"{operation}_f1sore", f1sore)
         setattr(self, f"{operation}_cm", cm)
 
-        plot_confusion_matrix_fcnn(cm, operation, self.class_labels, self.cfg.get("dataset_name"))
+        dataset_name = self.cfg.get("dataset_name")
+
+        plot_confusion_matrix_fcnn(
+            cm=cm,
+            path_to_plot=self.cm_dir,
+            operation=operation,
+            class_labels=self.class_labels,
+            dataset_name=dataset_name,
+            prefix=f"{self.timestamp}_"
+        )
+
         logging.info(f"{operation} accuracy: {accuracy:.4f}")
         logging.info(f"{operation} precision: {precision:.4f}")
         logging.info(f"{operation} recall: {recall:.4f}")
