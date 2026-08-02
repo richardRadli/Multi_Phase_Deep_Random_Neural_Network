@@ -60,22 +60,40 @@ class HELM(HELMBase):
                     logging.info("HELM testing series abort signal detected mid-cycle. Breaking loop.")
                     break
 
+            current_cycle = idx + 1
+            start_percent = round((idx / num_tests) * 100, 1)
+            mid_percent = round(((idx + 0.5) / num_tests) * 100, 1)
+            end_percent = round((current_cycle / num_tests) * 100, 1)
+
             if self.celery_task:
-                progress_percent = int((idx / num_tests) * 100)
                 self.celery_task.update_state(
                     state="PROGRESS",
                     meta={
-                        "status": f"Evaluating hierarchy: test series {idx + 1}/{num_tests}...",
+                        "status": f"Training analytical layers: cycle {current_cycle}/{num_tests}...",
                         "telemetry": {
-                            "current_cycle": idx + 1,
+                            "current_cycle": current_cycle,
                             "total_cycles": num_tests,
-                            "progress_percent": progress_percent
+                            "progress_percent": start_percent
                         }
                     }
                 )
 
             t3, beta, beta1, beta2, l3, ps1, ps2 = self.train(config=self.hyperparam_config)
             training_metrics = self.training_accuracy(t3, beta)
+
+            if self.celery_task:
+                self.celery_task.update_state(
+                    state="PROGRESS",
+                    meta={
+                        "status": f"Evaluating test metrics: cycle {current_cycle}/{num_tests}...",
+                        "telemetry": {
+                            "current_cycle": current_cycle,
+                            "total_cycles": num_tests,
+                            "progress_percent": mid_percent
+                        }
+                    }
+                )
+
             testing_metrics = self.evaluation(beta, beta1, beta2, l3, ps1, ps2, self.test_loader)
             train_cm_list = getattr(self, "train_cm_list", [])
             test_cm_list = getattr(self, "test_cm_list", [])
@@ -107,6 +125,22 @@ class HELM(HELMBase):
             insert_data_to_excel(self.filename, self.dataset_name, idx + 2, metrics)
 
             all_cycle_metrics.append(metrics[0])
+
+            if self.celery_task:
+                self.celery_task.update_state(
+                    state="PROGRESS",
+                    meta={
+                        "status": f"Finished cycle {current_cycle}/{num_tests}",
+                        "telemetry": {
+                            "current_cycle": current_cycle,
+                            "total_cycles": num_tests,
+                            "progress_percent": end_percent
+                        }
+                    }
+                )
+
+            if self.cycle_callback:
+                self.cycle_callback(current_cycle, num_tests, end_percent)
 
         if all_cycle_metrics:
             self.averaged_metrics = np.mean(all_cycle_metrics, axis=0).tolist()

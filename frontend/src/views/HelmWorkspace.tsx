@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Play, Square, Loader2, Image as ImageIcon, AlertCircle, ZoomIn, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Play, Square, Loader2, Image as ImageIcon, AlertCircle, ZoomIn, X, RefreshCw, CheckCircle, Settings, Sliders, Cpu, HardDrive } from 'lucide-react';
 
 interface HelmWorkspaceProps {
   darkMode: boolean;
+  mode?: 'run' | 'tune';
   onBack: () => void;
 }
 
 interface HelmResult {
   status: string;
   dataset_name: string;
-  method: string;
-  output_file: string | null;
+  method?: string;
+  backend?: string;
+  output_file?: string | null;
+  best_accuracy?: number;
+  best_params?: Record<string, any>;
   metrics?: {
     train_accuracy: number;
     test_accuracy: number;
@@ -26,6 +30,10 @@ interface HelmResult {
 
 interface ProgressInfo {
   status?: string;
+  progress_percent?: number;
+  current_trial?: number;
+  total_trials?: number;
+  best_accuracy_so_far?: number;
   telemetry?: {
     current_cycle?: number;
     total_cycles?: number;
@@ -33,7 +41,13 @@ interface ProgressInfo {
   };
 }
 
-export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) {
+const formatAccuracy = (val: number | undefined): string => {
+  if (typeof val !== 'number') return '0.00%';
+  const pct = val <= 1.0 ? val * 100 : val;
+  return `${pct.toFixed(2)}%`;
+};
+
+export default function HelmWorkspace({ darkMode, mode = 'run', onBack }: HelmWorkspaceProps) {
   const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
   const [datasetName, setDatasetName] = useState<string>('');
 
@@ -43,11 +57,18 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
   const [penalty, setPenalty] = useState<number | null>(null);
   const [scalingFactor, setScalingFactor] = useState<number | null>(null);
 
+  const [backend, setBackend] = useState<'optuna' | 'ray'>('optuna');
+  const [nTrials, setNTrials] = useState<number>(25);
+  const [cMin, setCMin] = useState<number>(1e-30);
+  const [cMax, setCMax] = useState<number>(1e-5);
+  const [scalingMin, setScalingMin] = useState<number>(0.0);
+  const [scalingMax, setScalingMax] = useState<number>(1.0);
+
   // Böngésző memóriából való visszaolvasás (HELM specifikus kulcsok)
-  const savedTaskId = localStorage.getItem('helm_active_task_id');
+  const savedTaskId = localStorage.getItem(`helm_active_task_id_${mode}`);
   const savedStatus = savedTaskId ? 'running' : 'idle';
-  const savedProgressPercent = Number(localStorage.getItem('helm_progress_percent')) || 0;
-  const savedProgressMsg = localStorage.getItem('helm_progress_msg') || '';
+  const savedProgressPercent = Number(localStorage.getItem(`helm_progress_percent_${mode}`)) || 0;
+  const savedProgressMsg = localStorage.getItem(`helm_progress_msg_${mode}`) || '';
 
   const savedCompletedTestsCount = Number(localStorage.getItem('helm_completed_tests_count')) || 1;
   const [completedTestsCount, setCompletedTestsCount] = useState<number>(savedCompletedTestsCount);
@@ -60,15 +81,17 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [results, setResults] = useState<HelmResult | null>(null);
 
+  const [bestAccSoFar, setBestAccSoFar] = useState<number | null>(null);
   const [selectedCycle, setSelectedCycle] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<'train' | 'test'>('test');
   const [isZoomed, setIsZoomed] = useState<boolean>(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const clearActiveTask = () => {
     setTaskId(null);
-    localStorage.removeItem('helm_active_task_id');
-    localStorage.removeItem('helm_progress_percent');
-    localStorage.removeItem('helm_progress_msg');
+    localStorage.removeItem(`helm_active_task_id_${mode}`);
+    localStorage.removeItem(`helm_progress_percent_${mode}`);
+    localStorage.removeItem(`helm_progress_msg_${mode}`);
   };
 
   const getErrorMessage = (err: unknown): string => {
@@ -130,9 +153,14 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
   useEffect(() => {
     if (!taskId) return;
 
-    const interval = setInterval(async () => {
+    let statusUrl = `http://localhost:8002/nn/helm/status/${taskId}`;
+    if (mode === 'tune') {
+      statusUrl = `http://localhost:8002/nn/helm/tune/status/${taskId}`;
+    }
+
+    pollingRef.current = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:8002/nn/helm/status/${taskId}`);
+        const response = await fetch(statusUrl);
         if (response.ok) {
           const data = (await response.json()) as {
             status: string;
@@ -145,31 +173,46 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
             setResults(data.info as HelmResult);
             setSelectedCycle(0);
 
-            const runTests = Number(localStorage.getItem('helm_active_tests_count')) || numberOfTests;
-            setCompletedTestsCount(runTests);
-            localStorage.setItem('helm_completed_tests_count', String(runTests));
+            if (mode === 'run') {
+              const runTests = Number(localStorage.getItem('helm_active_tests_count')) || numberOfTests;
+              setCompletedTestsCount(runTests);
+              localStorage.setItem('helm_completed_tests_count', String(runTests));
+            }
 
             clearActiveTask();
-            localStorage.removeItem('helm_active_tests_count');
-            clearInterval(interval);
+            if (pollingRef.current) clearInterval(pollingRef.current);
           } else if (data.status === 'FAILURE') {
             setStatus('error');
             setErrorMessage(typeof data.info === 'string' ? data.info : 'Unknown HELM engine error.');
             clearActiveTask();
-            localStorage.removeItem('helm_active_tests_count');
-            clearInterval(interval);
+            if (pollingRef.current) clearInterval(pollingRef.current);
           } else if (data.status === 'PROGRESS') {
             const progressInfo = data.info as ProgressInfo;
-            const newMsg = progressInfo.status || 'Executing hierarchical steps...';
-            const newPercent = progressInfo.telemetry?.progress_percent !== undefined
-              ? progressInfo.telemetry.progress_percent
-              : progressPercent;
+
+            let newPercent = 0;
+            let newMsg = '';
+
+            if (mode === 'tune') {
+              newPercent = progressInfo.progress_percent !== undefined ? progressInfo.progress_percent : progressPercent;
+              newMsg = (progressInfo.current_trial && progressInfo.total_trials)
+                ? `Trial ${progressInfo.current_trial} / ${progressInfo.total_trials}`
+                : (progressInfo.status || 'Exploring Hyperparameter Space...');
+
+              if (typeof progressInfo.best_accuracy_so_far === 'number') {
+                setBestAccSoFar(progressInfo.best_accuracy_so_far);
+              }
+            } else {
+              newMsg = progressInfo.status || 'Executing hierarchical steps...';
+              newPercent = progressInfo.telemetry?.progress_percent !== undefined
+                ? progressInfo.telemetry.progress_percent
+                : progressPercent;
+            }
 
             setProgressMsg(newMsg);
             setProgressPercent(newPercent);
 
-            localStorage.setItem('helm_progress_percent', String(newPercent));
-            localStorage.setItem('helm_progress_msg', newMsg);
+            localStorage.setItem(`helm_progress_percent_${mode}`, String(newPercent));
+            localStorage.setItem(`helm_progress_msg_${mode}`, newMsg);
           }
         }
       } catch (err) {
@@ -177,26 +220,42 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
       }
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [taskId]);
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [taskId, mode]);
 
   const handleStart = async () => {
     setStatus('running');
     setErrorMessage('');
     setResults(null);
+    setBestAccSoFar(null);
     setProgressMsg('Queuing task in Celery...');
     setProgressPercent(0);
 
-    const payload = {
+    let startUrl = `http://localhost:8002/nn/helm/start?dataset_name=${datasetName}`;
+    let payload: Record<string, any> = {
       seed: seed,
       num_tests: numberOfTests,
       penalty: penalty,
       scaling_factor: scalingFactor
     };
 
+    if (mode === 'tune') {
+      startUrl = `http://localhost:8002/nn/helm/tune?dataset_name=${datasetName}`;
+      payload = {
+        backend,
+        n_trials: nTrials,
+        seed: seed,
+        c_min: cMin,
+        c_max: cMax,
+        scaling_min: scalingMin,
+        scaling_max: scalingMax
+      };
+    }
+
     try {
-      const queryParams = `dataset_name=${datasetName}`;
-      const response = await fetch(`http://localhost:8002/nn/helm/start?${queryParams}`, {
+      const response = await fetch(startUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -210,25 +269,26 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
       const data = await response.json() as { task_id?: string };
       if (data.task_id) {
         setTaskId(data.task_id);
-        localStorage.setItem('helm_active_task_id', data.task_id);
-        localStorage.setItem('helm_active_tests_count', String(numberOfTests));
-        localStorage.setItem('helm_progress_percent', '0');
-        localStorage.setItem('helm_progress_msg', 'Queuing task in Celery...');
+        localStorage.setItem(`helm_active_task_id_${mode}`, data.task_id);
+        localStorage.setItem(`helm_progress_percent_${mode}`, '0');
+        localStorage.setItem(`helm_progress_msg_${mode}`, 'Queuing task in Celery...');
       }
     } catch (err) {
       setStatus('error');
       setErrorMessage(getErrorMessage(err));
       clearActiveTask();
-      localStorage.removeItem('helm_active_tests_count');
     }
   };
 
   const handleStop = async () => {
     if (!taskId) return;
     try {
-      await fetch(`http://localhost:8002/nn/helm/stop/${taskId}`, { method: 'POST' });
+      let stopUrl = `http://localhost:8002/nn/helm/stop/${taskId}`;
+      if (mode === 'tune') {
+        stopUrl = `http://localhost:8002/nn/helm/tune/stop/${taskId}`;
+      }
+      await fetch(stopUrl, { method: 'POST' });
       clearActiveTask();
-      localStorage.removeItem('helm_active_tests_count');
       setStatus('idle');
       setProgressMsg('');
       setProgressPercent(0);
@@ -237,7 +297,7 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
     }
   };
 
-  const plotUrls = results && results.output_file
+  const plotUrls = (results && results.output_file && mode === 'run')
     ? getPlotUrls(results.output_file, selectedCycle, results.dataset_name)
     : null;
   const activeImageUrl = plotUrls ? (activeTab === 'train' ? plotUrls.train : plotUrls.test) : '';
@@ -246,7 +306,9 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
     <div className="space-y-6">
       {/* CÍMSOR ÉS MÓD JELZŐ */}
       <div className="flex items-center justify-end">
-        <span className="text-xs font-mono text-purple-500">HELM Workspace</span>
+        <span className="text-xs font-mono text-purple-500 uppercase tracking-wider">
+          HELM {mode === 'tune' ? 'Hyperparameter Tuning Lab' : 'Workspace'}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
@@ -254,7 +316,9 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
         {/* BAL OSZLOP: PARAMÉTEREK ÉS NAVIGÁCIÓ */}
         <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-5 flex flex-col justify-between h-full shadow-md`}>
           <div>
-            <h3 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>HELM Parameters</h3>
+            <h3 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+              {mode === 'tune' ? 'Tuning Boundaries' : 'HELM Parameters'}
+            </h3>
 
             <div className="space-y-4">
               <div>
@@ -275,57 +339,102 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
                 </select>
               </div>
 
-              <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
-                {/* Penalty Override */}
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>C Penalty (Override)</label>
-                  <input
-                    type="number"
-                    step="0.00001"
-                    placeholder="Dataset default if empty"
-                    disabled={status === 'running'}
-                    value={penalty === null ? '' : penalty}
-                    onChange={(e) => setPenalty(e.target.value === '' ? null : parseFloat(e.target.value))}
-                    className={`w-full text-sm p-2 rounded-md border ${
-                      darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                    } disabled:opacity-50`}
-                  />
-                </div>
-
-                {/* Scaling Factor Override */}
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Scaling Factor (Override)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0.0"
-                    max="1.0"
-                    placeholder="Dataset default if empty"
-                    disabled={status === 'running'}
-                    value={scalingFactor === null ? '' : scalingFactor}
-                    onChange={(e) => setScalingFactor(e.target.value === '' ? null : parseFloat(e.target.value))}
-                    className={`w-full text-sm p-2 rounded-md border ${
-                      darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                    } disabled:opacity-50`}
-                  />
-                </div>
-
-                {/* Tests & Seed */}
-                <div className="grid grid-cols-2 gap-3 items-center">
+              {mode === 'tune' ? (
+                <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
                   <div>
-                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tests Count</label>
-                    <input
-                      type="number"
-                      min="1"
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Search Engine Backend</label>
+                    <select
+                      value={backend}
                       disabled={status === 'running'}
-                      value={numberOfTests}
-                      onChange={(e) => setNumberOfTests(parseInt(e.target.value) || 1)}
+                      onChange={(e) => setBackend(e.target.value as 'optuna' | 'ray')}
                       className={`w-full text-sm p-2 rounded-md border ${
                         darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
                       } disabled:opacity-50`}
+                    >
+                      <option value="optuna">Optuna (TPE Sampler)</option>
+                      <option value="ray">Ray Tune (ASHA Scheduler)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Total Trials: {nTrials}
+                    </label>
+                    <input
+                      type="range"
+                      min="5"
+                      max="100"
+                      step="5"
+                      value={nTrials}
+                      disabled={status === 'running'}
+                      onChange={(e) => setNTrials(parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
                     />
                   </div>
-                  <div className="flex items-center gap-2 mt-4">
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>C Penalty Min</label>
+                      <input
+                        type="number"
+                        step="1e-30"
+                        value={cMin}
+                        disabled={status === 'running'}
+                        onChange={(e) => setCMin(parseFloat(e.target.value) || 1e-30)}
+                        className={`w-full text-xs p-2 rounded border font-mono ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>C Penalty Max</label>
+                      <input
+                        type="number"
+                        step="1e-5"
+                        value={cMax}
+                        disabled={status === 'running'}
+                        onChange={(e) => setCMax(parseFloat(e.target.value) || 1e-5)}
+                        className={`w-full text-xs p-2 rounded border font-mono ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Scaling Min</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0.0"
+                        max="1.0"
+                        value={scalingMin}
+                        disabled={status === 'running'}
+                        onChange={(e) => setScalingMin(parseFloat(e.target.value) || 0.0)}
+                        className={`w-full text-xs p-2 rounded border font-mono ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Scaling Max</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0.0"
+                        max="1.0"
+                        value={scalingMax}
+                        disabled={status === 'running'}
+                        onChange={(e) => setScalingMax(parseFloat(e.target.value) || 1.0)}
+                        className={`w-full text-xs p-2 rounded border font-mono ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
                     <input
                       type="checkbox"
                       id="seed"
@@ -339,7 +448,73 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
                     }`}>Fix Random Seed</label>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                  {/* Penalty Override */}
+                  <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>C Penalty (Override)</label>
+                    <input
+                      type="number"
+                      step="0.00001"
+                      placeholder="Dataset default if empty"
+                      disabled={status === 'running'}
+                      value={penalty === null ? '' : penalty}
+                      onChange={(e) => setPenalty(e.target.value === '' ? null : parseFloat(e.target.value))}
+                      className={`w-full text-sm p-2 rounded-md border ${
+                        darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                      } disabled:opacity-50`}
+                    />
+                  </div>
+
+                  {/* Scaling Factor Override */}
+                  <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Scaling Factor (Override)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.0"
+                      max="1.0"
+                      placeholder="Dataset default if empty"
+                      disabled={status === 'running'}
+                      value={scalingFactor === null ? '' : scalingFactor}
+                      onChange={(e) => setScalingFactor(e.target.value === '' ? null : parseFloat(e.target.value))}
+                      className={`w-full text-sm p-2 rounded-md border ${
+                        darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                      } disabled:opacity-50`}
+                    />
+                  </div>
+
+                  {/* Tests & Seed */}
+                  <div className="grid grid-cols-2 gap-3 items-center">
+                    <div>
+                      <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tests Count</label>
+                      <input
+                        type="number"
+                        min="1"
+                        disabled={status === 'running'}
+                        value={numberOfTests}
+                        onChange={(e) => setNumberOfTests(parseInt(e.target.value) || 1)}
+                        className={`w-full text-sm p-2 rounded-md border ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        } disabled:opacity-50`}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 mt-4">
+                      <input
+                        type="checkbox"
+                        id="seed"
+                        disabled={status === 'running'}
+                        checked={seed}
+                        onChange={(e) => setSeed(e.target.checked)}
+                        className="cursor-pointer disabled:opacity-50"
+                      />
+                      <label htmlFor="seed" className={`text-xs font-medium cursor-pointer disabled:opacity-50 ${
+                        darkMode ? 'text-slate-400' : 'text-slate-600'
+                      }`}>Fix Random Seed</label>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -357,7 +532,7 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
                 onClick={handleStart}
                 className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
-                <Play className="w-4 h-4 fill-white" /> Execute HELM Run
+                <Play className="w-4 h-4 fill-white" /> {mode === 'tune' ? 'Launch Hyperparameter Search' : 'Execute HELM Run'}
               </button>
             )}
 
@@ -389,11 +564,13 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
           )}
 
           {status === 'running' && (
-            <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-2 shrink-0 shadow-sm`}>
+            <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-3 shrink-0 shadow-sm`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
-                  <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>HELM is processing hierarchy...</h4>
+                  <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                    {mode === 'tune' ? 'Optimizing HELM hyperparameters...' : 'HELM is processing hierarchy...'}
+                  </h4>
                 </div>
                 <span className="text-sm font-mono font-bold text-purple-500">{progressPercent}%</span>
               </div>
@@ -404,13 +581,58 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
                 ></div>
               </div>
               <p className={`text-xs italic ${darkMode ? 'text-slate-500' : 'text-slate-600'}`}>{progressMsg}</p>
+
+              {mode === 'tune' && bestAccSoFar !== null && (
+                <div className={`p-3 rounded-xl border text-xs font-mono flex justify-between items-center animate-fadeIn ${
+                  darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}>
+                  <span className="text-slate-500">Current Peak Accuracy:</span>
+                  <span className="font-bold text-purple-400">{formatAccuracy(bestAccSoFar)}</span>
+                </div>
+              )}
             </div>
           )}
 
           <div className={`flex-1 p-6 rounded-2xl border flex flex-col justify-center items-center ${
             darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
           } shadow-md overflow-hidden`}>
-            {results && plotUrls ? (
+
+            {mode === 'tune' && results && (
+              <div className="space-y-6 w-full animate-fadeIn">
+                <div className={`flex items-center gap-3 border-b pb-3 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                  <CheckCircle className="w-5 h-5 text-purple-500" />
+                  <h4 className="font-bold text-base text-purple-400">Hyperparameter Optimization Finished</h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <span className={`block text-[10px] font-medium uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Best Accuracy</span>
+                    <span className="text-2xl font-mono font-black text-purple-400">{formatAccuracy(results.best_accuracy)}</span>
+                  </div>
+
+                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <span className={`block text-[10px] font-medium uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Search Backend</span>
+                    <span className="text-2xl font-mono font-bold uppercase text-indigo-400">{results.backend ?? 'Optuna'}</span>
+                  </div>
+                </div>
+
+                {results.best_params && (
+                  <div className={`p-5 rounded-xl border space-y-3 ${darkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <h5 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Discovered Optimal Parameters:</h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(results.best_params).map(([key, value]) => (
+                        <div key={key} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                          <span className="block text-[10px] font-mono text-slate-500 uppercase">{key}</span>
+                          <span className="text-sm font-mono font-bold text-purple-400">{typeof value === 'number' ? value.toExponential(6) : String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {mode === 'run' && results && plotUrls ? (
               <div className="flex flex-col h-full w-full justify-between space-y-4">
                 <div className={`flex flex-col sm:flex-row justify-between items-center gap-4 border-b pb-3 shrink-0 ${
                   darkMode ? 'border-slate-800/40' : 'border-slate-200'
@@ -566,12 +788,14 @@ export default function HelmWorkspace({ darkMode, onBack }: HelmWorkspaceProps) 
                   }`}>{results.output_file}</code>
                 </div>
               </div>
-            ) : (
+            ) : null}
+
+            {status === 'idle' && !results && (
               <div className="text-center space-y-2 py-12">
                 <ImageIcon className={`w-12 h-12 mx-auto ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
-                <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>No Active Plot Data</h4>
+                <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>No Active Data</h4>
                 <p className={`text-xs max-w-xs ${darkMode ? 'text-slate-500' : 'text-slate-600'}`}>
-                  Run the HELM autoencoder series to generate and display the hierarchical layout matrices.
+                  {mode === 'tune' ? 'Configure search limits and launch tuning.' : 'Run the HELM autoencoder series to generate results.'}
                 </p>
               </div>
             )}

@@ -13,7 +13,8 @@ import HelmWorkSpace from './views/HelmWorkspace';
 import DatasetWorkspace from './views/DatasetWorkspace';
 import FcnnWorkspace from './views/FcnnWorkspace';
 
-type ViewType = 'dashboard' | 'dataset' | 'fcnn_train' | 'fcnn_test' | 'helm' | 'mpdrnn';
+// 💡 1. KIEGÉSZÍTVE A TUNE MÓDDAL
+type ViewType = 'dashboard' | 'dataset' | 'fcnn_train' | 'fcnn_test' | 'fcnn_tune' | 'helm' | 'helm_tune' | 'mpdrnn';
 
 interface ServiceStatus {
   dataset: 'online' | 'offline' | 'checking';
@@ -178,7 +179,7 @@ export default function App() {
                 </button>
               </div>
 
-              {/* FCNN Card */}
+              {/* FCNN Card - 💡 2. HARMINCADIK GOMBBAL KIEGÉSZÍTVE */}
               <div className={`p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.015] hover:shadow-xl flex flex-col justify-between min-h-[220px] ${
                 darkMode ? 'bg-slate-900 border-slate-800 hover:border-indigo-500/30' : 'bg-white border-slate-200 hover:shadow-indigo-500/5 shadow-md'
               }`}>
@@ -194,22 +195,27 @@ export default function App() {
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-500 leading-relaxed mb-6">Fully Connected Neural Network training and evaluation workspace.</p>
+                  <p className="text-sm text-slate-500 leading-relaxed mb-6">Fully Connected Neural Network training, evaluation and hyperparameter tuning workspace.</p>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
                     onClick={() => setCurrentView('fcnn_train')}
-                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs cursor-pointer transition-all shadow-md shadow-indigo-600/10"
+                    className="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-indigo-600/10 text-center"
                   >
-                    FCNN Training
+                    Training
                   </button>
-                  {/* MEGTARTOTTUK A SÖTÉT HÁTTERET, DE A SZÖVEG FIXEN FEHÉR */}
                   <button
                     onClick={() => setCurrentView('fcnn_test')}
-                    className="flex-1 py-3 font-bold rounded-xl text-xs cursor-pointer transition-all bg-slate-800 hover:bg-slate-750 text-white border border-slate-700 shadow-md"
+                    className="py-3 font-bold rounded-xl text-[11px] cursor-pointer transition-all bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 shadow-md text-center"
                   >
-                    FCNN Testing
+                    Testing
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('fcnn_tune')}
+                    className="py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-purple-600/10 text-center"
+                  >
+                    H-Param Tuning
                   </button>
                 </div>
               </div>
@@ -232,12 +238,21 @@ export default function App() {
                   </div>
                   <p className="text-sm text-slate-500 leading-relaxed mb-6">Hierarchical Extreme Learning Machine service.</p>
                 </div>
-                <button
-                  onClick={() => setCurrentView('helm')}
-                  className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-xs cursor-pointer transition-all shadow-md shadow-violet-600/10"
-                >
-                  Open HELM Workspace
-                </button>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    onClick={() => setCurrentView('helm')}
+                    className="py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-violet-600/10 text-center"
+                  >
+                    Execution
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('helm_tune')}
+                    className="py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-purple-600/10 text-center"
+                  >
+                    H-Param Tuning
+                  </button>
+                </div>
               </div>
 
               {/* MPDRNN Card */}
@@ -296,9 +311,27 @@ export default function App() {
               />
             )}
 
+            {/* 💡 3. TUNE MÓDÚ FCNN WORKSPACE RENDERELÉSE */}
+            {currentView === 'fcnn_tune' && (
+              <FcnnWorkspace
+                darkMode={darkMode}
+                mode="tune"
+                onBack={() => setCurrentView('dashboard')}
+              />
+            )}
+
             {currentView === 'helm' && (
               <HelmWorkSpace
                 darkMode={darkMode}
+                mode="run"
+                onBack={() => setCurrentView('dashboard')}
+              />
+            )}
+
+            {currentView === 'helm_tune' && (
+              <HelmWorkSpace
+                darkMode={darkMode}
+                mode="tune"
                 onBack={() => setCurrentView('dashboard')}
               />
             )}

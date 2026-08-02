@@ -54,6 +54,7 @@ services:
     volumes:
       - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
       - D:/storage/lion17:/app/storage
+    shm_size: '2gb'
 
 
   helm-api:

@@ -27,9 +27,10 @@ if PROJECT_ROOT not in sys.path:
 from config.data_paths import JSON_FILES_PATHS
 from nn.fcnn.train_fcnn import TrainFCNN
 from nn.fcnn.eval_fcnn import EvalFCNN
+from nn.fcnn.param_search_fcnn import HyperparameterSearch
 
 
-@celery_app.task(bind=True, name="task.train_fcnn_task")
+@celery_app.task(bind=True, name="tasks.train_fcnn_task")
 def train_fcnn_task(self, config: dict):
     logging.info("Starting FCNN training task")
 
@@ -57,16 +58,24 @@ def train_fcnn_task(self, config: dict):
         raw_json["dataset_name"] = dataset_name
         raw_json["seed"] = seed
         raw_json["epochs"] = epochs
+        if "patience" in config:
+            raw_json["patience"] = config["patience"]
+        if "batch_size" in config:
+            raw_json["batch_size"] = config["batch_size"]
+        if "optimizer" in config:
+            raw_json["optimizer"] = config["optimizer"]
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
-        nested_config = {k: v for k, v in raw_json.items() if isinstance(v, dict)}
 
-        flattened_config = {}
-        for key, value in nested_config.items():
-            if key != 'hyperparamtuning' and dataset_name in value:
-                flattened_config[key] = value[dataset_name]
+        hidden_neurons = raw_json.get("hidden_neurons", {}).get(dataset_name, 500)
+        batch_size = config.get("batch_size") or raw_json.get("batch_size", {}).get(dataset_name, 64)
 
-        override_cfg = {**simple_config, **flattened_config}
+        override_cfg = {
+            **simple_config,
+            "hidden_neurons": hidden_neurons,
+            "batch_size": batch_size,
+            "optimization": raw_json.get("optimization")
+        }
 
         trainer = TrainFCNN(override_cfg=override_cfg, celery_task=self)
         trainer.epoch_callback = on_epoch_end
@@ -84,6 +93,7 @@ def train_fcnn_task(self, config: dict):
             "dataset_name": dataset_name,
             "seed": seed,
             "epochs": epochs,
+            "patience": raw_json.get("patience", 10),
             "status": "running",
             "start_time": time.time(),
             "start_time_str": time.strftime("%Y-%m-%d %H:%M:%S")
@@ -168,20 +178,26 @@ def test_fcnn_task(self, config: dict):
             raw_json = json.load(f)
 
         raw_json["dataset_name"] = dataset_name
-        raw_json["batch_size"] = batch_size
         raw_json["seed"] = seed
-        raw_json["num_tests"] = num_tests
         raw_json["epochs"] = epochs
+        if "patience" in config:
+            raw_json["patience"] = config["patience"]
+        if "batch_size" in config:
+            raw_json["batch_size"] = config["batch_size"]
+        if "optimizer" in config:
+            raw_json["optimizer"] = config["optimizer"]
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
-        nested_config = {k: v for k, v in raw_json.items() if isinstance(v, dict)}
 
-        flattened_config = {}
-        for key, value in nested_config.items():
-            if key != 'hyperparamtuning' and dataset_name in value:
-                flattened_config[key] = value[dataset_name]
+        hidden_neurons = raw_json.get("hidden_neurons", {}).get(dataset_name, 500)
+        batch_size = config.get("batch_size") or raw_json.get("batch_size", {}).get(dataset_name, 64)
 
-        override_cfg = {**simple_config, **flattened_config}
+        override_cfg = {
+            **simple_config,
+            "hidden_neurons": hidden_neurons,
+            "batch_size": batch_size,
+            "optimization": raw_json.get("optimization")
+        }
 
         def safe_float(val):
             return float(val) if val is not None else 0.0
@@ -234,7 +250,6 @@ def test_fcnn_task(self, config: dict):
                     "train_f1_score": float(avg_metrics[6]),
                     "test_f1_score": float(avg_metrics[7]),
                     "training_time": float(avg_metrics[8]),
-                    # Alapértelmezett összefoglaló mezők
                     "accuracy": float(avg_metrics[1]),
                     "precision": float(avg_metrics[3]),
                     "recall": float(avg_metrics[5]),
@@ -246,3 +261,33 @@ def test_fcnn_task(self, config: dict):
     except Exception as e:
         logging.exception(f"FCNN evaluation task encountered an error: {str(e)}")
         raise RuntimeError(f"FCNN evaluation failed: {str(e)}")
+
+
+@celery_app.task(bind=True, name="tasks.tune_fcnn_task")
+def tune_fcnn_task(self, config: dict):
+    logging.info("Starting FCNN hyperparameter search task")
+    self.update_state(state="PROGRESS", meta={"status": "Initializing hyperparameter search...", "progress_percent": 0})
+
+    try:
+        config["task_id"] = self.request.id
+
+        backend = config.get("backend", "optuna")
+        n_trials = config.get("n_trials", 25)
+
+        searcher = HyperparameterSearch(override_cfg=config, celery_task=self)
+        results = searcher.tune_params(backend=backend, n_trials=n_trials)
+
+        return {
+            "status": "SUCCESS",
+            "dataset_name": config["dataset_name"],
+            "backend": backend,
+            "best_accuracy": results["best_accuracy"],
+            "best_params": results["best_params"]
+        }
+    except Exception as e:
+        if "ABORTED" in str(e):
+            logging.info("Hyperparameter tuning gracefully aborted by user.")
+            self.update_state(state="ABORTED", meta={"message": "Tuning process aborted."})
+            raise Ignore()
+        logging.exception(f"FCNN hyperparameter tuning task failed: {str(e)}")
+        raise RuntimeError(f"Tuning failed: {str(e)}")

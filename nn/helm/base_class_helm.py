@@ -15,6 +15,7 @@ class HELMBase:
     def __init__(self, override_cfg: dict = None, celery_task=None):
         setup_logger()
         self.celery_task = celery_task
+        self.cycle_callback = None
 
         if override_cfg is not None:
             self.cfg = override_cfg

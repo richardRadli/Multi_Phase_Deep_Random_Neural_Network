@@ -1,10 +1,10 @@
 import os
 import sys
 from typing import Optional
+from enum import Enum
 
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field
-from enum import Enum
 
 PROJECT_ROOT = os.getenv("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
@@ -17,6 +17,7 @@ fcnn_test_router = APIRouter(prefix="/nn/fcnn", tags=["FCNN Model Evaluation"])
 
 DatasetEnum = Enum("DatasetEnum", {ds.upper(): ds for ds in VALID_DATASETS}, type=str)
 
+
 class BatchSizeEnum(int, Enum):
     B16 = 16
     B32 = 32
@@ -25,11 +26,19 @@ class BatchSizeEnum(int, Enum):
     B256 = 256
     B512 = 512
 
+
+class OptimizerEnum(str, Enum):
+    ADAM = "adam"
+    SGD = "sgd"
+
+
 class FCNNTestRemainingConfig(BaseModel):
     seed: bool = Field(default=False, description="True esetén fixálja a random seedet")
     series_mode: bool = Field(default=False, description="True több Excel sorozathoz, False egyetlen JSON jelentéshez")
     num_tests: int = Field(default=20, ge=1, description="A sorozatban futtatandó tesztek száma")
-    epochs: Optional[int] = Field(default=1000, ge=1,  description="A tanítási epoch-ok száma ciklusos tesztelésnél")
+    epochs: Optional[int] = Field(default=1000, ge=1, description="A tanítási epoch-ok száma ciklusos tesztelésnél")
+    optimizer: Optional[OptimizerEnum] = Field(default=None, description="A teszteléshez használt optimizer opció")
+
 
 @fcnn_test_router.post("/test", status_code=status.HTTP_202_ACCEPTED)
 async def test_fcnn_model(
@@ -41,12 +50,13 @@ async def test_fcnn_model(
         config_payload = {
             "dataset_name": dataset_name.value,
             "batch_size": batch_size.value,
-            **config.model_dump()
+            **config.model_dump(mode="json", exclude_none=True)
         }
         task = test_fcnn_task.delay(config=config_payload)
         return {"task_id": task.id, "status": "QUEUED"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @fcnn_test_router.post("/test/stop/{task_id}")
 async def stop_fcnn_testing(task_id: str):
@@ -58,6 +68,7 @@ async def stop_fcnn_testing(task_id: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @fcnn_test_router.get("/test/status/{task_id}")
 async def get_fcnn_test_status(task_id: str):
@@ -72,7 +83,7 @@ async def get_fcnn_test_status(task_id: str):
         response["info"] = {"status": "Waiting in queue..."}
     elif task_result.state == "PROGRESS":
         response["info"] = task_result.info
-    elif task_result.state == "REVOKED":
+    elif task_result.state in ["ABORTED", "REVOKED"]:
         response["status"] = "ABORTED"
         response["info"] = {"status": "FCNN Evaluation task was manually aborted."}
 

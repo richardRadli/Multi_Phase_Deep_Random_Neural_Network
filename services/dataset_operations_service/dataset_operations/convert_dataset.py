@@ -49,6 +49,9 @@ def split_dataset(dataset_name: str, split_ratio: list = None):
         with open(path_to_dataset, "r") as file:
             lines = file.readlines()
 
+        if not lines:
+            raise ValueError(f"Dataset raw file is empty at path: {path_to_dataset}")
+
         labels = []
         features = []
         for line in tqdm(lines, desc=f"Reading {dataset_name}"):
@@ -89,7 +92,6 @@ def split_dataset(dataset_name: str, split_ratio: list = None):
             random_state=1234
         )
 
-
         validation_ratio = split_ratio[1] / (split_ratio[0] + split_ratio[1])
 
         train_x, valid_x, train_y, valid_y = train_test_split(
@@ -124,11 +126,18 @@ def split_dataset(dataset_name: str, split_ratio: list = None):
 
     except FileNotFoundError:
         logging.error(f"Dataset raw file not found at path: {path_to_dataset}")
+        raise FileNotFoundError(f"Dataset raw file not found at path: {path_to_dataset}")
+    except Exception as e:
+        logging.error(f"Error processing dataset '{dataset_name}': {str(e)}")
+        raise e
 
 
 def main():
     for dataset in VALID_DATASETS:
-        split_dataset(dataset, split_ratio=[0.7, 0.15, 0.15])
+        try:
+            split_dataset(dataset, split_ratio=[0.7, 0.15, 0.15])
+        except Exception as e:
+            logging.error(f"Skipping dataset '{dataset}' due to error: {e}")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import logging
 import sys
 from celery import Celery
 
+
 CELERY_BROKER = os.getenv("CELERY_BROKER_URL", "redis://redis_broker:6379/2")
 CELERY_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis_broker:6379/2")
 
@@ -23,6 +24,7 @@ if PROJECT_ROOT not in sys.path:
 
 from config.data_paths import JSON_FILES_PATHS
 from nn.helm.helm import HELM
+from nn.helm.param_search_helm import HyperparameterSearchHELM
 
 
 @celery_app.task(bind=True, name="tasks.helm_task")
@@ -102,4 +104,48 @@ def helm_task(self, config: dict):
         }
     except Exception as e:
         logging.exception(f"HELM error: {str(e)}")
+        raise RuntimeError(str(e))
+
+@celery_app.task(bind=True, name="tasks.helm_tune_task")
+def helm_tune_task(self, config: dict):
+    logging.info("Starting HELM hyperparameter search task")
+    task_id = self.request.id
+
+    self.update_state(state="PROGRESS", meta={'status': "Exploring hyperparameter space...", "progress_percent": 0})
+    try:
+        dataset_name = config["dataset_name"]
+        backend = config.get("backend", "optuna")
+        n_trials = config.get("n_trials", 25)
+
+        override_cfg = {
+            "dataset_name": dataset_name,
+            "task_id": task_id,
+            "n_trials": n_trials,
+            "seed": config.get("seed", False),
+            "c_min": config.get("c_min", 1e-30),
+            "c_max": config.get("c_max", 1e-5),
+            "scaling_min": config.get("scaling_min", 0.0),
+            "scaling_max": config.get("scaling_max", 1.0)
+        }
+
+        searcher = HyperparameterSearchHELM(override_cfg=override_cfg, celery_task=self)
+        res = searcher.tune_params(backend=backend, n_trials=n_trials)
+
+        is_aborted = self.backend.client.get(f"helm:abort:{task_id}")
+        if is_aborted:
+            self.update_state(state="REVOKED")
+            return {"status": "ABORTED", "dataset_name": dataset_name, "backend": backend}
+
+        return {
+            "status": "SUCCESS",
+            "dataset_name": dataset_name,
+            "backend": res.get("backend", backend),
+            "best_accuracy": res.get("best_accuracy", 0.0),
+            "best_params": res.get("best_params", {})
+        }
+    except Exception as e:
+        if "ABORTED" in str(e):
+            self.update_state(state="REVOKED")
+            return {"status": "ABORTED", "dataset_name": config.get("dataset_name")}
+        logging.exception(f"HELM hyperparameter search error: {str(e)}")
         raise RuntimeError(str(e))

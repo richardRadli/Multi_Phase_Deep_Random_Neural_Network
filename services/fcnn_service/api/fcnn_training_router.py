@@ -1,9 +1,11 @@
 import logging
 import os
 import sys
+from enum import Enum
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field
-from enum import Enum
 
 PROJECT_ROOT = os.getenv("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
@@ -17,9 +19,29 @@ fcnn_router = APIRouter(prefix="/nn/fcnn", tags=["FCNN Control & Evaluation"])
 DatasetEnum = Enum("DatasetEnum", {ds.upper(): ds for ds in VALID_DATASETS}, type=str)
 
 
+class BatchSizeEnum(int, Enum):
+    B16 = 16
+    B32 = 32
+    B64 = 64
+    B128 = 128
+    B256 = 256
+    B512 = 512
+
+
+class OptimizerEnum(str, Enum):
+    ADAM = "adam"
+    SGD = "sgd"
+
+
 class FCNNTrainingRemainingConfig(BaseModel):
     seed: bool = Field(default=False, description="True esetén fixálja a random seedet")
     epochs: int = Field(default=1000, ge=1, description="A tanítási epoch-ok száma")
+    patience: int = Field(default=10, ge=1, description="Early stopping türelmi idő korlátja")
+    optimizer: OptimizerEnum = Field(default=OptimizerEnum.ADAM, description="Választható optimizer (adam / sgd)")
+    batch_size: Optional[BatchSizeEnum] = Field(
+        default=None,
+        description="Batch size felülbírálása (ha nincs megadva, a dataset alapértelmezett értéke lép életbe)"
+    )
 
 
 @fcnn_router.post("/train", status_code=status.HTTP_202_ACCEPTED)
@@ -30,7 +52,7 @@ async def start_fcnn_training(
     try:
         config_payload = {
             "dataset_name": dataset_name.value,
-            **config.model_dump()
+            **config.model_dump(mode="json", exclude_none=True)
         }
         task = train_fcnn_task.delay(config=config_payload)
         celery_app.backend.client.sadd("fcnn:active_tasks", task.id)
