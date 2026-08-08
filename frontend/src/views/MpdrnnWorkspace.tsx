@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Play, Square, Loader2, Image as ImageIcon, AlertCircle, ZoomIn, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Play, Square, Loader2, Image as ImageIcon, AlertCircle, ZoomIn, X, CheckCircle } from 'lucide-react';
 
 interface MpdrnnWorkspaceProps {
   darkMode: boolean;
+  mode?: 'run' | 'tune';
   onBack: () => void;
 }
 
 interface MpdrnnResult {
   status: string;
   dataset_name: string;
-  method: string;
-  output_file: string | null;
+  method?: string;
+  backend?: string;
+  output_file?: string | null;
+  best_accuracy?: number;
+  best_params?: Record<string, any>;
   metrics?: {
     train_accuracy: number;
     test_accuracy: number;
@@ -26,6 +30,10 @@ interface MpdrnnResult {
 
 interface ProgressInfo {
   status?: string;
+  progress_percent?: number;
+  current_trial?: number;
+  total_trials?: number;
+  best_accuracy_so_far?: number;
   telemetry?: {
     current_cycle?: number;
     total_cycles?: number;
@@ -33,24 +41,28 @@ interface ProgressInfo {
   };
 }
 
-export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspaceProps) {
+const formatAccuracy = (val: number | undefined): string => {
+  if (typeof val !== 'number') return '0.00%';
+  const pct = val <= 1.0 ? val * 100 : val;
+  return `${pct.toFixed(2)}%`;
+};
+
+export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: MpdrnnWorkspaceProps) {
   const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
   const [datasetName, setDatasetName] = useState<string>('');
   const [method, setMethod] = useState<'BASE' | 'EXP_ORT' | 'EXP_ORT_C'>('BASE');
   const [activation, setActivation] = useState<string>('LeakyReLU');
 
-  // MPDRNNConfig JSON body paraméterek
+  // MPDRNN Execution Config paraméterek
   const [numberOfTests, setNumberOfTests] = useState<number>(20);
   const [seed, setSeed] = useState<boolean>(true);
   const [sigma, setSigma] = useState<number>(0.1);
   const [penalty, setPenalty] = useState<number | null>(null);
 
-  // Alapértelmezett módszer (Standard vs Custom 3-Layer)
   const [neuronMode, setNeuronMode] = useState<'standard' | 'custom3'>('standard');
   const [numOfLayers, setNumOfLayers] = useState<number>(3);
   const [numOfNeurons, setNumOfNeurons] = useState<number>(100);
 
-  // 3 Külön textbox neuron beállítás custom3 módhoz
   const [layer1Neurons, setLayer1Neurons] = useState<number>(100);
   const [layer2Neurons, setLayer2Neurons] = useState<number>(50);
   const [layer3Neurons, setLayer3Neurons] = useState<number>(25);
@@ -58,16 +70,32 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
   const [decayRate, setDecayRate] = useState<number>(0.5);
   const [rcond, setRcond] = useState<number | null>(null);
 
-  // Helyi böngésző memóriából való visszaolvasás az inicializáláshoz
-  const savedTaskId = localStorage.getItem('mpdrnn_active_task_id');
+  // MPDRNN Tuning Config paraméterek
+  const [backend, setBackend] = useState<'optuna' | 'ray'>('optuna');
+  const [nTrials, setNTrials] = useState<number>(25);
+  const [rcondMin, setRcondMin] = useState<number>(1e-30);
+  const [rcondMax, setRcondMax] = useState<number>(1e-1);
+  const [penaltyMin, setPenaltyMin] = useState<number>(0.1);
+  const [penaltyMax, setPenaltyMax] = useState<number>(30.0);
+
+  // Rétegenkénti neuron keresési határok
+  const [l1Min, setL1Min] = useState<number>(600);
+  const [l1Max, setL1Max] = useState<number>(1000);
+  const [l2Min, setL2Min] = useState<number>(200);
+  const [l2Max, setL2Max] = useState<number>(500);
+  const [l3Min, setL3Min] = useState<number>(50);
+  const [l3Max, setL3Max] = useState<number>(100);
+
+  // Helyi böngésző memóriából való visszaolvasás
+  const savedTaskId = localStorage.getItem(`mpdrnn_active_task_id_${mode}`);
   const savedStatus = savedTaskId ? 'running' : 'idle';
-  const savedProgressPercent = Number(localStorage.getItem('mpdrnn_progress_percent')) || 0;
-  const savedProgressMsg = localStorage.getItem('mpdrnn_progress_msg') || '';
+  const savedProgressPercent = Number(localStorage.getItem(`mpdrnn_progress_percent_${mode}`)) || 0;
+  const savedProgressMsg = localStorage.getItem(`mpdrnn_progress_msg_${mode}`) || '';
 
   const savedCompletedTestsCount = Number(localStorage.getItem('mpdrnn_completed_tests_count')) || 1;
   const [completedTestsCount, setCompletedTestsCount] = useState<number>(savedCompletedTestsCount);
 
-  // Futási és hálózati állapotok
+  // Futási állapotok
   const [taskId, setTaskId] = useState<string | null>(savedTaskId);
   const [status, setStatus] = useState<'idle' | 'running' | 'error'>(savedStatus);
   const [progressMsg, setProgressMsg] = useState<string>(savedProgressMsg);
@@ -75,18 +103,17 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [results, setResults] = useState<MpdrnnResult | null>(null);
 
-  // Vizuális eredményválasztók
+  const [bestAccSoFar, setBestAccSoFar] = useState<number | null>(null);
   const [selectedCycle, setSelectedCycle] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<'train' | 'test'>('test');
-
-  // Nagyítás állapot
   const [isZoomed, setIsZoomed] = useState<boolean>(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const clearActiveTask = () => {
     setTaskId(null);
-    localStorage.removeItem('mpdrnn_active_task_id');
-    localStorage.removeItem('mpdrnn_progress_percent');
-    localStorage.removeItem('mpdrnn_progress_msg');
+    localStorage.removeItem(`mpdrnn_active_task_id_${mode}`);
+    localStorage.removeItem(`mpdrnn_progress_percent_${mode}`);
+    localStorage.removeItem(`mpdrnn_progress_msg_${mode}`);
   };
 
   const handleMethodChange = (newMethod: 'BASE' | 'EXP_ORT' | 'EXP_ORT_C') => {
@@ -154,9 +181,14 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
   useEffect(() => {
     if (!taskId) return;
 
-    const interval = setInterval(async () => {
+    let statusUrl = `http://localhost:8003/nn/mpdrnn/status/${taskId}`;
+    if (mode === 'tune') {
+      statusUrl = `http://localhost:8003/nn/mpdrnn/tune/status/${taskId}`;
+    }
+
+    pollingRef.current = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:8003/nn/mpdrnn/status/${taskId}`);
+        const response = await fetch(statusUrl);
         if (response.ok) {
           const data = (await response.json()) as {
             status: string;
@@ -169,31 +201,48 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
             setResults(data.info as MpdrnnResult);
             setSelectedCycle(0);
 
-            const runTests = Number(localStorage.getItem('mpdrnn_active_tests_count')) || numberOfTests;
-            setCompletedTestsCount(runTests);
-            localStorage.setItem('mpdrnn_completed_tests_count', String(runTests));
+            if (mode === 'run') {
+              const runTests = Number(localStorage.getItem('mpdrnn_active_tests_count')) || numberOfTests;
+              setCompletedTestsCount(runTests);
+              localStorage.setItem('mpdrnn_completed_tests_count', String(runTests));
+            }
 
             clearActiveTask();
             localStorage.removeItem('mpdrnn_active_tests_count');
-            clearInterval(interval);
+            if (pollingRef.current) clearInterval(pollingRef.current);
           } else if (data.status === 'FAILURE') {
             setStatus('error');
-            setErrorMessage(typeof data.info === 'string' ? data.info : 'Unknown training error.');
+            setErrorMessage(typeof data.info === 'string' ? data.info : 'Unknown MPDRNN engine error.');
             clearActiveTask();
             localStorage.removeItem('mpdrnn_active_tests_count');
-            clearInterval(interval);
+            if (pollingRef.current) clearInterval(pollingRef.current);
           } else if (data.status === 'PROGRESS') {
             const progressInfo = data.info as ProgressInfo;
-            const newMsg = progressInfo.status || 'Calculating phases...';
-            const newPercent = progressInfo.telemetry?.progress_percent !== undefined
-              ? progressInfo.telemetry.progress_percent
-              : progressPercent;
+
+            let newPercent = 0;
+            let newMsg = '';
+
+            if (mode === 'tune') {
+              newPercent = progressInfo.progress_percent !== undefined ? progressInfo.progress_percent : progressPercent;
+              newMsg = (progressInfo.current_trial && progressInfo.total_trials)
+                ? `Trial ${progressInfo.current_trial} / ${progressInfo.total_trials}`
+                : (progressInfo.status || 'Exploring Hyperparameter Space...');
+
+              if (typeof progressInfo.best_accuracy_so_far === 'number') {
+                setBestAccSoFar(progressInfo.best_accuracy_so_far);
+              }
+            } else {
+              newMsg = progressInfo.status || 'Calculating phases...';
+              newPercent = progressInfo.telemetry?.progress_percent !== undefined
+                ? progressInfo.telemetry.progress_percent
+                : progressPercent;
+            }
 
             setProgressMsg(newMsg);
             setProgressPercent(newPercent);
 
-            localStorage.setItem('mpdrnn_progress_percent', String(newPercent));
-            localStorage.setItem('mpdrnn_progress_msg', newMsg);
+            localStorage.setItem(`mpdrnn_progress_percent_${mode}`, String(newPercent));
+            localStorage.setItem(`mpdrnn_progress_msg_${mode}`, newMsg);
           }
         }
       } catch (err) {
@@ -201,17 +250,21 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
       }
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [taskId]);
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [taskId, mode]);
 
   const handleStart = async () => {
     setStatus('running');
     setErrorMessage('');
     setResults(null);
+    setBestAccSoFar(null);
     setProgressMsg('Queuing task in Celery...');
     setProgressPercent(0);
 
-    const payload: Record<string, unknown> = {
+    let startUrl = `http://localhost:8003/nn/mpdrnn/start?dataset_name=${datasetName}&method=${method}&activation=${activation}`;
+    let payload: Record<string, unknown> = {
       number_of_tests: numberOfTests,
       seed: seed,
       sigma: method === 'BASE' ? undefined : sigma,
@@ -226,9 +279,30 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
       payload.num_of_neurons = numOfNeurons;
       payload.decay_rate = decayRate;
     }
+
+    if (mode === 'tune') {
+      startUrl = `http://localhost:8003/nn/mpdrnn/tune?dataset_name=${datasetName}`;
+      payload = {
+        backend,
+        n_trials: nTrials,
+        seed: seed,
+        method: method,
+        activation: activation,
+        rcond_min: rcondMin,
+        rcond_max: rcondMax,
+        penalty_min: penaltyMin,
+        penalty_max: penaltyMax,
+        l1_min: l1Min,
+        l1_max: l1Max,
+        l2_min: l2Min,
+        l2_max: l2Max,
+        l3_min: l3Min,
+        l3_max: l3Max
+      };
+    }
+
     try {
-      const queryParams = `dataset_name=${datasetName}&method=${method}&activation=${activation}`;
-      const response = await fetch(`http://localhost:8003/nn/mpdrnn/start?${queryParams}`, {
+      const response = await fetch(startUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -242,10 +316,10 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
       const data = await response.json() as { task_id?: string };
       if (data.task_id) {
         setTaskId(data.task_id);
-        localStorage.setItem('mpdrnn_active_task_id', data.task_id);
+        localStorage.setItem(`mpdrnn_active_task_id_${mode}`, data.task_id);
         localStorage.setItem('mpdrnn_active_tests_count', String(numberOfTests));
-        localStorage.setItem('mpdrnn_progress_percent', '0');
-        localStorage.setItem('mpdrnn_progress_msg', 'Queuing task in Celery...');
+        localStorage.setItem(`mpdrnn_progress_percent_${mode}`, '0');
+        localStorage.setItem(`mpdrnn_progress_msg_${mode}`, 'Queuing task in Celery...');
       }
     } catch (err) {
       setStatus('error');
@@ -258,7 +332,11 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
   const handleStop = async () => {
     if (!taskId) return;
     try {
-      await fetch(`http://localhost:8003/nn/mpdrnn/stop/${taskId}`, { method: 'POST' });
+      let stopUrl = `http://localhost:8003/nn/mpdrnn/stop/${taskId}`;
+      if (mode === 'tune') {
+        stopUrl = `http://localhost:8003/nn/mpdrnn/tune/stop/${taskId}`;
+      }
+      await fetch(stopUrl, { method: 'POST' });
       clearActiveTask();
       localStorage.removeItem('mpdrnn_active_tests_count');
       setStatus('idle');
@@ -269,8 +347,8 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
     }
   };
 
-  const plotUrls = results && results.output_file
-    ? getPlotUrls(results.output_file, selectedCycle, results.dataset_name, results.method)
+  const plotUrls = (results && results.output_file && mode === 'run')
+    ? getPlotUrls(results.output_file, selectedCycle, results.dataset_name, results.method || method)
     : null;
   const activeImageUrl = plotUrls ? (activeTab === 'train' ? plotUrls.train : plotUrls.test) : '';
 
@@ -278,18 +356,22 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
     <div className="space-y-6">
       {/* CÍMSOR ÉS MÓD JELZŐ */}
       <div className="flex items-center justify-end">
-        <span className="text-xs font-mono text-emerald-500">MPDRNN Workspace</span>
+        <span className="text-xs font-mono text-emerald-500 uppercase tracking-wider">
+          MPDRNN {mode === 'tune' ? 'Hyperparameter Tuning Lab' : 'Workspace'}
+        </span>
       </div>
 
-      {/* ITEMS-STRETCH GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
         {/* BAL OSZLOP: PARAMÉTEREK ÉS NAVIGÁCIÓ */}
         <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-5 flex flex-col justify-between h-full shadow-md`}>
           <div>
-            <h3 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>Model Parameters</h3>
+            <h3 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+              {mode === 'tune' ? 'Tuning Configuration' : 'Model Parameters'}
+            </h3>
 
             <div className="space-y-4">
+              {/* Dataset választó mindkét módnál */}
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Dataset</label>
                 <select
@@ -308,6 +390,7 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
                 </select>
               </div>
 
+              {/* Weight Method mindkét módnál */}
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Weight Method</label>
                 <select
@@ -324,6 +407,7 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
                 </select>
               </div>
 
+              {/* Activation mindkét módnál */}
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Activation</label>
                 <select
@@ -342,211 +426,183 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
                 </select>
               </div>
 
-              <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
-
-                {/* --- NEURON SPREAD MODE SELECTOR (Ricsi kérésére) --- */}
-                <div>
-                  <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                    Neuron Configuration Mode
-                  </label>
-                  <div className={`grid grid-cols-2 p-1 rounded-lg border text-xs font-semibold ${
-                    darkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
-                  }`}>
-                    <button
-                      type="button"
-                      disabled={status === 'running'}
-                      onClick={() => setNeuronMode('standard')}
-                      className={`py-1.5 px-2 rounded-md transition-all cursor-pointer ${
-                        neuronMode === 'standard'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      Standard (Auto)
-                    </button>
-                    <button
-                      type="button"
-                      disabled={status === 'running'}
-                      onClick={() => setNeuronMode('custom3')}
-                      className={`py-1.5 px-2 rounded-md transition-all cursor-pointer ${
-                        neuronMode === 'custom3'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      Custom 3-Layer
-                    </button>
-                  </div>
-                </div>
-
-                {/* DINAMIKUS MEZŐK A KIVÁLASZTOTT MÓD ALAPJÁN */}
-                {neuronMode === 'standard' ? (
-                  <div className="grid grid-cols-2 gap-3 animate-fadeIn">
-                    <div>
-                      <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layers</label>
-                      <input
-                        type="number"
-                        min="1"
-                        disabled={status === 'running'}
-                        value={numOfLayers}
-                        onChange={(e) => setNumOfLayers(parseInt(e.target.value) || 1)}
-                        className={`w-full text-sm p-2 rounded-md border ${
-                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                        } disabled:opacity-50`}
-                      />
-                    </div>
-                    <div>
-                      <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Total Neurons</label>
-                      <input
-                        type="number"
-                        min="1"
-                        disabled={status === 'running'}
-                        value={numOfNeurons}
-                        onChange={(e) => setNumOfNeurons(parseInt(e.target.value) || 1)}
-                        className={`w-full text-sm p-2 rounded-md border ${
-                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                        } disabled:opacity-50`}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2 animate-fadeIn">
-                    <span className={`block text-[11px] font-mono ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                      Fixed 3-Layer Architecture Configuration
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 1</label>
-                        <input
-                          type="number"
-                          min="1"
-                          disabled={status === 'running'}
-                          value={layer1Neurons}
-                          onChange={(e) => setLayer1Neurons(parseInt(e.target.value) || 1)}
-                          className={`w-full text-xs p-2 rounded-md border ${
-                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                          } disabled:opacity-50`}
-                        />
-                      </div>
-                      <div>
-                        <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 2</label>
-                        <input
-                          type="number"
-                          min="1"
-                          disabled={status === 'running'}
-                          value={layer2Neurons}
-                          onChange={(e) => setLayer2Neurons(parseInt(e.target.value) || 1)}
-                          className={`w-full text-xs p-2 rounded-md border ${
-                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                          } disabled:opacity-50`}
-                        />
-                      </div>
-                      <div>
-                        <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 3</label>
-                        <input
-                          type="number"
-                          min="1"
-                          disabled={status === 'running'}
-                          value={layer3Neurons}
-                          onChange={(e) => setLayer3Neurons(parseInt(e.target.value) || 1)}
-                          className={`w-full text-xs p-2 rounded-md border ${
-                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                          } disabled:opacity-50`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Sigma */}
-                <div>
-                  <div className="flex justify-between text-xs font-medium mb-1">
-                    <span className={darkMode ? 'text-slate-400' : 'text-slate-600'}>Sigma (Deviation)</span>
-                    <span className={method === 'BASE' ? (darkMode ? 'text-slate-600' : 'text-slate-400') : 'text-emerald-500 font-semibold'}>
-                      {method === 'BASE' ? 'N/A' : sigma}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.01"
-                    max="1.0"
-                    step="0.01"
-                    value={sigma}
-                    disabled={method === 'BASE' || status === 'running'}
-                    onChange={(e) => setSigma(parseFloat(e.target.value))}
-                    className="w-full cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed accent-emerald-500"
-                  />
-                </div>
-
-                {/* Decay Rate */}
-                <div>
-                  <div className="flex justify-between text-xs font-medium mb-1">
-                    <span className={darkMode ? 'text-slate-400' : 'text-slate-600'}>Decay Rate</span>
-                    <span className="text-emerald-500 font-semibold">{decayRate}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.0"
-                    max="2.0"
-                    step="0.1"
-                    value={decayRate}
-                    disabled={status === 'running'}
-                    onChange={(e) => setDecayRate(parseFloat(e.target.value))}
-                    className="w-full cursor-pointer disabled:opacity-50 accent-emerald-500"
-                  />
-                </div>
-
-                {/* Penalty Term */}
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>L2 Penalty</label>
-                  <input
-                    type="number"
-                    step="0.001"
-                    placeholder="e.g. 0.01"
-                    disabled={method !== 'EXP_ORT_C' || status === 'running'}
-                    value={penalty === null ? '' : penalty}
-                    onChange={(e) => setPenalty(e.target.value === '' ? null : parseFloat(e.target.value))}
-                    className={`w-full text-sm p-2 rounded-md border disabled:opacity-30 disabled:cursor-not-allowed ${
-                      darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                    }`}
-                  />
-                  {method !== 'EXP_ORT_C' && (
-                    <span className={`text-[10px] mt-1 block ${darkMode ? 'text-slate-500' : 'text-slate-600'}`}>Only allowed for EXP_ORT_C method.</span>
-                  )}
-                </div>
-
-                {/* Moore-Penrose rcond */}
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Moore-Penrose rcond</label>
-                  <input
-                    type="number"
-                    step="0.00001"
-                    placeholder="e.g. 1e-5 (Optional)"
-                    disabled={status === 'running'}
-                    value={rcond === null ? '' : rcond}
-                    onChange={(e) => setRcond(e.target.value === '' ? null : parseFloat(e.target.value))}
-                    className={`w-full text-sm p-2 rounded-md border ${
-                      darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                    } disabled:opacity-50`}
-                  />
-                </div>
-
-                {/* Tests & Seed */}
-                <div className="grid grid-cols-2 gap-3 items-center">
+              {mode === 'tune' ? (
+                /* ================= TUNING MÓD MEZŐI ================= */
+                <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
                   <div>
-                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tests Count</label>
-                    <input
-                      type="number"
-                      min="1"
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Search Engine Backend</label>
+                    <select
+                      value={backend}
                       disabled={status === 'running'}
-                      value={numberOfTests}
-                      onChange={(e) => setNumberOfTests(parseInt(e.target.value) || 1)}
+                      onChange={(e) => setBackend(e.target.value as 'optuna' | 'ray')}
                       className={`w-full text-sm p-2 rounded-md border ${
                         darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
                       } disabled:opacity-50`}
+                    >
+                      <option value="optuna">Optuna (TPE Sampler)</option>
+                      <option value="ray">Ray Tune (ASHA Scheduler)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Total Trials: {nTrials}
+                    </label>
+                    <input
+                      type="range"
+                      min="5"
+                      max="100"
+                      step="5"
+                      value={nTrials}
+                      disabled={status === 'running'}
+                      onChange={(e) => setNTrials(parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                     />
                   </div>
-                  <div className="flex items-center gap-2 mt-4">
+
+                  {/* Rétegenkénti Neuron Keresési Határok */}
+                  <div className="space-y-2">
+                    <span className={`block text-[11px] font-mono font-semibold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                      Layer Neuron Search Ranges
+                    </span>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className={`block text-[10px] font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 1 Min / Max</label>
+                        <div className="flex gap-1">
+                          <input
+                            type="number"
+                            value={l1Min}
+                            disabled={status === 'running'}
+                            onChange={(e) => setL1Min(parseInt(e.target.value) || 1)}
+                            className={`w-1/2 text-xs p-1.5 rounded border font-mono ${
+                              darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                            }`}
+                          />
+                          <input
+                            type="number"
+                            value={l1Max}
+                            disabled={status === 'running'}
+                            onChange={(e) => setL1Max(parseInt(e.target.value) || 1)}
+                            className={`w-1/2 text-xs p-1.5 rounded border font-mono ${
+                              darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className={`block text-[10px] font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 2 Min / Max</label>
+                        <div className="flex gap-1">
+                          <input
+                            type="number"
+                            value={l2Min}
+                            disabled={status === 'running'}
+                            onChange={(e) => setL2Min(parseInt(e.target.value) || 1)}
+                            className={`w-1/2 text-xs p-1.5 rounded border font-mono ${
+                              darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                            }`}
+                          />
+                          <input
+                            type="number"
+                            value={l2Max}
+                            disabled={status === 'running'}
+                            onChange={(e) => setL2Max(parseInt(e.target.value) || 1)}
+                            className={`w-1/2 text-xs p-1.5 rounded border font-mono ${
+                              darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={`block text-[10px] font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 3 Min / Max</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="number"
+                          value={l3Min}
+                          disabled={status === 'running'}
+                          onChange={(e) => setL3Min(parseInt(e.target.value) || 1)}
+                          className={`w-1/2 text-xs p-1.5 rounded border font-mono ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          }`}
+                        />
+                        <input
+                          type="number"
+                          value={l3Max}
+                          disabled={status === 'running'}
+                          onChange={(e) => setL3Max(parseInt(e.target.value) || 1)}
+                          className={`w-1/2 text-xs p-1.5 rounded border font-mono ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>rcond Min</label>
+                      <input
+                        type="number"
+                        step="1e-30"
+                        value={rcondMin}
+                        disabled={status === 'running'}
+                        onChange={(e) => setRcondMin(parseFloat(e.target.value) || 1e-30)}
+                        className={`w-full text-xs p-2 rounded border font-mono ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>rcond Max</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={rcondMax}
+                        disabled={status === 'running'}
+                        onChange={(e) => setRcondMax(parseFloat(e.target.value) || 0.1)}
+                        className={`w-full text-xs p-2 rounded border font-mono ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 💡 Penalty Term Min / Max - KIZÁRÓLAG EXP_ORT_C esetén jelenik meg */}
+                  {method === 'EXP_ORT_C' && (
+                    <div className="grid grid-cols-2 gap-3 animate-fadeIn">
+                      <div>
+                        <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Penalty Term Min</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={penaltyMin}
+                          disabled={status === 'running'}
+                          onChange={(e) => setPenaltyMin(parseFloat(e.target.value) || 0.1)}
+                          className={`w-full text-xs p-2 rounded border font-mono ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Penalty Term Max</label>
+                        <input
+                          type="number"
+                          step="0.5"
+                          value={penaltyMax}
+                          disabled={status === 'running'}
+                          onChange={(e) => setPenaltyMax(parseFloat(e.target.value) || 30.0)}
+                          className={`w-full text-xs p-2 rounded border font-mono ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-2">
                     <input
                       type="checkbox"
                       id="seed"
@@ -560,7 +616,225 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
                     }`}>Fix Random Seed</label>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* ================= SIMA FUTTATÁSI MÓD MEZŐI ================= */
+                <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                  <div>
+                    <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Neuron Configuration Mode
+                    </label>
+                    <div className={`grid grid-cols-2 p-1 rounded-lg border text-xs font-semibold ${
+                      darkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
+                    }`}>
+                      <button
+                        type="button"
+                        disabled={status === 'running'}
+                        onClick={() => setNeuronMode('standard')}
+                        className={`py-1.5 px-2 rounded-md transition-all cursor-pointer ${
+                          neuronMode === 'standard'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Standard (Auto)
+                      </button>
+                      <button
+                        type="button"
+                        disabled={status === 'running'}
+                        onClick={() => setNeuronMode('custom3')}
+                        className={`py-1.5 px-2 rounded-md transition-all cursor-pointer ${
+                          neuronMode === 'custom3'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Custom 3-Layer
+                      </button>
+                    </div>
+                  </div>
+
+                  {neuronMode === 'standard' ? (
+                    <div className="grid grid-cols-2 gap-3 animate-fadeIn">
+                      <div>
+                        <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layers</label>
+                        <input
+                          type="number"
+                          min="1"
+                          disabled={status === 'running'}
+                          value={numOfLayers}
+                          onChange={(e) => setNumOfLayers(parseInt(e.target.value) || 1)}
+                          className={`w-full text-sm p-2 rounded-md border ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          } disabled:opacity-50`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Total Neurons</label>
+                        <input
+                          type="number"
+                          min="1"
+                          disabled={status === 'running'}
+                          value={numOfNeurons}
+                          onChange={(e) => setNumOfNeurons(parseInt(e.target.value) || 1)}
+                          className={`w-full text-sm p-2 rounded-md border ${
+                            darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                          } disabled:opacity-50`}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 animate-fadeIn">
+                      <span className={`block text-[11px] font-mono ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                        Fixed 3-Layer Architecture Configuration
+                      </span>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 1</label>
+                          <input
+                            type="number"
+                            min="1"
+                            disabled={status === 'running'}
+                            value={layer1Neurons}
+                            onChange={(e) => setLayer1Neurons(parseInt(e.target.value) || 1)}
+                            className={`w-full text-xs p-2 rounded-md border ${
+                              darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                            } disabled:opacity-50`}
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 2</label>
+                          <input
+                            type="number"
+                            min="1"
+                            disabled={status === 'running'}
+                            value={layer2Neurons}
+                            onChange={(e) => setLayer2Neurons(parseInt(e.target.value) || 1)}
+                            className={`w-full text-xs p-2 rounded-md border ${
+                              darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                            } disabled:opacity-50`}
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Layer 3</label>
+                          <input
+                            type="number"
+                            min="1"
+                            disabled={status === 'running'}
+                            value={layer3Neurons}
+                            onChange={(e) => setLayer3Neurons(parseInt(e.target.value) || 1)}
+                            className={`w-full text-xs p-2 rounded-md border ${
+                              darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                            } disabled:opacity-50`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sigma */}
+                  <div>
+                    <div className="flex justify-between text-xs font-medium mb-1">
+                      <span className={darkMode ? 'text-slate-400' : 'text-slate-600'}>Sigma (Deviation)</span>
+                      <span className={method === 'BASE' ? (darkMode ? 'text-slate-600' : 'text-slate-400') : 'text-emerald-500 font-semibold'}>
+                        {method === 'BASE' ? 'N/A' : sigma}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.01"
+                      max="1.0"
+                      step="0.01"
+                      value={sigma}
+                      disabled={method === 'BASE' || status === 'running'}
+                      onChange={(e) => setSigma(parseFloat(e.target.value))}
+                      className="w-full cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed accent-emerald-500"
+                    />
+                  </div>
+
+                  {/* Decay Rate */}
+                  <div>
+                    <div className="flex justify-between text-xs font-medium mb-1">
+                      <span className={darkMode ? 'text-slate-400' : 'text-slate-600'}>Decay Rate</span>
+                      <span className="text-emerald-500 font-semibold">{decayRate}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.0"
+                      max="2.0"
+                      step="0.1"
+                      value={decayRate}
+                      disabled={status === 'running'}
+                      onChange={(e) => setDecayRate(parseFloat(e.target.value))}
+                      className="w-full cursor-pointer disabled:opacity-50 accent-emerald-500"
+                    />
+                  </div>
+
+                  {/* Penalty Term */}
+                  <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>L2 Penalty</label>
+                    <input
+                      type="number"
+                      step="0.001"
+                      placeholder="e.g. 0.01"
+                      disabled={method !== 'EXP_ORT_C' || status === 'running'}
+                      value={penalty === null ? '' : penalty}
+                      onChange={(e) => setPenalty(e.target.value === '' ? null : parseFloat(e.target.value))}
+                      className={`w-full text-sm p-2 rounded-md border disabled:opacity-30 disabled:cursor-not-allowed ${
+                        darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                      }`}
+                    />
+                    {method !== 'EXP_ORT_C' && (
+                      <span className={`text-[10px] mt-1 block ${darkMode ? 'text-slate-500' : 'text-slate-600'}`}>Only allowed for EXP_ORT_C method.</span>
+                    )}
+                  </div>
+
+                  {/* Moore-Penrose rcond */}
+                  <div>
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Moore-Penrose rcond</label>
+                    <input
+                      type="number"
+                      step="0.00001"
+                      placeholder="e.g. 1e-5 (Optional)"
+                      disabled={status === 'running'}
+                      value={rcond === null ? '' : rcond}
+                      onChange={(e) => setRcond(e.target.value === '' ? null : parseFloat(e.target.value))}
+                      className={`w-full text-sm p-2 rounded-md border ${
+                        darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                      } disabled:opacity-50`}
+                    />
+                  </div>
+
+                  {/* Tests & Seed */}
+                  <div className="grid grid-cols-2 gap-3 items-center">
+                    <div>
+                      <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tests Count</label>
+                      <input
+                        type="number"
+                        min="1"
+                        disabled={status === 'running'}
+                        value={numberOfTests}
+                        onChange={(e) => setNumberOfTests(parseInt(e.target.value) || 1)}
+                        className={`w-full text-sm p-2 rounded-md border ${
+                          darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                        } disabled:opacity-50`}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 mt-4">
+                      <input
+                        type="checkbox"
+                        id="seed"
+                        disabled={status === 'running'}
+                        checked={seed}
+                        onChange={(e) => setSeed(e.target.checked)}
+                        className="cursor-pointer disabled:opacity-50"
+                      />
+                      <label htmlFor="seed" className={`text-xs font-medium cursor-pointer disabled:opacity-50 ${
+                        darkMode ? 'text-slate-400' : 'text-slate-600'
+                      }`}>Fix Random Seed</label>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -578,7 +852,7 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
                 onClick={handleStart}
                 className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
-                <Play className="w-4 h-4 fill-white" /> Execute MPDRNN Run
+                <Play className="w-4 h-4 fill-white" /> {mode === 'tune' ? 'Launch Hyperparameter Search' : 'Execute MPDRNN Run'}
               </button>
             )}
 
@@ -611,11 +885,13 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
           )}
 
           {status === 'running' && (
-            <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-2 shrink-0 shadow-sm`}>
+            <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-3 shrink-0 shadow-sm`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
-                  <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>MPDRNN is running...</h4>
+                  <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                    {mode === 'tune' ? 'Optimizing MPDRNN hyperparameters...' : 'MPDRNN is running...'}
+                  </h4>
                 </div>
                 <span className="text-sm font-mono font-bold text-emerald-500">{progressPercent}%</span>
               </div>
@@ -626,6 +902,15 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
                 ></div>
               </div>
               <p className={`text-xs italic ${darkMode ? 'text-slate-500' : 'text-slate-600'}`}>{progressMsg}</p>
+
+              {mode === 'tune' && bestAccSoFar !== null && (
+                <div className={`p-3 rounded-xl border text-xs font-mono flex justify-between items-center animate-fadeIn ${
+                  darkMode ? 'bg-slate-950/60 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}>
+                  <span className="text-slate-500">Current Peak Accuracy:</span>
+                  <span className="font-bold text-emerald-400">{formatAccuracy(bestAccSoFar)}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -633,7 +918,49 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
           <div className={`flex-1 p-6 rounded-2xl border flex flex-col justify-center items-center ${
             darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
           } shadow-md overflow-hidden`}>
-            {results && plotUrls ? (
+
+            {mode === 'tune' && results && (
+              <div className="space-y-6 w-full animate-fadeIn">
+                <div className={`flex items-center gap-3 border-b pb-3 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  <h4 className="font-bold text-base text-emerald-400">Hyperparameter Optimization Finished</h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <span className={`block text-[10px] font-medium uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Best Accuracy</span>
+                    <span className="text-2xl font-mono font-black text-emerald-400">{formatAccuracy(results.best_accuracy)}</span>
+                  </div>
+
+                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <span className={`block text-[10px] font-medium uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Search Backend</span>
+                    <span className="text-2xl font-mono font-bold uppercase text-indigo-400">{results.backend ?? 'Optuna'}</span>
+                  </div>
+                </div>
+
+                {results.best_params && (
+                  <div className={`p-5 rounded-xl border space-y-3 ${darkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <h5 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Discovered Optimal Parameters:</h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(results.best_params).map(([key, value]) => (
+                        <div key={key} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                          <span className="block text-[10px] font-mono text-slate-500 uppercase">{key}</span>
+                          <span className="text-sm font-mono font-bold text-emerald-400">
+                            {Array.isArray(value)
+                              ? `[${value.join(', ')}]`
+                              : typeof value === 'number'
+                                ? value.toExponential(6)
+                                : String(value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {mode === 'run' && results && plotUrls ? (
               <div className="flex flex-col h-full w-full justify-between space-y-4">
 
                 {/* Fejléc és választók */}
@@ -794,12 +1121,14 @@ export default function MpdrnnWorkspace({ darkMode, onBack }: MpdrnnWorkspacePro
                   }`}>{results.output_file}</code>
                 </p>
               </div>
-            ) : (
+            ) : null}
+
+            {status === 'idle' && !results && (
               <div className="text-center space-y-2 py-12">
                 <ImageIcon className={`w-12 h-12 mx-auto ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
-                <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>No Active Plot Data</h4>
+                <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>No Active Data</h4>
                 <p className={`text-xs max-w-xs ${darkMode ? 'text-slate-500' : 'text-slate-600'}`}>
-                  Run the MPDRNN network to generate and display the training phase-plots.
+                  {mode === 'tune' ? 'Configure search limits and launch tuning.' : 'Run the MPDRNN network to generate and display the training phase-plots.'}
                 </p>
               </div>
             )}

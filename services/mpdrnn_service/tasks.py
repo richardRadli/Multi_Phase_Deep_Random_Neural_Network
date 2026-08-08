@@ -19,6 +19,7 @@ if PROJECT_ROOT not in sys.path:
 
 from config.data_paths import JSON_FILES_PATHS
 from nn.mpdrnn.mpdrnn import MPDRNN
+from nn.mpdrnn.param_search_mpdrnn import ParamSearchMPDRNN
 
 
 def exponential_neurons(num_of_layers, num_of_neurons, decay_rate=0.5):
@@ -87,7 +88,7 @@ def mpdrnn_task(self, config: dict):
 
         flattened_config = {}
         for key, value in nested_config.items():
-            if dataset_name in value:
+            if key != 'hyperparamtuning' and dataset_name in value:
                 flattened_config[key] = value[dataset_name]
 
         override_cfg = {**simple_config, **flattened_config}
@@ -136,4 +137,59 @@ def mpdrnn_task(self, config: dict):
         }
     except Exception as e:
         logging.exception(f"MPDRNN error: {str(e)}")
+        raise RuntimeError(str(e))
+
+
+@celery_app.task(bind=True, name="tasks.mpdrnn_tune_task")
+def mpdrnn_tune_task(self, config: dict):
+    logging.info("Starting MPDRNN hyperparameter search task")
+    task_id = self.request.id
+
+    self.update_state(state="PROGRESS", meta={'status': "Exploring hyperparameter space...", "progress_percent": 0})
+    try:
+        dataset_name = config["dataset_name"]
+        backend = config.get("backend", "optuna")
+        n_trials = config.get("n_trials", 25)
+
+        override_cfg = {
+            "dataset_name": dataset_name,
+            "task_id": task_id,
+            "n_trials": n_trials,
+            "seed": config.get("seed", False),
+            "method": config.get("method", "BASE"),
+            "activation": config.get("activation", "LeakyReLU"),
+            "mu": config.get("mu", 0.0),
+            "sigma": config.get("sigma", 0.1),
+            "rcond_min": config.get("rcond_min", 1e-30),
+            "rcond_max": config.get("rcond_max", 1e-1),
+            "penalty_min": config.get("penalty_min", 0.1),
+            "penalty_max": config.get("penalty_max", 30.0),
+            "l1_min": config.get("l1_min", 600),
+            "l1_max": config.get("l1_max", 1000),
+            "l2_min": config.get("l2_min", 200),
+            "l2_max": config.get("l2_max", 500),
+            "l3_min": config.get("l3_min", 50),
+            "l3_max": config.get("l3_max", 100)
+        }
+
+        searcher = ParamSearchMPDRNN(override_cfg=override_cfg, celery_task=self)
+        res = searcher.tune_params(backend=backend, n_trials=n_trials)
+
+        is_aborted = self.backend.client.get(f"mpdrnn:abort:{task_id}")
+        if is_aborted:
+            self.update_state(state="REVOKED")
+            return {"status": "ABORTED", "dataset_name": dataset_name, "backend": backend}
+
+        return {
+            "status": "SUCCESS",
+            "dataset_name": dataset_name,
+            "backend": res.get("backend", backend),
+            "best_accuracy": res.get("best_accuracy", 0.0),
+            "best_params": res.get("best_params", {})
+        }
+    except Exception as e:
+        if "ABORTED" in str(e):
+            self.update_state(state="REVOKED")
+            return {"status": "ABORTED", "dataset_name": config.get("dataset_name")}
+        logging.exception(f"MPDRNN hyperparameter search error: {str(e)}")
         raise RuntimeError(str(e))

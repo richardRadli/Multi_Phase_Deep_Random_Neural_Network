@@ -13,8 +13,7 @@ import HelmWorkSpace from './views/HelmWorkspace';
 import DatasetWorkspace from './views/DatasetWorkspace';
 import FcnnWorkspace from './views/FcnnWorkspace';
 
-// 💡 1. KIEGÉSZÍTVE A TUNE MÓDDAL
-type ViewType = 'dashboard' | 'dataset' | 'fcnn_train' | 'fcnn_test' | 'fcnn_tune' | 'helm' | 'helm_tune' | 'mpdrnn';
+type ViewType = 'dashboard' | 'dataset' | 'fcnn_train' | 'fcnn_test' | 'fcnn_tune' | 'helm' | 'helm_tune' | 'mpdrnn' | 'mpdrnn_tune';
 
 interface ServiceStatus {
   dataset: 'online' | 'offline' | 'checking';
@@ -37,7 +36,7 @@ export default function App() {
   const checkEndpoint = async (url: string): Promise<boolean> => {
     try {
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 1500); // 1.5 mp timeout
+      const id = setTimeout(() => controller.abort(), 1500);
 
       const res = await fetch(url, {
         signal: controller.signal,
@@ -51,7 +50,6 @@ export default function App() {
     }
   };
 
-  // Státuszellenőrző ciklus
   useEffect(() => {
     const checkAllServices = async () => {
       const [datasetOk, fcnnOk, helmOk, mpdrnnOk] = await Promise.all([
@@ -73,12 +71,11 @@ export default function App() {
 
     const interval = setInterval(() => {
       void checkAllServices();
-    }, 8000); // 8 másodpercenként frissít
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Státuszjelző pilula a fejlécben
   const StatusDot = ({ label, port, status }: { label: string; port: string; status: 'online' | 'offline' | 'checking' }) => {
     return (
       <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 text-xs font-semibold ${
@@ -100,7 +97,7 @@ export default function App() {
       </div>
     );
   };
-
+  console.log("Jelenlegi nézet:", currentView);
   return (
     <div className={`min-h-screen flex flex-col justify-between transition-colors duration-200 ${
       darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
@@ -110,7 +107,6 @@ export default function App() {
       <header className={`border-b px-8 py-4 flex items-center justify-between shrink-0 transition-colors duration-200 ${
         darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
       }`}>
-        {/* Bal oldal: Logó */}
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-500/20">
             <Cpu className="w-6 h-6 animate-pulse" />
@@ -118,7 +114,6 @@ export default function App() {
           <h1 className="text-xl font-extrabold tracking-tight">Neural Network Training and Eval System</h1>
         </div>
 
-        {/* Jobb oldal: Élő Státuszok */}
         <div className="flex items-center gap-6">
           <div className="hidden md:flex items-center gap-2.5">
             <StatusDot label="DATA" port="8000" status={services.dataset} />
@@ -179,7 +174,7 @@ export default function App() {
                 </button>
               </div>
 
-              {/* FCNN Card - 💡 2. HARMINCADIK GOMBBAL KIEGÉSZÍTVE */}
+              {/* FCNN Card */}
               <div className={`p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.015] hover:shadow-xl flex flex-col justify-between min-h-[220px] ${
                 darkMode ? 'bg-slate-900 border-slate-800 hover:border-indigo-500/30' : 'bg-white border-slate-200 hover:shadow-indigo-500/5 shadow-md'
               }`}>
@@ -273,12 +268,21 @@ export default function App() {
                   </div>
                   <p className="text-sm text-slate-500 leading-relaxed mb-6">Multi-Phase Deep Randomized Neural Network control center.</p>
                 </div>
-                <button
-                  onClick={() => setCurrentView('mpdrnn')}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs cursor-pointer transition-all shadow-md shadow-emerald-600/10"
-                >
-                  Open MPDRNN Workspace
-                </button>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    onClick={() => setCurrentView('mpdrnn')}
+                    className="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-emerald-600/10 text-center"
+                  >
+                    Execution
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('mpdrnn_tune')}
+                    className="py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-purple-600/10 text-center"
+                  >
+                    H-Param Tuning
+                  </button>
+                </div>
               </div>
 
             </div>
@@ -311,7 +315,6 @@ export default function App() {
               />
             )}
 
-            {/* 💡 3. TUNE MÓDÚ FCNN WORKSPACE RENDERELÉSE */}
             {currentView === 'fcnn_tune' && (
               <FcnnWorkspace
                 darkMode={darkMode}
@@ -339,6 +342,15 @@ export default function App() {
             {currentView === 'mpdrnn' && (
               <MpdrnnWorkspace
                 darkMode={darkMode}
+                mode="run"
+                onBack={() => setCurrentView('dashboard')}
+              />
+            )}
+
+            {currentView === 'mpdrnn_tune' && (
+              <MpdrnnWorkspace
+                darkMode={darkMode}
+                mode="tune"
                 onBack={() => setCurrentView('dashboard')}
               />
             )}
