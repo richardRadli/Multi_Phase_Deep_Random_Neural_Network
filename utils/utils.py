@@ -264,12 +264,7 @@ def get_num_of_neurons(cfg: dict, method: str) -> list:
         KeyError: If the provided method is not found in the configuration.
     """
 
-    num_neurons = {
-        "BASE": cfg.get("eq_neurons"),
-        "EXP_ORT": cfg.get("exp_neurons"),
-        "EXP_ORT_C": cfg.get("exp_neurons"),
-    }
-    return num_neurons[method]
+    return cfg.get("exp_neurons") or cfg.get("eq_neurons")
 
 
 def insert_data_to_excel(filename: str, dataset_name: str, row: int, data: list) -> None:
@@ -460,7 +455,7 @@ def plot_confusion_matrix_fcnn(cm: np.ndarray, path_to_plot: str, operation: str
 
 
 def plot_confusion_matrix_mpdrnn(cm: np.ndarray, path_to_plot: str, name_of_dataset: str, operation: str, method: str,
-                                 labels=None) -> None:
+                                 labels=None, prefix: str = "") -> None:
     """
     Plots multiple confusion matrices side by side and saves the plot as a PNG file.
 

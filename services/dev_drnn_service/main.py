@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI
-from services.mpdrnn_service.api.mpdrnn_router import mpdrnn_router
+from services.dev_drnn_service.api.dev_drnn_router import dev_drnn_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -23,7 +23,7 @@ app.add_middleware(
 
 if os.path.exists("/app/storage"):
     app.mount("/static", StaticFiles(directory="/app/storage"), name="static")
-app.include_router(mpdrnn_router)
+app.include_router(dev_drnn_router)
 
 @app.get("/", tags=["Health Check"])
 async def root():

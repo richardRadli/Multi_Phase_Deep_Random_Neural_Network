@@ -59,7 +59,7 @@ class ConfigFilePaths(_Const):
     def get_data_path(self, key: str) -> str:
         return os.path.join(self.PROJECT_ROOT, self.dirs_config_paths.get(key, ""))
 
-
+1
 class MPDRNNPaths(_Const):
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------
@@ -71,8 +71,8 @@ class MPDRNNPaths(_Const):
         :return: Full absolute path.
         """
         prefixes = {
-            "results_": "networks/mpdrnn/results",
-            "hyperparam_": "networks/mpdrnn/hyperparam",
+            "results_": "networks/mpdrnn/data",
+            "hyperparam_": "networks/mpdrnn/hyperparam_tuning",
             "hyperparam_tuning_": "networks/mpdrnn/hyperparam_tuning"
         }
 
@@ -97,7 +97,7 @@ class IPMPDRNNPaths(_Const):
         :return: Full absolute path.
         """
         prefixes = {
-            "results_": "networks/ipmpdrnn/results",
+            "results_": "networks/ipmpdrnn/data",
             "hyperparam_": "networks/ipmpdrnn/hyperparam_tuning",
             "hyperparam_tuning_": "networks/ipmpdrnn/hyperparam_tuning"
         }
@@ -152,7 +152,7 @@ class HELMPaths(_Const):
         """
         prefixes = {
             "helm_": "networks/helm/images/confusion_matrix",
-            "results_": "networks/helm/results",
+            "results_": "networks/helm/data",
             "hyperparam_": "networks/helm/hyperparam_tuning",
             "hyperparam_tuning_": "networks/helm/hyperparam_tuning"
         }

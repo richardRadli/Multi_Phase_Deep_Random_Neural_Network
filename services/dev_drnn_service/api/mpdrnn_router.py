@@ -10,9 +10,9 @@ if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
 from config.dataset_config import VALID_DATASETS
-from services.mpdrnn_service.tasks import celery_app, mpdrnn_task, mpdrnn_tune_task
+from services.dev_drnn_service.tasks import celery_app, mpdrnn_task, mpdrnn_tune_task
 
-mpdrnn_router = APIRouter(prefix="/nn/mpdrnn", tags=["MPDRNN Unified Control"])
+dev_drnn_router = APIRouter(prefix="/nn/dev_drnn", tags=["DevDRNN Unified Control"])
 
 DatasetEnum = Enum("DatasetEnum", {ds.upper(): ds for ds in VALID_DATASETS}, type=str)
 
@@ -36,7 +36,7 @@ class SearchBackendEnum(str, Enum):
     RAY = "ray"
 
 
-class MPDRNNConfig(BaseModel):
+class DevDRNNConfig(BaseModel):
     number_of_tests: int = Field(default=20, ge=1, description="Tesztek futtatási száma")
     seed: bool = Field(default=True, description="True esetén fixálja a random seedet")
 
@@ -55,7 +55,7 @@ class MPDRNNConfig(BaseModel):
     rcond: Optional[float] = Field(default=None, description="Opcionális Moore-Penrose rcond felülírás")
 
 
-class MPDRNNTuneConfig(BaseModel):
+class DevDRNNTuneConfig(BaseModel):
     backend: SearchBackendEnum = Field(default=SearchBackendEnum.OPTUNA, description="Keresési backend (optuna vagy ray)")
     n_trials: int = Field(default=25, ge=1, le=100, description="Próbálkozások száma")
     seed: bool = Field(default=False, description="Fixálja a véletlenszám-generálást")
@@ -77,9 +77,9 @@ class MPDRNNTuneConfig(BaseModel):
     l3_max: int = Field(default=100, ge=1, description="Layer 3 maximum neuronszám")
 
 
-@mpdrnn_router.post("/start", status_code=status.HTTP_202_ACCEPTED)
-async def start_mpdrnn_process(
-        config: MPDRNNConfig,
+@dev_drnn_router.post("/start", status_code=status.HTTP_202_ACCEPTED)
+async def start_dev_drnn_process(
+        config: DevDRNNConfig,
         dataset_name: DatasetEnum = Query(..., description="Válaszd ki az adathalmazt"),
         method: MethodEnum = Query(MethodEnum.BASE, description="Válaszd ki a súlygenerálási módszert"),
         activation: ActivationEnum = Query(ActivationEnum.LeakyReLU, description="Válaszd ki az aktivációs függvényt")
@@ -105,9 +105,9 @@ async def start_mpdrnn_process(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@mpdrnn_router.post("/tune", status_code=status.HTTP_202_ACCEPTED)
-async def start_mpdrnn_tuning(
-        config: MPDRNNTuneConfig,
+@dev_drnn_router.post("/tune", status_code=status.HTTP_202_ACCEPTED)
+async def start_dev_drnn_tuning(
+        config: DevDRNNTuneConfig,
         dataset_name: DatasetEnum = Query(..., description="Válaszd ki az adathalmazt")
 ):
     try:
@@ -121,28 +121,28 @@ async def start_mpdrnn_tuning(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@mpdrnn_router.post("/stop/{task_id}")
-def stop_mpdrnn_task(task_id: str):
+@dev_drnn_router.post("/stop/{task_id}")
+def stop_dev_drnn_task(task_id: str):
     celery_app.backend.client.set(f"mpdrnn:abort:{task_id}", 1, ex=3600)
     celery_app.control.revoke(task_id, terminate=False)
     return {
         "status": "ABORT_SIGNAL_SENT",
-        "message": f"MPDRNN task {task_id} abort signal sent to Redis."
+        "message": f"DevDRNN task {task_id} abort signal sent to Redis."
     }
 
 
-@mpdrnn_router.post("/tune/stop/{task_id}")
-def stop_mpdrnn_tune_task(task_id: str):
+@dev_drnn_router.post("/tune/stop/{task_id}")
+def stop_dev_drnn_tune_task(task_id: str):
     celery_app.backend.client.set(f"mpdrnn:abort:{task_id}", 1, ex=3600)
     celery_app.control.revoke(task_id, terminate=False)
     return {
         "status": "ABORT_SIGNAL_SENT",
-        "message": f"MPDRNN tune task {task_id} abort signal sent to Redis."
+        "message": f"DevDRNN tune task {task_id} abort signal sent to Redis."
     }
 
 
-@mpdrnn_router.get("/status/{task_id}")
-def get_mpdrnn_status(task_id: str):
+@dev_drnn_router.get("/status/{task_id}")
+def get_dev_drnn_status(task_id: str):
     task_result = celery_app.AsyncResult(task_id)
     response = {"task_id": task_id, "status": task_result.state, "info": None}
     if task_result.state == "SUCCESS":
@@ -156,8 +156,8 @@ def get_mpdrnn_status(task_id: str):
     return response
 
 
-@mpdrnn_router.get("/tune/status/{task_id}")
-def get_mpdrnn_tune_status(task_id: str):
+@dev_drnn_router.get("/tune/status/{task_id}")
+def get_dev_drnn_tune_status(task_id: str):
     task_result = celery_app.AsyncResult(task_id)
     response = {"task_id": task_id, "status": task_result.state, "info": None}
     if task_result.state == "SUCCESS":
@@ -171,6 +171,6 @@ def get_mpdrnn_tune_status(task_id: str):
     return response
 
 
-@mpdrnn_router.get("/datasets", tags=["Config"])
+@dev_drnn_router.get("/datasets", tags=["Config"])
 def get_datasets():
     return {"datasets": VALID_DATASETS}

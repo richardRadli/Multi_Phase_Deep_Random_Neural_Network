@@ -4,22 +4,36 @@ import {
   Cpu,
   Network,
   Binary,
+  Scissors,
   Moon,
   Sun
 } from 'lucide-react';
 
-import MpdrnnWorkspace from './views/MpdrnnWorkspace';
+import DevDrnnWorkspace from './views/DevDrnnWorkspace';
+import DevDrnnAuxWorkspace from './views/DevDrnnAuxWorkspace';
 import HelmWorkSpace from './views/HelmWorkspace';
 import DatasetWorkspace from './views/DatasetWorkspace';
 import FcnnWorkspace from './views/FcnnWorkspace';
 
-type ViewType = 'dashboard' | 'dataset' | 'fcnn_train' | 'fcnn_test' | 'fcnn_tune' | 'helm' | 'helm_tune' | 'mpdrnn' | 'mpdrnn_tune';
+type ViewType =
+  | 'dashboard'
+  | 'dataset'
+  | 'fcnn_train'
+  | 'fcnn_test'
+  | 'fcnn_tune'
+  | 'helm'
+  | 'helm_tune'
+  | 'dev_drnn'
+  | 'dev_drnn_tune'
+  | 'dev_drnn_aux'
+  | 'dev_drnn_aux_tune';
 
 interface ServiceStatus {
   dataset: 'online' | 'offline' | 'checking';
   fcnn: 'online' | 'offline' | 'checking';
   helm: 'online' | 'offline' | 'checking';
-  mpdrnn: 'online' | 'offline' | 'checking';
+  dev_drnn: 'online' | 'offline' | 'checking';
+  dev_drnn_aux: 'online' | 'offline' | 'checking';
 }
 
 export default function App() {
@@ -30,7 +44,8 @@ export default function App() {
     dataset: 'checking',
     fcnn: 'checking',
     helm: 'checking',
-    mpdrnn: 'checking'
+    dev_drnn: 'checking',
+    dev_drnn_aux: 'checking'
   });
 
   const checkEndpoint = async (url: string): Promise<boolean> => {
@@ -52,18 +67,20 @@ export default function App() {
 
   useEffect(() => {
     const checkAllServices = async () => {
-      const [datasetOk, fcnnOk, helmOk, mpdrnnOk] = await Promise.all([
+      const [datasetOk, fcnnOk, helmOk, devDrnnOk, devDrnnAuxOk] = await Promise.all([
         checkEndpoint('http://localhost:8000/'),
         checkEndpoint('http://localhost:8001/'),
         checkEndpoint('http://localhost:8002/'),
-        checkEndpoint('http://localhost:8003/')
+        checkEndpoint('http://localhost:8003/'),
+        checkEndpoint('http://localhost:8004/')
       ]);
 
       setServices({
         dataset: datasetOk ? 'online' : 'offline',
         fcnn: fcnnOk ? 'online' : 'offline',
         helm: helmOk ? 'online' : 'offline',
-        mpdrnn: mpdrnnOk ? 'online' : 'offline'
+        dev_drnn: devDrnnOk ? 'online' : 'offline',
+        dev_drnn_aux: devDrnnAuxOk ? 'online' : 'offline'
       });
     };
 
@@ -97,7 +114,7 @@ export default function App() {
       </div>
     );
   };
-  console.log("Jelenlegi nézet:", currentView);
+
   return (
     <div className={`min-h-screen flex flex-col justify-between transition-colors duration-200 ${
       darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
@@ -115,11 +132,12 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-2.5">
+          <div className="hidden md:flex items-center gap-2">
             <StatusDot label="DATA" port="8000" status={services.dataset} />
             <StatusDot label="FCNN" port="8001" status={services.fcnn} />
             <StatusDot label="HELM" port="8002" status={services.helm} />
-            <StatusDot label="MPDR" port="8003" status={services.mpdrnn} />
+            <StatusDot label="DEV-DRNN" port="8003" status={services.dev_drnn} />
+            <StatusDot label="DEV-AUX" port="8004" status={services.dev_drnn_aux} />
           </div>
 
           <button
@@ -138,7 +156,7 @@ export default function App() {
 
         {/* ==================== 1. DASHBOARD NÉZET ==================== */}
         {currentView === 'dashboard' && (
-          <div className="space-y-8 w-full animate-fadeIn max-w-6xl mx-auto py-4">
+          <div className="space-y-8 w-full animate-fadeIn max-w-7xl mx-auto py-4">
 
             <div className="text-center space-y-2 mb-4">
               <h2 className="text-3xl font-black tracking-tight bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 bg-clip-text text-transparent">
@@ -146,7 +164,7 @@ export default function App() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full items-stretch">
 
               {/* Dataset Card */}
               <div className={`p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.015] hover:shadow-xl flex flex-col justify-between min-h-[220px] ${
@@ -250,7 +268,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* MPDRNN Card */}
+              {/* DevDRNN Card */}
               <div className={`p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.015] hover:shadow-xl flex flex-col justify-between min-h-[220px] ${
                 darkMode ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/30' : 'bg-white border-slate-200 hover:shadow-emerald-500/5 shadow-md'
               }`}>
@@ -261,23 +279,58 @@ export default function App() {
                         <Binary className="w-7 h-7" />
                       </div>
                       <div>
-                        <h3 className="font-extrabold text-lg">MPDRNN Service</h3>
+                        <h3 className="font-extrabold text-lg">DevDRNN Service</h3>
                         <span className="text-xs font-mono text-slate-500">Port :8003</span>
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-500 leading-relaxed mb-6">Multi-Phase Deep Randomized Neural Network control center.</p>
+                  <p className="text-sm text-slate-500 leading-relaxed mb-6">Multi-Phase Deep Randomized Neural Network workspace.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <button
-                    onClick={() => setCurrentView('mpdrnn')}
+                    onClick={() => setCurrentView('dev_drnn')}
                     className="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-emerald-600/10 text-center"
                   >
                     Execution
                   </button>
                   <button
-                    onClick={() => setCurrentView('mpdrnn_tune')}
+                    onClick={() => setCurrentView('dev_drnn_tune')}
+                    className="py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-purple-600/10 text-center"
+                  >
+                    H-Param Tuning
+                  </button>
+                </div>
+              </div>
+
+              {/* DevDRNN-Aux Card */}
+              <div className={`p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.015] hover:shadow-xl flex flex-col justify-between min-h-[220px] ${
+                darkMode ? 'bg-slate-900 border-slate-800 hover:border-teal-500/30' : 'bg-white border-slate-200 hover:shadow-teal-500/5 shadow-md'
+              }`}>
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3.5 bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400 rounded-2xl shadow-sm">
+                        <Scissors className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h3 className="font-extrabold text-lg">DevDRNN-Aux Service</h3>
+                        <span className="text-xs font-mono text-slate-500">Port :8004</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-500 leading-relaxed mb-6">Iterative Pruning Deep Randomized Neural Network with auxiliary networks.</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    onClick={() => setCurrentView('dev_drnn_aux')}
+                    className="py-3 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-teal-600/10 text-center"
+                  >
+                    Execution
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('dev_drnn_aux_tune')}
                     className="py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-[11px] cursor-pointer transition-all shadow-md shadow-purple-600/10 text-center"
                   >
                     H-Param Tuning
@@ -339,16 +392,32 @@ export default function App() {
               />
             )}
 
-            {currentView === 'mpdrnn' && (
-              <MpdrnnWorkspace
+            {currentView === 'dev_drnn' && (
+              <DevDrnnWorkspace
                 darkMode={darkMode}
                 mode="run"
                 onBack={() => setCurrentView('dashboard')}
               />
             )}
 
-            {currentView === 'mpdrnn_tune' && (
-              <MpdrnnWorkspace
+            {currentView === 'dev_drnn_tune' && (
+              <DevDrnnWorkspace
+                darkMode={darkMode}
+                mode="tune"
+                onBack={() => setCurrentView('dashboard')}
+              />
+            )}
+
+            {currentView === 'dev_drnn_aux' && (
+              <DevDrnnAuxWorkspace
+                darkMode={darkMode}
+                mode="run"
+                onBack={() => setCurrentView('dashboard')}
+              />
+            )}
+
+            {currentView === 'dev_drnn_aux_tune' && (
+              <DevDrnnAuxWorkspace
                 darkMode={darkMode}
                 mode="tune"
                 onBack={() => setCurrentView('dashboard')}

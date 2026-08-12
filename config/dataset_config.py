@@ -100,7 +100,6 @@ def general_dataset_configs(dataset_type: str) -> Dict:
     config = raw_configs[dataset_type]
     base_path = DATASET_FILES_PATHS.get_data_path(f"dataset_path_{dataset_type}")
 
-    # Egyedi nyers fájlnevek kezelése
     if dataset_type == "wall":
         data_filename = "sensor_readings_24.data"
     elif dataset_type == "waveform":

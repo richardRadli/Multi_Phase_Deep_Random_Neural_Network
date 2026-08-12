@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Play, Square, Loader2, Image as ImageIcon, AlertCircle, ZoomIn, X, CheckCircle } from 'lucide-react';
 
-interface MpdrnnWorkspaceProps {
+interface DevDrnnWorkspaceProps {
   darkMode: boolean;
   mode?: 'run' | 'tune';
   onBack: () => void;
 }
 
-interface MpdrnnResult {
+interface DevDrnnResult {
   status: string;
   dataset_name: string;
   method?: string;
@@ -47,13 +47,13 @@ const formatAccuracy = (val: number | undefined): string => {
   return `${pct.toFixed(2)}%`;
 };
 
-export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: MpdrnnWorkspaceProps) {
+export default function DevDrnnWorkspace({ darkMode, mode = 'run', onBack }: DevDrnnWorkspaceProps) {
   const [availableDatasets, setAvailableDatasets] = useState<string[]>([]);
   const [datasetName, setDatasetName] = useState<string>('');
   const [method, setMethod] = useState<'BASE' | 'EXP_ORT' | 'EXP_ORT_C'>('BASE');
   const [activation, setActivation] = useState<string>('LeakyReLU');
 
-  // MPDRNN Execution Config paraméterek
+  // DevDRNN Execution Config parameters
   const [numberOfTests, setNumberOfTests] = useState<number>(20);
   const [seed, setSeed] = useState<boolean>(true);
   const [sigma, setSigma] = useState<number>(0.1);
@@ -70,7 +70,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
   const [decayRate, setDecayRate] = useState<number>(0.5);
   const [rcond, setRcond] = useState<number | null>(null);
 
-  // MPDRNN Tuning Config paraméterek
+  // DevDRNN Tuning Config parameters
   const [backend, setBackend] = useState<'optuna' | 'ray'>('optuna');
   const [nTrials, setNTrials] = useState<number>(25);
   const [rcondMin, setRcondMin] = useState<number>(1e-30);
@@ -78,7 +78,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
   const [penaltyMin, setPenaltyMin] = useState<number>(0.1);
   const [penaltyMax, setPenaltyMax] = useState<number>(30.0);
 
-  // Rétegenkénti neuron keresési határok
+  // Layer neuron search ranges
   const [l1Min, setL1Min] = useState<number>(600);
   const [l1Max, setL1Max] = useState<number>(1000);
   const [l2Min, setL2Min] = useState<number>(200);
@@ -86,22 +86,22 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
   const [l3Min, setL3Min] = useState<number>(50);
   const [l3Max, setL3Max] = useState<number>(100);
 
-  // Helyi böngésző memóriából való visszaolvasás
-  const savedTaskId = localStorage.getItem(`mpdrnn_active_task_id_${mode}`);
+  // Read state from localStorage
+  const savedTaskId = localStorage.getItem(`dev_drnn_active_task_id_${mode}`);
   const savedStatus = savedTaskId ? 'running' : 'idle';
-  const savedProgressPercent = Number(localStorage.getItem(`mpdrnn_progress_percent_${mode}`)) || 0;
-  const savedProgressMsg = localStorage.getItem(`mpdrnn_progress_msg_${mode}`) || '';
+  const savedProgressPercent = Number(localStorage.getItem(`dev_drnn_progress_percent_${mode}`)) || 0;
+  const savedProgressMsg = localStorage.getItem(`dev_drnn_progress_msg_${mode}`) || '';
 
-  const savedCompletedTestsCount = Number(localStorage.getItem('mpdrnn_completed_tests_count')) || 1;
+  const savedCompletedTestsCount = Number(localStorage.getItem('dev_drnn_completed_tests_count')) || 1;
   const [completedTestsCount, setCompletedTestsCount] = useState<number>(savedCompletedTestsCount);
 
-  // Futási állapotok
+  // Runtime states
   const [taskId, setTaskId] = useState<string | null>(savedTaskId);
   const [status, setStatus] = useState<'idle' | 'running' | 'error'>(savedStatus);
   const [progressMsg, setProgressMsg] = useState<string>(savedProgressMsg);
   const [progressPercent, setProgressPercent] = useState<number>(savedProgressPercent);
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [results, setResults] = useState<MpdrnnResult | null>(null);
+  const [results, setResults] = useState<DevDrnnResult | null>(null);
 
   const [bestAccSoFar, setBestAccSoFar] = useState<number | null>(null);
   const [selectedCycle, setSelectedCycle] = useState<number>(0);
@@ -111,9 +111,9 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
 
   const clearActiveTask = () => {
     setTaskId(null);
-    localStorage.removeItem(`mpdrnn_active_task_id_${mode}`);
-    localStorage.removeItem(`mpdrnn_progress_percent_${mode}`);
-    localStorage.removeItem(`mpdrnn_progress_msg_${mode}`);
+    localStorage.removeItem(`dev_drnn_active_task_id_${mode}`);
+    localStorage.removeItem(`dev_drnn_progress_percent_${mode}`);
+    localStorage.removeItem(`dev_drnn_progress_msg_${mode}`);
   };
 
   const handleMethodChange = (newMethod: 'BASE' | 'EXP_ORT' | 'EXP_ORT_C') => {
@@ -181,9 +181,9 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
   useEffect(() => {
     if (!taskId) return;
 
-    let statusUrl = `http://localhost:8003/nn/mpdrnn/status/${taskId}`;
+    let statusUrl = `http://localhost:8003/nn/dev_drnn/status/${taskId}`;
     if (mode === 'tune') {
-      statusUrl = `http://localhost:8003/nn/mpdrnn/tune/status/${taskId}`;
+      statusUrl = `http://localhost:8003/nn/dev_drnn/tune/status/${taskId}`;
     }
 
     pollingRef.current = setInterval(async () => {
@@ -192,29 +192,29 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
         if (response.ok) {
           const data = (await response.json()) as {
             status: string;
-            info: MpdrnnResult | ProgressInfo | string | null
+            info: DevDrnnResult | ProgressInfo | string | null
           };
 
           if (data.status === 'SUCCESS') {
             setStatus('idle');
             setProgressPercent(100);
-            setResults(data.info as MpdrnnResult);
+            setResults(data.info as DevDrnnResult);
             setSelectedCycle(0);
 
             if (mode === 'run') {
-              const runTests = Number(localStorage.getItem('mpdrnn_active_tests_count')) || numberOfTests;
+              const runTests = Number(localStorage.getItem('dev_drnn_active_tests_count')) || numberOfTests;
               setCompletedTestsCount(runTests);
-              localStorage.setItem('mpdrnn_completed_tests_count', String(runTests));
+              localStorage.setItem('dev_drnn_completed_tests_count', String(runTests));
             }
 
             clearActiveTask();
-            localStorage.removeItem('mpdrnn_active_tests_count');
+            localStorage.removeItem('dev_drnn_active_tests_count');
             if (pollingRef.current) clearInterval(pollingRef.current);
           } else if (data.status === 'FAILURE') {
             setStatus('error');
-            setErrorMessage(typeof data.info === 'string' ? data.info : 'Unknown MPDRNN engine error.');
+            setErrorMessage(typeof data.info === 'string' ? data.info : 'Unknown DevDRNN engine error.');
             clearActiveTask();
-            localStorage.removeItem('mpdrnn_active_tests_count');
+            localStorage.removeItem('dev_drnn_active_tests_count');
             if (pollingRef.current) clearInterval(pollingRef.current);
           } else if (data.status === 'PROGRESS') {
             const progressInfo = data.info as ProgressInfo;
@@ -241,8 +241,8 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
             setProgressMsg(newMsg);
             setProgressPercent(newPercent);
 
-            localStorage.setItem(`mpdrnn_progress_percent_${mode}`, String(newPercent));
-            localStorage.setItem(`mpdrnn_progress_msg_${mode}`, newMsg);
+            localStorage.setItem(`dev_drnn_progress_percent_${mode}`, String(newPercent));
+            localStorage.setItem(`dev_drnn_progress_msg_${mode}`, newMsg);
           }
         }
       } catch (err) {
@@ -263,7 +263,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
     setProgressMsg('Queuing task in Celery...');
     setProgressPercent(0);
 
-    let startUrl = `http://localhost:8003/nn/mpdrnn/start?dataset_name=${datasetName}&method=${method}&activation=${activation}`;
+    let startUrl = `http://localhost:8003/nn/dev_drnn/start?dataset_name=${datasetName}&method=${method}&activation=${activation}`;
     let payload: Record<string, unknown> = {
       number_of_tests: numberOfTests,
       seed: seed,
@@ -281,7 +281,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
     }
 
     if (mode === 'tune') {
-      startUrl = `http://localhost:8003/nn/mpdrnn/tune?dataset_name=${datasetName}`;
+      startUrl = `http://localhost:8003/nn/dev_drnn/tune?dataset_name=${datasetName}`;
       payload = {
         backend,
         n_trials: nTrials,
@@ -310,35 +310,35 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
 
       if (!response.ok) {
         const errData = await response.json() as { detail?: string };
-        throw new Error(errData.detail || 'Failed to start MPDRNN process.');
+        throw new Error(errData.detail || 'Failed to start DevDRNN process.');
       }
 
       const data = await response.json() as { task_id?: string };
       if (data.task_id) {
         setTaskId(data.task_id);
-        localStorage.setItem(`mpdrnn_active_task_id_${mode}`, data.task_id);
-        localStorage.setItem('mpdrnn_active_tests_count', String(numberOfTests));
-        localStorage.setItem(`mpdrnn_progress_percent_${mode}`, '0');
-        localStorage.setItem(`mpdrnn_progress_msg_${mode}`, 'Queuing task in Celery...');
+        localStorage.setItem(`dev_drnn_active_task_id_${mode}`, data.task_id);
+        localStorage.setItem('dev_drnn_active_tests_count', String(numberOfTests));
+        localStorage.setItem(`dev_drnn_progress_percent_${mode}`, '0');
+        localStorage.setItem(`dev_drnn_progress_msg_${mode}`, 'Queuing task in Celery...');
       }
     } catch (err) {
       setStatus('error');
       setErrorMessage(getErrorMessage(err));
       clearActiveTask();
-      localStorage.removeItem('mpdrnn_active_tests_count');
+      localStorage.removeItem('dev_drnn_active_tests_count');
     }
   };
 
   const handleStop = async () => {
     if (!taskId) return;
     try {
-      let stopUrl = `http://localhost:8003/nn/mpdrnn/stop/${taskId}`;
+      let stopUrl = `http://localhost:8003/nn/dev_drnn/stop/${taskId}`;
       if (mode === 'tune') {
-        stopUrl = `http://localhost:8003/nn/mpdrnn/tune/stop/${taskId}`;
+        stopUrl = `http://localhost:8003/nn/dev_drnn/tune/stop/${taskId}`;
       }
       await fetch(stopUrl, { method: 'POST' });
       clearActiveTask();
-      localStorage.removeItem('mpdrnn_active_tests_count');
+      localStorage.removeItem('dev_drnn_active_tests_count');
       setStatus('idle');
       setProgressMsg('');
       setProgressPercent(0);
@@ -354,16 +354,15 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
 
   return (
     <div className="space-y-6">
-      {/* CÍMSOR ÉS MÓD JELZŐ */}
       <div className="flex items-center justify-end">
         <span className="text-xs font-mono text-emerald-500 uppercase tracking-wider">
-          MPDRNN {mode === 'tune' ? 'Hyperparameter Tuning Lab' : 'Workspace'}
+          DevDRNN {mode === 'tune' ? 'Hyperparameter Tuning Lab' : 'Workspace'}
         </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
-        {/* BAL OSZLOP: PARAMÉTEREK ÉS NAVIGÁCIÓ */}
+        {/* LEFT COLUMN: PARAMETERS */}
         <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-5 flex flex-col justify-between h-full shadow-md`}>
           <div>
             <h3 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>
@@ -371,7 +370,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
             </h3>
 
             <div className="space-y-4">
-              {/* Dataset választó mindkét módnál */}
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Dataset</label>
                 <select
@@ -390,7 +388,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                 </select>
               </div>
 
-              {/* Weight Method mindkét módnál */}
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Weight Method</label>
                 <select
@@ -407,7 +404,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                 </select>
               </div>
 
-              {/* Activation mindkét módnál */}
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Activation</label>
                 <select
@@ -427,7 +423,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
               </div>
 
               {mode === 'tune' ? (
-                /* ================= TUNING MÓD MEZŐI ================= */
+                /* TUNING MODE FIELDS */
                 <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
                   <div>
                     <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Search Engine Backend</label>
@@ -460,7 +456,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                     />
                   </div>
 
-                  {/* Rétegenkénti Neuron Keresési Határok */}
                   <div className="space-y-2">
                     <span className={`block text-[11px] font-mono font-semibold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
                       Layer Neuron Search Ranges
@@ -570,7 +565,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                     </div>
                   </div>
 
-                  {/* 💡 Penalty Term Min / Max - KIZÁRÓLAG EXP_ORT_C esetén jelenik meg */}
                   {method === 'EXP_ORT_C' && (
                     <div className="grid grid-cols-2 gap-3 animate-fadeIn">
                       <div>
@@ -617,7 +611,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                   </div>
                 </div>
               ) : (
-                /* ================= SIMA FUTTATÁSI MÓD MEZŐI ================= */
+                /* EXECUTION MODE FIELDS */
                 <div className={`pt-2 border-t space-y-4 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
                   <div>
                     <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -838,21 +832,21 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
             </div>
           </div>
 
-          {/* GOMBOK: INDÍTÁS ÉS VISSZA A DASHBOARDRA */}
+          {/* ACTION BUTTONS */}
           <div className="pt-4 space-y-2">
             {status === 'running' ? (
               <button
                 onClick={handleStop}
                 className="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-medium rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
-                <Square className="w-4 h-4 fill-white" /> Stop MPDRNN Process
+                <Square className="w-4 h-4 fill-white" /> Stop DevDRNN Process
               </button>
             ) : (
               <button
                 onClick={handleStart}
                 className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
-                <Play className="w-4 h-4 fill-white" /> {mode === 'tune' ? 'Launch Hyperparameter Search' : 'Execute MPDRNN Run'}
+                <Play className="w-4 h-4 fill-white" /> {mode === 'tune' ? 'Launch Hyperparameter Search' : 'Execute DevDRNN Run'}
               </button>
             )}
 
@@ -869,7 +863,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
           </div>
         </div>
 
-        {/* JOBB OSZLOP: EREDMÉNYEK PANEL */}
+        {/* RIGHT COLUMN: RESULTS PANEL */}
         <div className="lg:col-span-2 flex flex-col h-full space-y-4">
 
           {status === 'error' && (
@@ -890,7 +884,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                 <div className="flex items-center gap-3">
                   <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
                   <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
-                    {mode === 'tune' ? 'Optimizing MPDRNN hyperparameters...' : 'MPDRNN is running...'}
+                    {mode === 'tune' ? 'Optimizing DevDRNN hyperparameters...' : 'DevDRNN is running...'}
                   </h4>
                 </div>
                 <span className="text-sm font-mono font-bold text-emerald-500">{progressPercent}%</span>
@@ -962,14 +956,11 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
 
             {mode === 'run' && results && plotUrls ? (
               <div className="flex flex-col h-full w-full justify-between space-y-4">
-
-                {/* Fejléc és választók */}
                 <div className={`flex flex-col sm:flex-row justify-between items-center gap-4 border-b pb-3 shrink-0 ${
                   darkMode ? 'border-slate-800/40' : 'border-slate-200'
                 }`}>
                   <h4 className="font-bold text-sm text-emerald-500">Task Completed Successfully!</h4>
 
-                  {/* Fülek */}
                   <div className={`flex p-1 rounded-lg border text-[11px] ${
                     darkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
                   }`}>
@@ -995,7 +986,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                     </button>
                   </div>
 
-                  {/* Ciklus választó */}
                   {completedTestsCount > 1 && (
                     <div className="flex gap-1 items-center">
                       <span className={`text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Cycle:</span>
@@ -1038,7 +1028,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                   )}
                 </div>
 
-                {/* KPI Mérőszámok Kártyái */}
                 {results.metrics && (
                   <div className="space-y-4 shrink-0 animate-fadeIn">
                     {activeTab === 'train' && (
@@ -1094,7 +1083,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                   </div>
                 )}
 
-                {/* DEDIKÁLT KÉPMÉRET */}
                 <div className={`flex-1 flex items-center justify-center relative group border rounded-xl overflow-hidden bg-white p-4 shadow-inner min-h-[300px] max-h-[520px] ${
                   darkMode ? 'border-slate-800/40' : 'border-slate-200'
                 }`}>
@@ -1103,7 +1091,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                   </div>
                   <img
                     src={activeImageUrl}
-                    alt="MPDRNN Phase Confusion Matrix"
+                    alt="DevDRNN Phase Confusion Matrix"
                     onClick={() => setIsZoomed(true)}
                     className="w-full h-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.01]"
                     onError={(e) => {
@@ -1112,7 +1100,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                   />
                 </div>
 
-                {/* Excel elérési út */}
                 <p className={`text-[11px] text-center shrink-0 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                   Excel Saved to: <code className={`px-2 py-1 rounded font-mono ${
                     darkMode
@@ -1128,7 +1115,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
                 <ImageIcon className={`w-12 h-12 mx-auto ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
                 <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>No Active Data</h4>
                 <p className={`text-xs max-w-xs ${darkMode ? 'text-slate-500' : 'text-slate-600'}`}>
-                  {mode === 'tune' ? 'Configure search limits and launch tuning.' : 'Run the MPDRNN network to generate and display the training phase-plots.'}
+                  {mode === 'tune' ? 'Configure search limits and launch tuning.' : 'Run the DevDRNN network to generate and display the training phase-plots.'}
                 </p>
               </div>
             )}
@@ -1138,7 +1125,6 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
 
       </div>
 
-      {/* NAGYÍTOTT MODAL OVERLAY */}
       {isZoomed && activeImageUrl && (
         <div
           onClick={() => setIsZoomed(false)}
@@ -1154,7 +1140,7 @@ export default function MpdrnnWorkspace({ darkMode, mode = 'run', onBack }: Mpdr
           <div className="max-w-[95vw] max-h-[90vh] flex flex-col items-center space-y-3" onClick={(e) => e.stopPropagation()}>
             <img
               src={activeImageUrl}
-              alt="MPDRNN Fullscreen Confusion Matrix"
+              alt="DevDRNN Fullscreen Confusion Matrix"
               className="w-full h-auto max-h-[80vh] object-contain rounded-xl bg-white p-4 shadow-2xl border border-slate-800"
             />
             <span className="text-xs font-mono text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-full">

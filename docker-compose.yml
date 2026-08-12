@@ -14,6 +14,7 @@ services:
       - PROJECT_ROOT=/app
       - DATASET_ROOT=/app/datasets
       - STORAGE_ROOT=/app/storage
+      - GDRIVE_DATASET_URL=https://drive.google.com/uc?id=1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k
     volumes:
       - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
       - D:/storage/lion17:/app/storage
@@ -56,7 +57,6 @@ services:
       - D:/storage/lion17:/app/storage
     shm_size: '2gb'
 
-
   helm-api:
     build:
       context: .
@@ -98,13 +98,13 @@ services:
       - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
       - D:/storage/lion17:/app/storage
 
-  mpdrnn-api:
+  dev-drnn-api:
     build:
       context: .
-      dockerfile: services/mpdrnn_service/Dockerfile
+      dockerfile: services/dev_drnn_service/Dockerfile
     ports:
       - "8003:8003"
-    command: uvicorn services.mpdrnn_service.main:app --host 0.0.0.0 --port 8003
+    command: uvicorn services.dev_drnn_service.main:app --host 0.0.0.0 --port 8003
     environment:
       - CELERY_BROKER_URL=redis://redis_broker:6379/3
       - CELERY_RESULT_BACKEND=redis://redis_broker:6379/3
@@ -117,11 +117,11 @@ services:
       - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
       - D:/storage/lion17:/app/storage
 
-  mpdrnn-worker:
+  dev-drnn-worker:
     build:
       context: .
-      dockerfile: services/mpdrnn_service/Dockerfile
-    command: celery -A services.mpdrnn_service.tasks.celery_app worker --loglevel=info -P solo
+      dockerfile: services/dev_drnn_service/Dockerfile
+    command: celery -A services.dev_drnn_service.tasks.celery_app worker --loglevel=info -P solo
     environment:
       - CELERY_BROKER_URL=redis://redis_broker:6379/3
       - CELERY_RESULT_BACKEND=redis://redis_broker:6379/3
@@ -130,7 +130,44 @@ services:
       - STORAGE_ROOT=/app/storage
     depends_on:
       - redis_broker
-      - mpdrnn-api
+      - dev-drnn-api
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  dev-drnn-aux-api:
+    build:
+      context: .
+      dockerfile: services/dev_drnn_aux_service/Dockerfile
+    ports:
+      - "8004:8004"
+    command: uvicorn services.dev_drnn_aux_service.main:app --host 0.0.0.0 --port 8004
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/4
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/4
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    depends_on:
+      - redis_broker
+    volumes:
+      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
+      - D:/storage/lion17:/app/storage
+
+  dev-drnn-aux-worker:
+    build:
+      context: .
+      dockerfile: services/dev_drnn_aux_service/Dockerfile
+    command: celery -A services.dev_drnn_aux_service.tasks.celery_app worker --loglevel=info -P solo
+    environment:
+      - CELERY_BROKER_URL=redis://redis_broker:6379/4
+      - CELERY_RESULT_BACKEND=redis://redis_broker:6379/4
+      - PROJECT_ROOT=/app
+      - DATASET_ROOT=/app/datasets
+      - STORAGE_ROOT=/app/storage
+    depends_on:
+      - redis_broker
+      - dev-drnn-aux-api
     volumes:
       - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
       - D:/storage/lion17:/app/storage
