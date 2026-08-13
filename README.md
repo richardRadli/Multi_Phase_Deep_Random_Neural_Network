@@ -1,137 +1,83 @@
-# Multi Phase Deep Random Neural Networks
- 
-![Python](https://img.shields.io/badge/python-v3.11-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![PyTorch](https://img.shields.io/badge/PyTorch-v2.2.1-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit-v1.4.0--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white)
-![NumPy](https://img.shields.io/badge/numpy-v1.26.4-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
-![Pandas](https://img.shields.io/badge/pandas-v2.1.0-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
-![SciPy](https://img.shields.io/badge/SciPy-v1.12.0-%230C55A5.svg?style=for-the-badge&logo=scipy&logoColor=%white)
-![Ray Badge](https://img.shields.io/badge/Ray-v2.23.0-028CF0?logo=ray&logoColor=fff&style=for-the-badge)
+# Multi-Phase Deep Random Neural Network (MPDRNN) System
 
+This project is a microservice-based, Dockerized framework designed for training, testing, evaluating, and **hyperparameter tuning** across various artificial neural network architectures (**FCNN, HELM, DRNN, IPMPDRNN**), complemented by a modern React-based web user interface.
 
-# Overview
+---
 
-## 🚨 Repository Status
-As of 2024.11.28.:
+## 🔥 Key System Capabilities
 
-| Branch Name  | Status         | Description |
-|--------------|----------------|---|
-| `lion17` | Up-to-date     |  Deep Randomized Networks for Fast Learning  |   
-| `journal`   | Under development     |  Can Randomized Networks be Competitive to Gradient Optimization for Feed-forward Networks? |  
+* **3-Way Dataset Splitting (Train / Validation / Test):** Dynamically partitions datasets into Training, Validation, and Testing sets. Validation data is strictly reserved for hyperparameter tuning and model selection, ensuring unbiased final evaluation on the Test set.
+* **Dual-Backend Hyperparameter Tuning:** All neural network services support automated hyperparameter search powered by both **Optuna** (TPE Sampler, Median Pruner) and **Ray Tune** (ASHA Scheduler).
+* **Real-time Task Tracking & Process Control:** Live progress monitoring and instant task abort capabilities controlled via **Celery** workers and **Redis** status signaling.
+* **Automatic Dataset Management:** Zero-setup dataset initialization. Missing datasets are automatically downloaded and extracted into a local relative `./datasets` directory upon system launch.
 
-## ✨ Features
-- Multiple network types (FCNN, HELM, MPDRNN)
-- Hyperparameter tuning for optimal performance
-- Dataset conversion and integration
-- Detailed configuration options via JSON files
+---
 
-## 🔧 Prerequisites
-- Python 3.10 or higher
-- Optional: CUDA-enabled GPU (for PyTorch with CUDA support)
+## 🏛️ System Architecture
 
-## 📚 Datasets
-Datasets that are employed in our articles can be found and downloaded on the following websites:
+The framework consists of independent microservices communicating seamlessly via Docker Compose:
 
-1. UCI Machine Learning Repository: <a href="https://www.example.com/my great page">UCI Repository</a>
-2. Google Drive: <a href="https://drive.google.com/file/d/1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k/view?usp=drive_link">Download here</a>
+* **React Frontend (`:5173`)**: Modern web dashboard for configuring dataset splits, running training/tuning tasks, controlling active jobs, and visualizing performance metrics.
+* **Dataset Operations Service (`:8000`)**: Handles automatic dataset downloading, archiving, and dynamic **3-way dataset splitting (Train / Validation / Test)**.
+* **FCNN Service (`:8001`)**: Manages training, evaluation, and **Optuna / Ray Tune** hyperparameter search for Fully Connected Neural Networks (MLP).
+* **HELM Service (`:8002`)**: Handles training, evaluation, and **Optuna / Ray Tune** hyperparameter search for Hierarchical Extreme Learning Machines.
+* **DEV-DRNN Service (`:8003`)**: Manages training, evaluation, and **Optuna / Ray Tune** hyperparameter tuning for Deep Random Neural Networks.
+* **DEV-DRNN-AUX Service (`:8004`)**: Handles auxiliary DRNN algorithms, multi-phase network pruning (**IPMPDRNN**), and **Optuna / Ray Tune** hyperparameter optimization for pruning thresholds and sub-networks.
+* **Redis Broker (`:6379`)**: Asynchronous task queue broker and status store for Celery workers and abort signals.
 
-In case of downloading from the UCI Machine Learning Repository, one must convert the datasets to an appropriate format. 
-For that use the provided Python file _convert_datasets.py_. Datasets on the Google Drive link are already converted.
+---
 
-## 📝 Requirements
-Make sure you have the following packages installed:
+## 🌐 User Interface Workspaces
 
-```
-colorama~=0.4.6
-colorlog~=6.8.2
-jsonschema~=4.23.0
-matplotlib~=3.8.1
-numpy~=1.26.4
-openpyxl~=3.1.2
-pandas~=2.1.0
-ray~=2.32.0
-seaborn~=0.13.0
-scipy~=1.12.0
-sklearn~=1.4.0
-torch~=2.2.1+cu121
-torchvision~=0.17.1+cu121
-tqdm~=4.66.2
-torchinfo~=1.8.0
-```
+The React application contains five specialized workspaces:
 
-You can install the listed packages with the following command:
-```bash
-pip install -r requirements.txt
-```
+### 1. 📊 Dataset Workspace (`DatasetWorkspace.tsx`)
+* **Purpose:** Dataset management and pre-processing.
+* **What it does:** Displays available benchmark datasets (e.g., `mnist`, `connect4`, `usps`, etc.) and allows dynamic **3-way splitting** into Training, Validation, and Testing subsets (e.g., 70% Train / 15% Validation / 15% Test).
 
-## 🚀 Installation
+### 2. 🧠 FCNN Workspace (`FcnnWorkspace.tsx`)
+* **Purpose:** Multi-Layer Perceptron (FCNN) model workbench.
+* **What it does:** Supports full training runs, validation-driven testing, and automated hyperparameter optimization using either **Optuna** or **Ray Tune**.
 
-### 1. Clone or download the repository
-Begin by cloning or downloading this repository to your local machine.
+### 3. ⚡ HELM Workspace (`HelmWorkspace.tsx`)
+* **Purpose:** Hierarchical Extreme Learning Machine workbench.
+* **What it does:** Runs fast, randomized hierarchical network training, validation-guided tuning (**Optuna / Ray Tune**), and final test set evaluations.
 
-### 2. Update configuration
-Open the _data_paths.py_ file. You will find the following dictionary:
+### 4. 🎲 Dev DRNN Workspace (`DevDrnnWorkspace.tsx`)
+* **Purpose:** Deep Random Neural Network experimental environment.
+* **What it does:** Provides configuration, training, validation, and full **Optuna / Ray Tune** hyperparameter search for complex, multi-phase random neural networks.
 
-```python
-root_mapping = {
-    'ricsi': {
-        "STORAGE_ROOT":
-            "D:/storage/Journal2",
-        "DATASET_ROOT":
-            "D:/storage/Journal2/datasets",
-        "PROJECT_ROOT":
-            "C:/Users/ricsi/Documents/research/Multi_Phase_Deep_Random_Neural_Network",
-    }
-}
-```
+### 5. ✂️ Dev DRNN Aux / Pruning Workspace (`DevDrnnAuxWorkspace.tsx`)
+* **Purpose:** Network pruning (**IPMPDRNN**) and auxiliary network workbench.
+* **What it does:** Performs multi-phase network pruning, auxiliary network insertion, and validation-based hyperparameter tuning (**Optuna / Ray Tune**) for pruning ratios and layer dimensions.
 
-You have to replace the username (in this case 'ricsi') with your own. Your username can be acquired by running the `whoami` command in your terminal to retrieve it.
+---
 
-#### STORAGE_ROOT: 
-- Adjust this path to the location where you want to save project outputs and other data generated during the execution of the Python files.
+## 🚀 Getting Started
 
-#### DATASET_ROOT: 
-- Modify this path to point to the directory where your datasets are stored. This folder should contain all datasets necessary for the project. It should look like this:
+### Prerequisites
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed on your system.
 
-* D:\storage\Journal2\datasets
-  * connect4
-    * connect4.npz
-    * data.txt
+> ⚠️ **Windows Note:**  
+> If Docker throws a file access or volume permission error on the first startup, enable File Sharing in Docker Desktop:  
+> Go to **Settings ➔ Resources ➔ File sharing** and ensure `C:\Users` is added to the shared paths.
 
-#### PROJECT_ROOT
-- Update this path to the directory where the Python and JSON files of the project are located.
+### Running the System (Single Command)
 
-### 3. Create necessary folders
-Run the __data_paths.py__ script. This will create all the required folders based on the paths specified in the configuration.
+1. Clone the repository and switch to the target branch:
+   ```bash
+   git clone <REPO_URL>
+   cd Multi_Phase_Deep_Random_Neural_Network
+   git checkout <BRANCH_NAME>
+   ```
 
-### 4. Download and place datasets
-Obtain the necessary datasets and place them into the DATASET_ROOT directory as specified in your updated configuration.
+2. Launch all microservices using Docker Compose:
+   ```bash
+   docker compose up --build
+   ```
 
-## 💻 Usage
-### Setting Up Configuration Files
-Before running the Python scripts, you need to configure your settings by preparing the following JSON and Python files:
-- Configuration for the FCNN (FCNN_config.json)
-- Configuration for the HELM (HELM_config.json)
-- Configuration for the IPMPDRNN (IPMPDRNN_config.json)
-- Configuration for the MPDRNN (MPDRNN_config.json)
+3. **Automatic Dataset Setup:**  
+   On first boot, `dataset-service` checks the local environment. If datasets are missing, it automatically downloads and extracts them into the local `./datasets` directory.
 
-
-Once your configuration files are set up, run the Python scripts to train and test.
-
-### Workflow
-- Optional: It is advisable to run hyperparameter tuning, although config files contain the best settings.
-  - There is a separate file for hyperparameter tuning for all available networks. 
-- After tuning, you may execute the training and evaluation for the desired network.
-  - To train and evaluate the FCNN network, run __execute_test.py__ in the fcnn folder.
-    - FCNN can be individually trained (__train_fcnn.py__) and evaluated (__eval_fcnn.py__) 
-  - To train and evaluate the HELM network, run __helm.py__ in the helm folder.
-  - To train and evaluate the MPDRNN network, run __mpdrnn.py__ in the mpdrnn folder.
-
-
-## 📰 Link to paper
-
-For detailed insights, check out our [research paper](https://link.springer.com/chapter/10.1007/978-3-031-44505-7_9).
-
-## References
-Link to the original [H-ELM code](https://www.extreme-learning-machines.org/elm_codes.html).  
-
+4. Open the web interface in your browser:  
+   👉 **`http://localhost:5173`**
