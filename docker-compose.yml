@@ -16,8 +16,8 @@ services:
       - STORAGE_ROOT=/app/storage
       - GDRIVE_DATASET_URL=https://drive.google.com/uc?id=1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   fcnn-api:
     build:
@@ -35,8 +35,8 @@ services:
     depends_on:
       - redis_broker
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   fcnn-worker:
     build:
@@ -53,8 +53,8 @@ services:
       - redis_broker
       - fcnn-api
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
     shm_size: '2gb'
 
   helm-api:
@@ -73,8 +73,8 @@ services:
     depends_on:
       - redis_broker
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   helm-worker:
     build:
@@ -95,8 +95,8 @@ services:
       - redis_broker
       - helm-api
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   dev-drnn-api:
     build:
@@ -114,8 +114,8 @@ services:
     depends_on:
       - redis_broker
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   dev-drnn-worker:
     build:
@@ -132,8 +132,8 @@ services:
       - redis_broker
       - dev-drnn-api
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   dev-drnn-aux-api:
     build:
@@ -151,8 +151,8 @@ services:
     depends_on:
       - redis_broker
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   dev-drnn-aux-worker:
     build:
@@ -169,8 +169,8 @@ services:
       - redis_broker
       - dev-drnn-aux-api
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   frontend:
     build:

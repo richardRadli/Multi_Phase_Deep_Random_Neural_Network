@@ -1,5 +1,6 @@
 import os
 import sys
+from contextlib import asynccontextmanager
 from enum import Enum
 from typing import List
 
@@ -13,11 +14,21 @@ if PROJECT_ROOT not in sys.path:
 
 from config.dataset_config import VALID_DATASETS, general_dataset_configs
 from services.dataset_operations_service.dataset_operations.convert_dataset import split_dataset
+from services.dataset_operations_service.init_datasets import check_and_download_datasets
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # A Dataset szerviz indulásakor lefut a letöltés/ellenőrzés
+    check_and_download_datasets()
+    yield
+
 
 app = FastAPI(
     title="Dataset Operations Service",
     description="API for dataset conversion and dynamic 3-way splitting (Train / Validation / Test)",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
