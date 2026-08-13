@@ -1,124 +1,78 @@
-# Multi Phase Deep Random Neural Networks
- 
-![Python](https://img.shields.io/badge/python-v3.11-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![PyTorch](https://img.shields.io/badge/PyTorch-v2.2.1-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit-v1.4.0--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white)
-![NumPy](https://img.shields.io/badge/numpy-v1.26.4-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
-![Pandas](https://img.shields.io/badge/pandas-v2.1.0-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
-![SciPy](https://img.shields.io/badge/SciPy-v1.12.0-%230C55A5.svg?style=for-the-badge&logo=scipy&logoColor=%white)
-![Ray Badge](https://img.shields.io/badge/Ray-v2.23.0-028CF0?logo=ray&logoColor=fff&style=for-the-badge)
+# Multi-Phase Deep Random Neural Network (MPDRNN) System
 
+This project is a microservice-based, Dockerized framework designed for training, testing, and evaluating various artificial neural network architectures (**FCNN, HELM, MPDRNN**), complemented by a modern React-based web user interface.
 
-# Overview
+---
 
-## ✨ Features
-- Multiple network types (FCNN, HELM, MPDRNN)
-- Hyperparameter tuning for optimal performance
-- Dataset conversion and integration
-- Detailed configuration options via JSON files
+## 🔥 Key System Capabilities
 
-## 🔧 Prerequisites
-- Python 3.10 or higher
-- Optional: CUDA-enabled GPU (for PyTorch with CUDA support)
+* **2-Way Dataset Splitting (Train / Test):** Dynamically partitions datasets into Training and Testing sets based on custom user-defined ratios.
+* **Streamlined Training & Evaluation:** Full pipeline for model configuration, training, and evaluation across different network architectures.
+* **Real-time Task Tracking:** Live progress monitoring and task management powered by **Celery** workers and **Redis** status store.
+* **Automatic Dataset Management:** Zero-setup dataset initialization. Missing datasets are automatically downloaded and extracted into a local relative `./datasets` directory upon system launch.
 
-## 📚 Datasets
-Datasets that are employed in our articles can be found and downloaded on the following websites:
+---
 
-1. UCI Machine Learning Repository: <a href="https://www.example.com/my great page">UCI Repository</a>
-2. Google Drive: <a href="https://drive.google.com/file/d/1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k/view?usp=drive_link">Download here</a>
+## 🏛️ System Architecture
 
-In case of downloading from the UCI Machine Learning Repository, one must convert the datasets to an appropriate format. 
-For that use the provided Python file _convert_datasets.py_. Datasets on the Google Drive link are already converted.
+The framework consists of independent microservices communicating seamlessly via Docker Compose:
 
-## 📝 Requirements
-Make sure you have the following packages installed:
+* **React Frontend (`:5173`)**: Modern web dashboard for configuring dataset splits, executing training/testing jobs, and visualizing performance metrics.
+* **Dataset Operations Service (`:8000`)**: Handles automatic dataset downloading, archiving, and dynamic **2-way dataset splitting (Train / Test)**.
+* **FCNN Service (`:8001`)**: Manages training and testing for Fully Connected Neural Networks (MLP).
+* **HELM Service (`:8002`)**: Handles training and evaluation for Hierarchical Extreme Learning Machine models.
+* **MPDRNN Service (`:8003`)**: Manages training and evaluation for Multi-Phase Deep Random Neural Networks.
+* **Redis Broker (`:6379`)**: Asynchronous task queue broker and status store for Celery workers.
 
-```
-colorama~=0.4.6
-colorlog~=6.8.2
-jsonschema~=4.23.0
-matplotlib~=3.8.1
-numpy~=1.26.4
-openpyxl~=3.1.2
-pandas~=2.1.0
-ray~=2.32.0
-seaborn~=0.13.0
-scipy~=1.12.0
-sklearn~=1.4.0
-torch~=2.2.1+cu121
-torchvision~=0.17.1+cu121
-tqdm~=4.66.2
-torchinfo~=1.8.0
-```
+---
 
-You can install the listed packages with the following command:
-```bash
-pip install -r requirements.txt
-```
+## 🌐 User Interface Workspaces
 
-## 🚀 Installation
+The React application contains four specialized workspaces:
 
-### 1. Clone or download the repository
-Begin by cloning or downloading this repository to your local machine.
+### 1. 📊 Dataset Workspace (`DatasetWorkspace.tsx`)
+* **Purpose:** Dataset management and pre-processing.
+* **What it does:** Displays available benchmark datasets (e.g., `mnist`, `connect4`, `usps`, etc.) and allows dynamic **2-way splitting** into Training and Testing subsets based on a chosen ratio.
 
-### 2. Update configuration
-Open the _data_paths.py_ file. You will find the following dictionary:
+### 2. 🧠 FCNN Workspace (`FcnnWorkspace.tsx`)
+* **Purpose:** Multi-Layer Perceptron (FCNN) model workbench.
+* **What it does:** Supports full training runs, parameter setup, and test set evaluations for FCNN models.
 
-```python
-root_mapping = {
-    'ricsi': {
-        "STORAGE_ROOT":
-            "D:/storage/Journal2",
-        "DATASET_ROOT":
-            "D:/storage/Journal2/datasets",
-        "PROJECT_ROOT":
-            "C:/Users/ricsi/Documents/research/Multi_Phase_Deep_Random_Neural_Network",
-    }
-}
-```
+### 3. ⚡ HELM Workspace (`HelmWorkspace.tsx`)
+* **Purpose:** Hierarchical Extreme Learning Machine workbench.
+* **What it does:** Runs fast, randomized hierarchical network training and final test set evaluations.
 
-You have to replace the username (in this case 'ricsi') with your own. Your username can be acquired by running the `whoami` command in your terminal to retrieve it.
+### 4. 🎲 MPDRNN Workspace (`MpdrnnWorkspace.tsx`)
+* **Purpose:** Multi-Phase Deep Random Neural Network experimental environment.
+* **What it does:** Provides configuration, multi-phase training, and testing options for Multi-Phase Deep Random Neural Networks.
 
-#### STORAGE_ROOT: 
-- Adjust this path to the location where you want to save project outputs and other data generated during the execution of the Python files.
+---
 
-#### DATASET_ROOT: 
-- Modify this path to point to the directory where your datasets are stored. This folder should contain all datasets necessary for the project. It should look like this:
+## 🚀 Getting Started
 
-* D:\storage\Journal2\datasets
-  * connect4
-    * connect4.npz
-    * data.txt
+### Prerequisites
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed on your system.
 
-#### PROJECT_ROOT
-- Update this path to the directory where the Python and JSON files of the project are located.
+> ⚠️ **Windows Note:**  
+> If Docker throws a file access or volume permission error on the first startup, enable File Sharing in Docker Desktop:  
+> Go to **Settings ➔ Resources ➔ File sharing** and ensure `C:\Users` is added to the shared paths.
 
-### 3. Create necessary folders
-Run the __data_paths.py__ script. This will create all the required folders based on the paths specified in the configuration.
+### Running the System (Single Command)
 
-### 4. Download and place datasets
-Obtain the necessary datasets and place them into the DATASET_ROOT directory as specified in your updated configuration.
+1. Clone the repository and switch to this branch:
+   ```bash
+   git clone <REPO_URL>
+   cd Multi_Phase_Deep_Random_Neural_Network
+   git checkout lion17-internship
+   ```
 
-## 💻 Usage
-### Setting Up Configuration Files
-Before running the Python scripts, you need to configure your settings by preparing the following JSON and Python files:
-- Configuration for the FCNN (FCNN_config.json)
-- Configuration for the HELM (HELM_config.json)
-- Configuration for the MPDRNN (MPDRNN_config.json)
+2. Launch all microservices using Docker Compose:
+   ```bash
+   docker compose up --build
+   ```
 
+3. **Automatic Dataset Setup:**  
+   On first boot, `dataset-service` checks the local environment. If datasets are missing, it automatically downloads and extracts them into the local `./datasets` directory.
 
-Once your configuration files are set up, run the Python scripts to train and test.
-
-### Workflow
-- Optional: It is advisable to run hyperparameter tuning, although config files contain the best settings.
-  - There is a separate file for hyperparameter tuning for all available networks. 
-- After tuning, you may execute the training and evaluation for the desired network.
-  - To train and evaluate the FCNN network, run __execute_test.py__ in the fcnn folder.
-    - FCNN can be individually trained (__train_fcnn.py__) and evaluated (__eval_fcnn.py__) 
-  - To train and evaluate the HELM network, run __helm.py__ in the helm folder.
-  - To train and evaluate the MPDRNN network, run __mpdrnn.py__ in the mpdrnn folder.
-
-
-## 📰 Link to paper
-
-For detailed insights, check out our [research paper](https://link.springer.com/chapter/10.1007/978-3-031-44505-7_9).
+4. Open the web interface in your browser:  
+   👉 **`http://localhost:5173`**
