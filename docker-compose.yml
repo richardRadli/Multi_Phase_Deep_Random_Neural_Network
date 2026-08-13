@@ -14,9 +14,10 @@ services:
       - PROJECT_ROOT=/app
       - DATASET_ROOT=/app/datasets
       - STORAGE_ROOT=/app/storage
+      - GDRIVE_DATASET_URL=https://drive.google.com/uc?id=1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   fcnn-api:
     build:
@@ -34,8 +35,8 @@ services:
     depends_on:
       - redis_broker
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   fcnn-worker:
     build:
@@ -52,9 +53,8 @@ services:
       - redis_broker
       - fcnn-api
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
-
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   helm-api:
     build:
@@ -72,8 +72,8 @@ services:
     depends_on:
       - redis_broker
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   helm-worker:
     build:
@@ -94,8 +94,8 @@ services:
       - redis_broker
       - helm-api
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   mpdrnn-api:
     build:
@@ -113,8 +113,8 @@ services:
     depends_on:
       - redis_broker
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   mpdrnn-worker:
     build:
@@ -131,8 +131,8 @@ services:
       - redis_broker
       - mpdrnn-api
     volumes:
-      - C:/Users/hmark/Documents/Datasets/datasets:/app/datasets
-      - D:/storage/lion17:/app/storage
+      - ./datasets:/app/datasets
+      - ./storage:/app/storage
 
   frontend:
     build:

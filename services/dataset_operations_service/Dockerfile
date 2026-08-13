@@ -13,6 +13,9 @@ ENV DATASET_ROOT=/app/datasets
 ENV STORAGE_ROOT=/app/storage
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends unar \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /install /usr/local
 
 COPY config/ ./config/
@@ -21,6 +24,7 @@ COPY utils/ ./utils/
 COPY services/dataset_operations_service/ ./services/dataset_operations_service/
 
 RUN useradd --create-home --shell /bin/bash appuser \
+    && mkdir -p /app/datasets /app/storage \
     && chown -R appuser:appuser /app
 USER appuser
 
