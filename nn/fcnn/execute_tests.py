@@ -21,7 +21,6 @@ def main(override_cfg: dict = None, celery_task = None) -> Tuple[str, List[float
     """
 
     timestamp = create_timestamp()
-    colorama.init()
 
     if override_cfg is not None:
         cfg = override_cfg
@@ -37,7 +36,12 @@ def main(override_cfg: dict = None, celery_task = None) -> Tuple[str, List[float
     device = cfg.get("device")
     optimizer = cfg.get("optimizer")
     optimization = cfg.get("optimization")
-    lr = optimization.get(optimizer).get("learning_rate").get(dataset_name)
+
+    if cfg.get("learning_rate") is not None:
+        lr = cfg.get("learning_rate")
+    else:
+        lr = optimization.get(optimizer).get("learning_rate").get(dataset_name)
+
     num_tests = cfg.get("num_tests", 1)
 
     fcnn_config = fcnn_paths_configs(dataset_name)
@@ -51,7 +55,7 @@ def main(override_cfg: dict = None, celery_task = None) -> Tuple[str, List[float
     collected_data = []
     all_series_metrics = []
 
-    for i in tqdm(range(cfg.get("num_tests")), desc=f"{colorama.Fore.LIGHTBLUE_EX} Testing cycle"):
+    for i in tqdm(range(cfg.get("num_tests")), desc="Testing cycle"):
         if celery_task:
             is_aborted = celery_task.backend.client.get(f"fcnn:abort:{celery_task.request.id}")
             if is_aborted:

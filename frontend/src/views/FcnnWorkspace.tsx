@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Play, Square, RefreshCw, CheckCircle, AlertCircle, BarChart2, FileSpreadsheet, Settings, Sliders, Cpu, HardDrive, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Play, Square, RefreshCw, CheckCircle, AlertCircle, BarChart2, FileSpreadsheet, Settings, Sliders, Cpu, HardDrive, ArrowRight, FolderOpen } from 'lucide-react';
 
 interface FcnnMetrics {
   accuracy?: number;
@@ -69,7 +69,14 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
   const [backend, setBackend] = useState<'optuna' | 'ray'>('optuna');
   const [nTrials, setNTrials] = useState<number>(25);
 
-  const [batchSize, setBatchSize] = useState<number>(128);
+  const [batchSize, setBatchSize] = useState<number>(64);
+  const [hiddenNeurons, setHiddenNeurons] = useState<number>(500);
+  const [learningRate, setLearningRate] = useState<number>(0.001);
+  const [momentum, setMomentum] = useState<number>(0.9);
+
+  const [availableCheckpoints, setAvailableCheckpoints] = useState<string[]>([]);
+  const [selectedCheckpoint, setSelectedCheckpoint] = useState<string>('');
+
   const [seriesMode, setSeriesMode] = useState<boolean>(false);
   const [numTests, setNumTests] = useState<number>(20);
 
@@ -132,6 +139,57 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
     else localStorage.removeItem(`fcnn_results_${mode}`);
   }, [results, mode]);
 
+  const fetchCheckpoints = async (dsName: string) => {
+    if (!dsName) return;
+    try {
+      const res = await fetch(`http://localhost:8001/nn/fcnn/checkpoints?dataset_name=${dsName}`);
+      if (res.ok) {
+        const data = await res.json() as { checkpoints: string[] };
+        setAvailableCheckpoints(data.checkpoints || []);
+        if (data.checkpoints && data.checkpoints.length > 0) {
+          setSelectedCheckpoint(data.checkpoints[0]);
+        } else {
+          setSelectedCheckpoint('');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load checkpoints:', err);
+      setAvailableCheckpoints([]);
+      setSelectedCheckpoint('');
+    }
+  };
+
+  useEffect(() => {
+    const fetchDatasets = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/datasets');
+        if (response.ok) {
+          const data = await response.json() as { datasets: string[] };
+          setAvailableDatasets(data.datasets);
+          if (data.datasets.length > 0) {
+            setDatasetName(data.datasets[0]);
+            if (mode === 'test') {
+              void fetchCheckpoints(data.datasets[0]);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load datasets, using fallback array:', err);
+        const fallback = ['connect4', 'mnist', 'letter'];
+        setAvailableDatasets(fallback);
+        setDatasetName(fallback[0]);
+        if (mode === 'test') void fetchCheckpoints(fallback[0]);
+      }
+    };
+    void fetchDatasets();
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode === 'test' && datasetName) {
+      void fetchCheckpoints(datasetName);
+    }
+  }, [datasetName, mode]);
+
   const startPolling = (id: string) => {
     if (pollingRef.current) clearInterval(pollingRef.current);
 
@@ -173,6 +231,7 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
           setStatus('success');
           setProgress(100);
           setMatrixTimestamp(Date.now());
+          if (mode === 'train') void fetchCheckpoints(datasetName);
         } else if (data.status === 'ABORTED' || data.status === 'REVOKED') {
           if (pollingRef.current) clearInterval(pollingRef.current);
           setResults(data.info);
@@ -187,25 +246,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
       }
     }, 1000);
   };
-
-  useEffect(() => {
-    const fetchDatasets = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/datasets');
-        if (response.ok) {
-          const data = await response.json() as { datasets: string[] };
-          setAvailableDatasets(data.datasets);
-          if (data.datasets.length > 0) setDatasetName(data.datasets[0]);
-        }
-      } catch (err) {
-        console.error('Failed to load datasets, using fallback array:', err);
-        const fallback = ['connect4', 'mnist', 'letter'];
-        setAvailableDatasets(fallback);
-        setDatasetName(fallback[0]);
-      }
-    };
-    void fetchDatasets();
-  }, []);
 
   useEffect(() => {
     if (status === 'running' && taskId) {
@@ -233,14 +273,33 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
 
     try {
       let url = '';
-      let body = {};
+      let body: Record<string, any> = {};
 
       if (mode === 'train') {
         url = `http://localhost:8001/nn/fcnn/train?dataset_name=${datasetName}`;
-        body = { seed, epochs, patience, optimizer, batch_size: batchSize };
+        body = {
+          seed,
+          epochs,
+          patience,
+          optimizer,
+          batch_size: batchSize,
+          hidden_neurons: hiddenNeurons,
+          learning_rate: learningRate,
+          ...(optimizer === 'sgd' ? { momentum } : {}),
+        };
       } else if (mode === 'test') {
         url = `http://localhost:8001/nn/fcnn/test?dataset_name=${datasetName}&batch_size=${batchSize}`;
-        body = { seed, series_mode: seriesMode, num_tests: numTests, epochs, optimizer };
+        body = {
+          seed,
+          series_mode: seriesMode,
+          num_tests: numTests,
+          epochs: seriesMode ? epochs : undefined,
+          optimizer: seriesMode ? optimizer : undefined,
+          model_checkpoint: !seriesMode ? (selectedCheckpoint || undefined) : undefined,
+          hidden_neurons: hiddenNeurons,
+          learning_rate: seriesMode ? learningRate : undefined,
+          ...(optimizer === 'sgd' && seriesMode ? { momentum } : {}),
+        };
       } else {
         url = `http://localhost:8001/nn/fcnn/tune?dataset_name=${datasetName}`;
         body = {
@@ -314,10 +373,10 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
   };
 
   const currentMetrics = getDisplayMetrics();
+  const isEpochsDisabled = status === 'running' || (mode === 'test' && !seriesMode);
 
   return (
     <div className="space-y-6">
-      {/* CÍMSOR ÉS MÓD JELZŐ */}
       <div className="flex items-center justify-end">
         <span className={`text-xs font-mono uppercase tracking-wider ${
           mode === 'train' ? 'text-emerald-500' : mode === 'test' ? 'text-amber-500' : 'text-purple-500'
@@ -327,11 +386,7 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-
-        {/* BAL OSZLOP: PARAMÉTER KÁRTYÁK */}
         <div className="space-y-6">
-
-          {/* 1. KÁRTYA: ENGINE & EXECUTION SETTINGS */}
           <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-5 shadow-md`}>
             <div className={`flex items-center gap-3 border-b pb-3 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
               <Settings className={`w-5 h-5 ${
@@ -358,6 +413,44 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
               </select>
             </div>
 
+            {mode === 'test' && !seriesMode && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className={`block text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Model Weights (.pt checkpoint)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => void fetchCheckpoints(datasetName)}
+                    className="text-[10px] text-amber-500 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Refresh
+                  </button>
+                </div>
+                <div className="relative">
+                  <select
+                    value={selectedCheckpoint}
+                    disabled={status === 'running' || availableCheckpoints.length === 0}
+                    onChange={(e) => setSelectedCheckpoint(e.target.value)}
+                    className={`w-full text-xs font-mono p-2.5 rounded-md border truncate ${
+                      darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                    }`}
+                  >
+                    {availableCheckpoints.length > 0 ? (
+                      availableCheckpoints.map((cp) => (
+                        <option key={cp} value={cp}>{cp}</option>
+                      ))
+                    ) : (
+                      <option value="">(Default: Latest trained checkpoint)</option>
+                    )}
+                  </select>
+                </div>
+                <span className="text-[10px] text-slate-500 block">
+                  {availableCheckpoints.length > 0 ? `${availableCheckpoints.length} checkpoint(s) found` : 'No saved checkpoints found in directory'}
+                </span>
+              </div>
+            )}
+
             {mode === 'tune' && (
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -377,22 +470,100 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
               </div>
             )}
 
-            <div>
-              <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Optimizer
-              </label>
-              <select
-                value={optimizer}
-                disabled={status === 'running'}
-                onChange={(e) => setOptimizer(e.target.value as 'adam' | 'sgd')}
-                className={`w-full text-sm p-2.5 rounded-md border ${
-                  darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                }`}
-              >
-                <option value="adam">ADAM</option>
-                <option value="sgd">SGD</option>
-              </select>
-            </div>
+            {(mode !== 'test' || seriesMode) && (
+              <div>
+                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  Optimizer
+                </label>
+                <select
+                  value={optimizer}
+                  disabled={status === 'running'}
+                  onChange={(e) => setOptimizer(e.target.value as 'adam' | 'sgd')}
+                  className={`w-full text-sm p-2.5 rounded-md border ${
+                    darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                  }`}
+                >
+                  <option value="adam">ADAM</option>
+                  <option value="sgd">SGD</option>
+                </select>
+              </div>
+            )}
+
+            {mode !== 'tune' && (
+              <div>
+                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  Batch Size
+                </label>
+                <select
+                  value={batchSize}
+                  disabled={status === 'running'}
+                  onChange={(e) => setBatchSize(parseInt(e.target.value))}
+                  className={`w-full text-sm p-2.5 rounded-md border ${
+                    darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                  }`}
+                >
+                  {[16, 32, 64, 128, 256, 512].map((bs) => (
+                    <option key={bs} value={bs}>{bs}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {mode !== 'tune' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Hidden Neurons
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="10"
+                    value={hiddenNeurons}
+                    disabled={status === 'running'}
+                    onChange={(e) => setHiddenNeurons(parseInt(e.target.value) || 100)}
+                    className={`w-full text-xs p-2 rounded border font-mono ${
+                      darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Learning Rate
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    min="0.00001"
+                    max="1.0"
+                    value={learningRate}
+                    disabled={status === 'running' || (mode === 'test' && !seriesMode)}
+                    onChange={(e) => setLearningRate(parseFloat(e.target.value) || 0.001)}
+                    className={`w-full text-xs p-2 rounded border font-mono ${
+                      isEpochsDisabled && mode === 'test' ? 'opacity-50 cursor-not-allowed ' : ''
+                    }${darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
+                  />
+                </div>
+              </div>
+            )}
+
+            {mode !== 'tune' && optimizer === 'sgd' && (
+              <div>
+                <label className={`block text-[11px] font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  SGD Momentum: {momentum}
+                </label>
+                <input
+                  type="range"
+                  min="0.0"
+                  max="0.99"
+                  step="0.01"
+                  value={momentum}
+                  disabled={status === 'running' || (mode === 'test' && !seriesMode)}
+                  onChange={(e) => setMomentum(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                />
+              </div>
+            )}
 
             {mode === 'tune' && (
               <div>
@@ -413,20 +584,25 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
             )}
 
             <div>
-              <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                {mode === 'tune' ? `Max Epochs / Trial: ${epochs}` : `Training Epochs: ${epochs}`}
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className={`block text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  {mode === 'tune' ? `Max Epochs / Trial: ${epochs}` : `Training Epochs: ${epochs}`}
+                </label>
+                {mode === 'test' && !seriesMode && (
+                  <span className="text-[10px] text-slate-500 italic">Disabled in single test mode</span>
+                )}
+              </div>
               <input
                 type="range"
                 min="10"
                 max={mode === 'tune' ? 300 : 5000}
                 step={mode === 'tune' ? 10 : 50}
                 value={epochs}
-                disabled={status === 'running'}
+                disabled={isEpochsDisabled}
                 onChange={(e) => setEpochs(parseInt(e.target.value))}
-                className={`w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer ${
-                  mode === 'train' ? 'accent-emerald-600' : mode === 'test' ? 'accent-amber-500' : 'accent-purple-600'
-                }`}
+                className={`w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none ${
+                  isEpochsDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+                } ${mode === 'train' ? 'accent-emerald-600' : mode === 'test' ? 'accent-amber-500' : 'accent-purple-600'}`}
               />
             </div>
 
@@ -463,26 +639,10 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
 
             {mode === 'test' && (
               <div className="space-y-4 pt-1">
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Evaluation Batch Size</label>
-                  <select
-                    value={batchSize}
-                    disabled={status === 'running'}
-                    onChange={(e) => setBatchSize(parseInt(e.target.value))}
-                    className={`w-full text-sm p-2.5 rounded-md border ${
-                      darkMode ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
-                    }`}
-                  >
-                    {[16, 32, 64, 128, 256, 512].map((bs) => (
-                      <option key={bs} value={bs}>{bs}</option>
-                    ))}
-                  </select>
-                </div>
-
                 <div className={`flex items-center justify-between p-2.5 rounded-lg border ${
                   darkMode ? 'border-slate-800/30 bg-slate-950/20' : 'border-slate-200 bg-slate-50'
                 }`}>
-                  <span className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Series Mode</span>
+                  <span className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Series Benchmark Mode</span>
                   <input
                     type="checkbox"
                     checked={seriesMode}
@@ -491,11 +651,28 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
                     className="w-4 h-4 rounded text-amber-600 focus:ring-0 cursor-pointer"
                   />
                 </div>
+
+                {seriesMode && (
+                  <div className="animate-fadeIn">
+                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Benchmark Cycles / Tests: {numTests}
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="100"
+                      step="1"
+                      value={numTests}
+                      disabled={status === 'running'}
+                      onChange={(e) => setNumTests(parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* 2. KÁRTYA: SEARCH SPACE BOUNDARIES (CSAK TUNING MÓDBAN) */}
           {mode === 'tune' && (
             <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} space-y-5 shadow-md animate-fadeIn`}>
               <div className={`flex items-center gap-3 border-b pb-3 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
@@ -653,12 +830,9 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
               <ArrowLeft className="w-4 h-4" /> Back to Dashboard
             </button>
           </div>
-
         </div>
 
-        {/* JOBB OSZLOP: LOGOK ÉS EREDMÉNYEK */}
         <div className="lg:col-span-2 flex flex-col space-y-4">
-
           {status === 'error' && (
             <div className={`p-4 rounded-xl border flex items-start gap-3 shrink-0 ${
               darkMode ? 'bg-rose-950/30 border-rose-900/50 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700'
@@ -674,7 +848,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
           <div className={`p-6 rounded-2xl border flex flex-col justify-start ${
             darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
           } shadow-md min-h-[420px]`}>
-
             {status === 'running' && (
               <div className="text-center space-y-5 py-12 my-auto">
                 <RefreshCw className={`w-12 h-12 mx-auto animate-spin ${
@@ -709,7 +882,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
               </div>
             )}
 
-            {/* TRAIN EREDMÉNYEK */}
             {mode === 'train' && (status === 'success' || status === 'aborted') && results && (
               <div className="space-y-6 animate-fadeIn">
                 <div className={`flex items-center gap-3 border-b pb-3 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
@@ -758,12 +930,12 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
                     <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                      <span className="text-slate-500 block text-[10px] uppercase">Weights Checkpoint File</span>
-                      <span className="font-semibold text-emerald-500 break-all">fcnn_{datasetName}_{optimizer}.pth</span>
+                      <span className="text-slate-500 block text-[10px] uppercase">Neurons / Batch Size</span>
+                      <span className="font-semibold text-emerald-500 break-all">{hiddenNeurons} hidden / {batchSize} bs</span>
                     </div>
                     <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                       <span className="text-slate-500 block text-[10px] uppercase">Model Checkpoint Status</span>
-                      <span className="font-semibold text-blue-400">Dumped to Storage Directory</span>
+                      <span className="font-semibold text-blue-400">Saved to weights directory</span>
                     </div>
                   </div>
                 </div>
@@ -775,13 +947,12 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
                     <p className="font-bold flex items-center gap-1.5">
                       <ArrowRight className="w-3.5 h-3.5 text-blue-500" /> Next Recommended Action:
                     </p>
-                    <p className="opacity-80">Return to Dashboard and open <b>FCNN Testing</b> to evaluate confusion matrix plots and generate Excel metrics reports.</p>
+                    <p className="opacity-80">Return to Dashboard and open <b>FCNN Testing</b> to evaluate confusion matrix plots or run Excel benchmark series.</p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TEST EREDMÉNYEK */}
             {mode === 'test' && status === 'success' && results && (
               <div className="space-y-6">
                 {results.metrics ? (
@@ -875,7 +1046,6 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
               </div>
             )}
 
-            {/* TUNING EREDMÉNYEK */}
             {mode === 'tune' && (status === 'success' || status === 'aborted') && results && (
               <div className="space-y-6 animate-fadeIn">
                 <div className={`flex items-center gap-3 border-b pb-3 ${darkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
@@ -934,24 +1104,21 @@ export default function FcnnWorkspace({ darkMode, mode, onBack }: FcnnWorkspaceP
               </div>
             )}
 
-            {/* IDLE STATE */}
             {status === 'idle' && (
               <div className="text-center space-y-2 py-12 my-auto">
                 <Cpu className={`w-12 h-12 mx-auto ${darkMode ? 'text-slate-600' : 'text-slate-400'}`} />
                 <h4 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>System Ready & Armed</h4>
                 <p className={`text-xs max-w-xs mx-auto ${darkMode ? 'text-slate-500' : 'text-slate-600'}`}>
                   {mode === 'train'
-                    ? 'Adjust training epochs and trigger the network engine to optimize synapses.'
+                    ? 'Adjust training epochs, neurons, learning rate and trigger the network engine.'
                     : mode === 'test'
-                    ? 'Configure batch settings or run iterative Excel evaluation loops directly.'
+                    ? 'Pick an existing checkpoint for single evaluation or run multi-cycle benchmark loops.'
                     : 'Set boundaries for Learning Rate, Neurons & Batch Sizes to discover peak model parameters.'}
                 </p>
               </div>
             )}
-
           </div>
         </div>
-
       </div>
     </div>
   );

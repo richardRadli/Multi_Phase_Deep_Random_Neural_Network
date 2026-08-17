@@ -1,4 +1,3 @@
-import colorama
 import logging
 import numpy as np
 import os
@@ -22,7 +21,6 @@ class TrainFCNN:
     def __init__(self, override_cfg: dict = None, celery_task = None):
         # Basic setup
         timestamp = create_timestamp()
-        colorama.init()
         setup_logger()
 
         self.celery_task = celery_task
@@ -46,8 +44,19 @@ class TrainFCNN:
         batch_size = self.cfg.get("batch_size")
         optimizer = self.cfg.get("optimizer")
         optimization = self.cfg.get("optimization")
-        learning_rate = optimization.get(optimizer).get("learning_rate").get(dataset_name)
-        momentum = optimization.get(optimizer).get("momentum").get(dataset_name) if optimizer == "sgd" else None
+
+        if self.cfg.get("learning_rate") is not None:
+            learning_rate = self.cfg.get("learning_rate")
+        else:
+            learning_rate = optimization.get(optimizer).get("learning_rate").get(dataset_name)
+
+        if optimizer == "sgd":
+            if self.cfg.get("momentum") is not None:
+                momentum = self.cfg.get("momentum")
+            else:
+                momentum = optimization.get(optimizer).get("momentum").get(dataset_name)
+        else:
+            momentum = None
 
         gen_ds_cfg = (
             general_dataset_configs(

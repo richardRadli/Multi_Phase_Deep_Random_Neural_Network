@@ -67,13 +67,15 @@ def train_fcnn_task(self, config: dict):
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
 
-        hidden_neurons = raw_json.get("hidden_neurons", {}).get(dataset_name, 500)
+        hidden_neurons = config.get("hidden_neurons") or raw_json.get("hidden_neurons", {}).get(dataset_name, 500)
         batch_size = config.get("batch_size") or raw_json.get("batch_size", {}).get(dataset_name, 64)
 
         override_cfg = {
             **simple_config,
             "hidden_neurons": hidden_neurons,
             "batch_size": batch_size,
+            "learning_rate": config.get("learning_rate"),
+            "momentum": config.get("momentum"),
             "optimization": raw_json.get("optimization")
         }
 
@@ -189,13 +191,16 @@ def test_fcnn_task(self, config: dict):
 
         simple_config = {k: v for k, v in raw_json.items() if not isinstance(v, dict)}
 
-        hidden_neurons = raw_json.get("hidden_neurons", {}).get(dataset_name, 500)
+        hidden_neurons = config.get("hidden_neurons") or raw_json.get("hidden_neurons", {}).get(dataset_name, 500)
         batch_size = config.get("batch_size") or raw_json.get("batch_size", {}).get(dataset_name, 64)
 
         override_cfg = {
             **simple_config,
             "hidden_neurons": hidden_neurons,
             "batch_size": batch_size,
+            "learning_rate": config.get("learning_rate"),
+            "momentum": config.get("momentum"),
+            "model_checkpoint": config.get("model_checkpoint"),
             "optimization": raw_json.get("optimization")
         }
 

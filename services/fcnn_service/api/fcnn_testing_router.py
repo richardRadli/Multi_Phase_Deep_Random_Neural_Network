@@ -2,9 +2,11 @@ import os
 import sys
 from typing import Optional
 from enum import Enum
+import glob
 
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field
+from config.dataset_config import fcnn_paths_configs
 
 PROJECT_ROOT = os.getenv("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
@@ -35,9 +37,16 @@ class OptimizerEnum(str, Enum):
 class FCNNTestRemainingConfig(BaseModel):
     seed: bool = Field(default=False, description="True esetén fixálja a random seedet")
     series_mode: bool = Field(default=False, description="True több Excel sorozathoz, False egyetlen JSON jelentéshez")
-    num_tests: int = Field(default=20, ge=1, description="A sorozatban futtatandó tesztek száma")
-    epochs: Optional[int] = Field(default=1000, ge=1, description="A tanítási epoch-ok száma ciklusos tesztelésnél")
+    num_tests: int = Field(default=20, ge=1, description="A sorozatban futtatandó tesztek száma (csak series_mode=True esetén)")
+    epochs: Optional[int] = Field(default=1000, ge=1, description="A tanítási epoch-ok száma ciklusos tesztelésnél (csak series_mode=True esetén)")
     optimizer: Optional[OptimizerEnum] = Field(default=None, description="A teszteléshez használt optimizer opció")
+    model_checkpoint: Optional[str] = Field(
+        default=None,
+        description="Konkrét .pt fájl neve vagy relatív útvonala kiértékeléshez (ha nincs megadva, a legújabbat tölti be)"
+    )
+    hidden_neurons: Optional[int] = Field(default=None, ge=1, description="Rejtett réteg neuronszáma")
+    learning_rate: Optional[float] = Field(default=None, gt=0.0, description="Learning rate series módhoz")
+    momentum: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="SGD momentum series módhoz")
 
 
 @fcnn_test_router.post("/test", status_code=status.HTTP_202_ACCEPTED)
@@ -88,3 +97,21 @@ async def get_fcnn_test_status(task_id: str):
         response["info"] = {"status": "FCNN Evaluation task was manually aborted."}
 
     return response
+
+
+@fcnn_test_router.get("/checkpoints")
+async def list_fcnn_checkpoints(dataset_name: DatasetEnum = Query(..., description="Az adathalmaz neve")):
+    """Visszaadja a kiválasztott datasethöz elérhető betanított .pt súlyfájlok listáját időrendben (legújabb elöl)."""
+    try:
+        fcnn_ds_cfg = fcnn_paths_configs(dataset_name.value)
+        weights_dir = fcnn_ds_cfg.get("fcnn_saved_weights")
+        if not os.path.exists(weights_dir):
+            return {"checkpoints": []}
+
+        pt_files = glob.glob(os.path.join(weights_dir, "**", "*.pt"), recursive=True)
+        pt_files.sort(key=os.path.getmtime, reverse=True)
+
+        relative_checkpoints = [os.path.relpath(f, weights_dir) for f in pt_files]
+        return {"checkpoints": relative_checkpoints}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

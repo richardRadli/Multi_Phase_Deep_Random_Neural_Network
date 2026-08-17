@@ -1,6 +1,5 @@
 import os
 
-import colorama
 import logging
 import torch
 
@@ -19,7 +18,6 @@ from utils.utils import (setup_logger, device_selector, create_train_valid_test_
 class EvalFCNN:
     def __init__(self, override_cfg: dict = None):
         # Basic setup
-        colorama.init()
         setup_logger()
 
         if override_cfg is not None:
@@ -64,8 +62,17 @@ class EvalFCNN:
         )
         summary(self.model, input_size=(gen_ds_cfg.get("num_features"),), device=self.device)
 
-        checkpoint = find_latest_file_in_latest_directory(fcnn_ds_cfg.get("fcnn_saved_weights"))
-        self.model.load_state_dict(torch.load(checkpoint))
+        custom_checkpoint = self.cfg.get("model_checkpoint")
+        if custom_checkpoint:
+            if os.path.isabs(custom_checkpoint):
+                checkpoint_path = custom_checkpoint
+            else:
+                checkpoint_path = os.path.join(fcnn_ds_cfg.get("fcnn_saved_weights"), custom_checkpoint)
+        else:
+            checkpoint_path = find_latest_file_in_latest_directory(fcnn_ds_cfg.get("fcnn_saved_weights"))
+
+        logging.info(f"Loading FCNN weights from checkpoint: {checkpoint_path}")
+        self.model.load_state_dict(torch.load(checkpoint_path, map_location=self.device))
         self.model = self.model.to(self.device)
 
         self.timestamp = create_timestamp()

@@ -40,7 +40,24 @@ class FCNNTrainingRemainingConfig(BaseModel):
     optimizer: OptimizerEnum = Field(default=OptimizerEnum.ADAM, description="Választható optimizer (adam / sgd)")
     batch_size: Optional[BatchSizeEnum] = Field(
         default=None,
-        description="Batch size felülbírálása (ha nincs megadva, a dataset alapértelmezett értéke lép életbe)"
+        description="Batch size felülírása (ha nincs megadva, a dataset alapértelmezett értéke lép életbe)"
+    )
+    hidden_neurons: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Rejtett réteg neuronszáma (ha nincs megadva, a default configból olvassa)"
+    )
+    learning_rate: Optional[float] = Field(
+        default=None,
+        gt=0.0,
+        le=1.0,
+        description="Learning rate felülírása"
+    )
+    momentum: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="SGD momentum (csak SGD optimizer esetén)"
     )
 
 
