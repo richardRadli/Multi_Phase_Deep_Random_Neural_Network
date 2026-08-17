@@ -18,6 +18,7 @@ services:
     volumes:
       - ./datasets:/app/datasets
       - ./storage:/app/storage
+    user: root
 
   fcnn-api:
     build:
