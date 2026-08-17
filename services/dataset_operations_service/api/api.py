@@ -19,7 +19,6 @@ from services.dataset_operations_service.init_datasets import check_and_download
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # A Dataset szerviz indulásakor lefut a letöltés/ellenőrzés
     check_and_download_datasets()
     yield
 

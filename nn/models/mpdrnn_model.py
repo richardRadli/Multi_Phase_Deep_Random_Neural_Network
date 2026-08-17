@@ -1,4 +1,3 @@
-import colorama
 import logging
 import torch
 import torch.nn as nn
@@ -49,7 +48,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
 
         self.penalty_term = penalty_term
 
-        colorama.init()
+        #colorama.init()
 
     @measure_execution_time
     def train_ith_layer(self, train_loader, hi: torch.Tensor, weights1: nn.Parameter,
@@ -68,7 +67,7 @@ class MultiPhaseDeepRandomizedNeuralNetworkBase(nn.Module):
             None
         """
 
-        for train_x, train_y in tqdm(train_loader, total=len(train_loader), desc=colorama.Fore.MAGENTA + "Training"):
+        for train_x, train_y in tqdm(train_loader, total=len(train_loader), desc= "Training"):
             if hi_prev is None:
                 hi.data = self.activation_function(train_x @ weights1)
             else:

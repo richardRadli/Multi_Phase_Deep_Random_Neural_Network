@@ -14,7 +14,7 @@ services:
       - PROJECT_ROOT=/app
       - DATASET_ROOT=/app/datasets
       - STORAGE_ROOT=/app/storage
-      - GDRIVE_DATASET_URL=https://drive.google.com/uc?id=1Fe3DjPOGgzNmlnJj0yn0WTUazh3ojL8k
+      - GDRIVE_DATASET_URL=https://drive.google.com/uc?id=1bityqrN5wydhqxvEl0RCn9TRj0RtDjtR
     volumes:
       - ./datasets:/app/datasets
       - ./storage:/app/storage
