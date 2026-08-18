@@ -8,6 +8,8 @@
   "sigma": 0.15,
   "num_aux_net": 4,
   "eq_neurons": {
+    "adult": [300, 300, 300],
+    "cifar10": [2000, 2000, 2000],
     "connect4": [866, 866, 866],
     "isolete": [1300, 1300, 1300],
     "letter": [1500, 1500, 1500],
@@ -25,6 +27,8 @@
     "waveform": [216, 216, 216]
   },
   "exp_neurons": {
+    "adult": [600, 200, 100],
+    "cifar10": [4000, 1500, 500],
     "connect4": [2049, 452, 100],
     "isolete": [1400, 1300, 1200],
     "letter": [3000, 1000, 500],
@@ -42,6 +46,8 @@
     "waveform": [700, 400, 100]
   },
   "subset_percentage": {
+    "adult": 0.5,
+    "cifar10": 0.1,
     "connect4": 0.5,
     "isolete": 0.55,
     "letter": 0.1,
@@ -59,6 +65,16 @@
     "waveform": 0.8285131061826998
   },
   "rcond": {
+    "adult": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
+    "cifar10": {
+      "BASE": 1e-5,
+      "EXP_ORT": 1e-5,
+      "EXP_ORT_C": 1e-15
+    },
     "connect4": {
       "BASE": 1e-5,
       "EXP_ORT": 1e-15,
@@ -136,6 +152,8 @@
     }
   },
   "penalty": {
+    "adult": 5,
+    "cifar10": 0.15,
     "connect4": 5,
     "isolete": 5,
     "letter": 0.15,

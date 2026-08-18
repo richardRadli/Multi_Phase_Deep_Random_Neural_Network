@@ -1,27 +1,50 @@
 import logging
+import os
+import pickle
+from typing import Tuple
+
 import numpy as np
-
-from tqdm import tqdm
-from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder
+from tqdm import tqdm
 
-from config.dataset_config import general_dataset_configs, VALID_DATASETS
+from config.dataset_config import VALID_DATASETS, general_dataset_configs
 from utils.common import setup_logger
 
 
-def all_elements_numeric(nested_list):
-    """Checks recursively whether all items in a nested list are numeric."""
-    for item in nested_list:
-        if isinstance(item, list):
-            if not all_elements_numeric(item):
+def all_elements_numeric(matrix: list) -> bool:
+    """Ellenőrzi, hogy a beolvasott mátrix minden eleme numerikussá konvertálható-e."""
+    for row in matrix:
+        for element in row:
+            try:
+                float(element)
+            except ValueError:
                 return False
-        else:
-            if not str(item).isnumeric():
-                try:
-                    float(item)
-                except ValueError:
-                    return False
     return True
+
+
+def load_cifar10_raw(cifar_dir: str) -> Tuple[np.ndarray, np.ndarray]:
+    """Mind az 5 train batch és az 1 test batch beolvasása (összesen 60 000 minta)."""
+    features_list = []
+    labels_list = []
+
+    for b in range(1, 6):
+        batch_path = os.path.join(cifar_dir, f"data_batch_{b}")
+        with open(batch_path, "rb") as f:
+            entry = pickle.load(f, encoding="bytes")
+            features_list.append(entry[b"data"])
+            labels_list.extend(entry[b"labels"])
+
+    test_batch_path = os.path.join(cifar_dir, "test_batch")
+    if os.path.exists(test_batch_path):
+        with open(test_batch_path, "rb") as f:
+            entry = pickle.load(f, encoding="bytes")
+            features_list.append(entry[b"data"])
+            labels_list.extend(entry[b"labels"])
+
+    features = np.vstack(features_list).astype(np.float32)
+    labels = np.array(labels_list).reshape(-1, 1)
+    return features, labels
 
 
 def split_dataset(dataset_name: str, split_ratio: list = None):
@@ -46,42 +69,55 @@ def split_dataset(dataset_name: str, split_ratio: list = None):
     num_features = general_dataset_configs(dataset_name).get("num_features")
 
     try:
-        with open(path_to_dataset, "r") as file:
-            lines = file.readlines()
+        if dataset_name == "cifar10":
+            cifar_dir = os.path.join(os.path.dirname(path_to_dataset), "cifar-10-batches-py")
+            raw_features, raw_labels = load_cifar10_raw(cifar_dir)
 
-        if not lines:
-            raise ValueError(f"Dataset raw file is empty at path: {path_to_dataset}")
+            label_encoder = OneHotEncoder(sparse_output=False)
+            encoded_labels = label_encoder.fit_transform(raw_labels)
 
-        labels = []
-        features = []
-        for line in tqdm(lines, desc=f"Reading {dataset_name}"):
-            split = line.strip().split(',')
+            scaler = MinMaxScaler()
+            normalized_features = scaler.fit_transform(raw_features)
 
-            if dataset_name in ["connect4", "isolete", "musk2", "optdigits", "page_blocks", "satimages",
-                                "shuttle", "spambase", "usps", "wall", "waveform"]:
-                labels.append(split[-1])
-                features.append(split[:-1])
-            elif dataset_name in ["letter", "mnist", "mnist_fashion", "segment"]:
-                labels.append(split[0])
-                features.append(split[1:])
-            else:
-                raise ValueError(f"Unsupported dataset name: {dataset_name}")
-
-        label_encoder = OneHotEncoder(sparse_output=False)
-        encoded_labels = label_encoder.fit_transform(np.array(labels).reshape(-1, 1))
-
-        if all_elements_numeric(features):
-            reshaped_features = np.array(features, dtype=np.float32)
-            reshaped_features = reshaped_features.reshape((size_of_dataset, num_features))
         else:
-            encoder = LabelEncoder()
-            reshaped_features = []
-            for feature in tqdm(features, desc="Encoding non-numeric features"):
-                processed_feature = [0 if val == ' ?' else val for val in feature]
-                reshaped_features.append(encoder.fit_transform(processed_feature))
+            with open(path_to_dataset, "r") as file:
+                lines = [l.strip() for l in file if l.strip()]
 
-        scaler = MinMaxScaler()
-        normalized_features = scaler.fit_transform(reshaped_features)
+            if not lines:
+                raise ValueError(f"Dataset raw file is empty at path: {path_to_dataset}")
+
+            labels = []
+            features = []
+            for line in tqdm(lines, desc=f"Reading {dataset_name}"):
+                split = line.split(",")
+
+                if dataset_name in [
+                    "adult", "connect4", "isolete", "musk2", "optdigits", "page_blocks",
+                    "satimages", "shuttle", "spambase", "usps", "wall", "waveform"
+                ]:
+                    labels.append(split[-1].strip())
+                    features.append(split[:-1])
+                elif dataset_name in ["letter", "mnist", "mnist_fashion", "segment"]:
+                    labels.append(split[0].strip())
+                    features.append(split[1:])
+                else:
+                    raise ValueError(f"Unsupported dataset name: {dataset_name}")
+
+            label_encoder = OneHotEncoder(sparse_output=False)
+            encoded_labels = label_encoder.fit_transform(np.array(labels).reshape(-1, 1))
+
+            if all_elements_numeric(features):
+                reshaped_features = np.array(features, dtype=np.float32).reshape((len(lines), num_features))
+            else:
+                encoder = LabelEncoder()
+                reshaped_features = []
+                for feature in tqdm(features, desc="Encoding non-numeric features"):
+                    processed_feature = [0 if val in [" ?", "?", ""] else val for val in feature]
+                    reshaped_features.append(encoder.fit_transform(processed_feature))
+                reshaped_features = np.array(reshaped_features, dtype=np.float32)
+
+            scaler = MinMaxScaler()
+            normalized_features = scaler.fit_transform(reshaped_features)
 
         size_of_test_subset = int(size_of_dataset * split_ratio[2])
 

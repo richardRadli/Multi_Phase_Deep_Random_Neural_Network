@@ -59,7 +59,7 @@ class ConfigFilePaths(_Const):
     def get_data_path(self, key: str) -> str:
         return os.path.join(self.PROJECT_ROOT, self.dirs_config_paths.get(key, ""))
 
-1
+
 class MPDRNNPaths(_Const):
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------ G E T   D A T A   P A T H ---------------------------------------------

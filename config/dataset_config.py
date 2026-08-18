@@ -10,7 +10,7 @@ from config.data_paths import (
 )
 
 VALID_DATASETS = [
-    "connect4", "isolete", "letter", "mnist", "mnist_fashion",
+    "adult", "cifar10", "connect4", "isolete", "letter", "mnist", "mnist_fashion",
     "musk2", "optdigits", "page_blocks", "satimages", "segment",
     "shuttle", "spambase", "usps", "wall", "waveform"
 ]
@@ -94,7 +94,18 @@ def general_dataset_configs(dataset_type: str) -> Dict:
         "waveform": {
             "dataset_size": 5000, "num_train_data": 3500, "num_test_data": 1500,
             "num_features": 21, "num_classes": 3, "class_labels": ["0", "1", "2"]
-        }
+        },
+        "adult": {
+            "dataset_size": 32561, "num_train_data": 22792, "num_test_data": 9769,
+            "num_features": 14, "num_classes": 2, "class_labels": ["<=50K", ">50K"]
+        },
+        "cifar10": {
+            "dataset_size": 60000, "num_train_data": 42000, "num_test_data": 18000,
+            "num_features": 3072, "num_classes": 10, "class_labels": [
+                "airplane", "automobile", "bird", "cat", "deer",
+                "dog", "frog", "horse", "ship", "truck"
+            ]
+        },
     }
 
     config = raw_configs[dataset_type]
@@ -102,8 +113,8 @@ def general_dataset_configs(dataset_type: str) -> Dict:
 
     if dataset_type == "wall":
         data_filename = "sensor_readings_24.data"
-    elif dataset_type == "waveform":
-        data_filename = "waveform.data"
+    elif dataset_type in ["waveform", "adult"]:
+        data_filename = f"{dataset_type}.data"
     else:
         data_filename = "data.txt"
 

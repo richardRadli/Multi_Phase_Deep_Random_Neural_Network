@@ -9,6 +9,8 @@
   "optimization": {
     "adam": {
       "learning_rate": {
+        "adult": 0.001,
+        "cifar10": 0.0005,
         "connect4": 0.0014840476104628093,
         "isolete": 0.001907640069101866,
         "letter": 0.000889053777822152,
@@ -28,6 +30,8 @@
     },
     "sgd": {
       "learning_rate": {
+        "adult": 0.01,
+        "cifar10": 0.01,
         "connect4": 0.00108595,
         "isolete": 0.0333806,
         "letter": 0.09160847263704444,
@@ -45,6 +49,8 @@
         "waveform": 0
       },
       "momentum": {
+        "adult": 0.9,
+        "cifar10": 0.9,
         "connect4": 0.981549,
         "isolete": 0.876804,
         "letter": 0.7396715844501105,
@@ -64,6 +70,8 @@
     }
   },
   "hidden_neurons": {
+    "adult": 256,
+    "cifar10": 2048,
     "connect4": 866,
     "isolete": 1300,
     "letter": 1500,
@@ -81,6 +89,8 @@
     "waveform": 500
   },
   "batch_size": {
+    "adult": 64,
+    "cifar10": 128,
     "connect4": 128,
     "isolete": 128,
     "letter": 64,
